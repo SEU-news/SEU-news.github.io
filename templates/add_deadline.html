@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Deadline Entry</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+    <h2>Add Deadline Entry</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="link">Link</label>
+            <input type="text" id="link" name="link" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="short_title">Short Title</label>
+            <input type="text" id="short_title" name="short_title" class="form-control" required>
+        </div>
+        <div class="form-group mt-3">
+            <label>标签 (可选):</label>
+            <div class="btn-group" role="group" aria-label="Tag selection">
+                <input type="radio" class="btn-check" name="tag" id="tagA" value="校级活动" autocomplete="off">
+                <label class="btn btn-outline-primary rounded-pill me-1" for="tagA">校级活动</label>
+
+                <input type="radio" class="btn-check" name="tag" id="tagB" value="院级活动" autocomplete="off">
+                <label class="btn btn-outline-primary rounded-pill me-1" for="tagB">院级活动</label>
+
+                <input type="radio" class="btn-check" name="tag" id="tagC" value="社团活动" autocomplete="off">
+                <label class="btn btn-outline-primary rounded-pill me-2" for="tagC">社团活动</label>
+
+                <input type="radio" class="btn-check" name="tag" id="tagD" value="讲座" autocomplete="off">
+                <label class="btn btn-outline-primary rounded-pill me-1" for="tagD">讲座</label>
+
+                <input type="radio" class="btn-check" name="tag" id="tagNone" value="" autocomplete="off" checked>
+                <label class="btn btn-outline-secondary rounded-pill" for="tagNone">取消</label>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="publish_time">Publish Time</label>
+            <input type="date" id="publish_time" name="publish_time" class="form-control" value="{{ today }}">
+        </div>
+        <div class="mb-3">
+            <label for="due_time">Due Time</label>
+            <input type="date" id="due_time" name="due_time" class="form-control" value="{{ today }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Add Entry</button>
+    </form>
+    
+    <script type="text/javascript">
+        function CheckTag(selector) {
+            var custom = document.getElementById('customTag');
+            if (selector.value === 'others') {
+                custom.style.display = 'block';
+                custom.required = true;
+            } else {
+                custom.style.display = 'none';
+                custom.required = false;
+            }
+        }
+    </script>
+    
+</body>
+</html>

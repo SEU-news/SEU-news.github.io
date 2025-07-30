@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+  <title>Render Preview</title>
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/../static/default.css">
+</head>
+<body>
+  <div>
+    <label for="dateInput">Enter date (MM-DD-YYYY):</label>
+    <input type="date" id="dateInput">
+    <button id="loadBtn" class="btn btn-primary">Load Data</button>
+  </div>
+  
+  <div id="toc"></div>
+  
+  <div id="result">
+  </div>
+  
+  <script type="text/javascript">
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+    function escapeAndBreak(str) {
+      return escapeHTML(str).replace(/\r?\n/g, "<br>");
+    }
+    
+    function generateTOC() {
+      var tocDiv = document.getElementById("toc");
+      tocDiv.innerHTML = "<h2>Table of Contents</h2>";
+      var tocList = document.createElement("ul");
+      var currentH2Li = null;
+      var headings = document.querySelectorAll("#result h2, #result h3");
+      headings.forEach(function(heading, index) {
+        if(!heading.id) {
+          heading.id = "heading-" + index;
+        }
+        var li = document.createElement("li");
+        li.innerHTML = '<a href="#' + heading.id + '">' + heading.innerText + '</a>';
+        if(heading.tagName.toLowerCase() === "h2") {
+          tocList.appendChild(li);
+          currentH2Li = li;
+          currentH2Li.subList = document.createElement("ul");
+          currentH2Li.subList.className = "ui";
+          currentH2Li.appendChild(currentH2Li.subList);
+        } else if (heading.tagName.toLowerCase() === "h3") {
+          if(currentH2Li && currentH2Li.subList) {
+            currentH2Li.subList.appendChild(li);
+          } else {
+            tocList.appendChild(li);
+          }
+        }
+      });
+      tocDiv.appendChild(tocList);
+    }
+
+    
+    document.getElementById("loadBtn").addEventListener("click", function(){
+      var date = document.getElementById("dateInput").value;
+      if(!date){
+        alert("Please select a date.");
+        return;
+      }
+      fetch(`/typst/${date}`)
+        .then(function(response){ return response.json(); })
+        .then(function(data){
+          var resultDiv = document.getElementById("result");
+          resultDiv.innerHTML = "";
+
+          for(var section in data.data){
+            if(section.endsWith("-v"))
+                continue;
+            var sectionDiv = document.createElement("div");
+            if(section == "other")
+              sectionDiv.innerHTML = "<h2>" + "校级活动" + "</h2>";
+            else
+            sectionDiv.innerHTML = "<h2>" + escapeHTML(section) + "</h2>";
+            if(Array.isArray(data.data[section])){
+              var ul = document.createElement("ul");
+              data.data[section].forEach(function(item){
+                var li = document.createElement("li");
+                li.innerHTML = "<h3>" + escapeHTML(item.title) + "</h3>" + 
+                  (item.link ? " 原文：<a href=\"" + escapeHTML(item.link) + "\" target=\"_blank\">" + escapeHTML(item.link) + "</a>" : "");
+                if(item.id){
+                  li.innerHTML += " <button class=\"btn btn-sm btn-secondary\" onclick=\"window.location.href='../review/" + escapeHTML(item.id) + "'\">Edit</button>";
+                }
+                if(item.description) {
+                  var descStr = "";
+                  Object.keys(item.description).sort().forEach(function(key){
+                    var part = item.description[key];
+                    if(part.type === "text"){
+                      descStr += escapeAndBreak(part.content);
+                    } else if(part.type === "link"){
+                      descStr += ' <a href="' + escapeHTML(part.content) + '" target="_blank">' + escapeHTML(part.content) + '</a>';
+                    }
+                  });
+                  li.innerHTML += "<br>" + descStr;
+                }
+                ul.appendChild(li);
+              });
+              sectionDiv.appendChild(ul);
+            }
+            resultDiv.appendChild(sectionDiv);
+          }
+
+          for(var dueSection in data.due){
+            var dueDiv = document.createElement("div");
+            dueDiv.innerHTML = "<h2>Due: " + escapeHTML(dueSection) + "</h2>";
+            if(Array.isArray(data.due[dueSection])){
+              var table = document.createElement("table");
+              table.setAttribute("border", "1");
+              var thead = document.createElement("thead");
+              var headerRow = document.createElement("tr");
+              headerRow.innerHTML = "<th>Title</th><th>Due Time</th><th>Publish Date</th><th>Edit</th>";
+              thead.appendChild(headerRow);
+              table.appendChild(thead);
+              var tbody = document.createElement("tbody");
+              data.due[dueSection].forEach(function(item){
+                var row = document.createElement("tr");
+                var titleCell = document.createElement("td");
+                if(item.link){
+                  titleCell.innerHTML = '<a href="' + escapeHTML(item.link) + '" target="_blank">' + escapeHTML(item.title) + '</a>';
+                } else {
+                  titleCell.innerHTML = escapeHTML(item.title);
+                }
+                var dueCell = document.createElement("td");
+                var dueTimeStr = escapeHTML(item.due_time);
+                dueCell.innerHTML = dueTimeStr.length >= 10 ? dueTimeStr.slice(5,10) : dueTimeStr;
+                                var publishCell = document.createElement("td");
+                var publishDateStr = escapeHTML(item.publish_date);
+                if(publishDateStr.length >= 10){
+                  publishCell.innerHTML = '<a href="https://nik-nul.github.io/news/' + escapeHTML(item.publish_date) + '" target="_blank">' + publishDateStr.slice(5,10) + '</a>';
+                } else {
+                  publishCell.innerHTML = publishDateStr;
+                }
+                var editCell = document.createElement("td");
+                if(item.id){
+                  editCell.innerHTML = '<button class="btn btn-sm btn-secondary" onclick="window.location.href=\'../review/' + escapeHTML(item.id) + '\'">Edit</button>';
+                } else {
+                  editCell.innerHTML = "";
+                }
+                row.appendChild(titleCell);
+                row.appendChild(dueCell);
+                row.appendChild(publishCell);
+                row.appendChild(editCell);
+                tbody.appendChild(row);
+              });
+              table.appendChild(tbody);
+              dueDiv.appendChild(table);
+            }
+            resultDiv.appendChild(dueDiv);
+          }
+          generateTOC();
+        })
+        .catch(function(error){
+          console.error("Error loading JSON:", error);
+          alert("Failed to load data.");
+        });
+    });
+    
+    document.addEventListener('DOMContentLoaded', function(){
+      var now = new Date();
+      var utcDate = now.getUTCFullYear() + '-' +
+                    String(now.getUTCMonth() + 1).padStart(2, '0') + '-' +
+                    String(now.getUTCDate()).padStart(2, '0');
+      document.getElementById("dateInput").value = utcDate;
+      document.getElementById("loadBtn").click();
+    });
+  </script>
+</body>
+</html>

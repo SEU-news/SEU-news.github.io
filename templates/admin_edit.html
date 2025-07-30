@@ -1,0 +1,61 @@
+<!-- templates/admin_edit.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>编辑条目</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>编辑条目 ID: {{ entry[0] }}</h2>
+        <form method="POST">
+            <div class="mb-3">
+                <label>Uploader</label>
+                <input type="text" name="uploader" class="form-control" value="{{ entry[1] }}" required>
+            </div>
+            <div class="mb-3">
+                <label>Upload Time</label>
+                <input type="text" name="upload_time" class="form-control" value="{{ entry[2] }}" required>
+            </div>
+            <div class="mb-3">
+                <label>Title</label>
+                <input type="text" name="title" class="form-control" value="{{ entry[3] }}" required>
+            </div>
+            <div class="mb-3">
+                <label>Link</label>
+                <input type="text" name="link" class="form-control" value="{{ entry[4] }}">
+            </div>
+            <div class="mb-3">
+                <label>Description</label>
+                <textarea name="description" class="form-control" rows="3">{{ entry[5] }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label>Describer</label>
+                <input type="text" name="describer" class="form-control" value="{{ entry[6] or '' }}">
+            </div>
+            <div class="mb-3">
+                <label>Reviewer</label>
+                <input type="text" name="reviewer" class="form-control" value="{{ entry[7] or '' }}">
+            </div>
+            <div class="mb-3">
+                <label>Due Time</label>
+                <input type="text" name="due_time" class="form-control" value="{{ entry[8] or '' }}">
+            </div>
+            <div class="mb-3">
+                <label>Status</label>
+                <input type="text" name="status" class="form-control" value="{{ entry[9] }}" required>
+            </div>
+            <div class="mb-3">
+                <label>Type</label>
+                <input type="text" name="entry_type" class="form-control" value="{{ entry[10] }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">更新</button>
+            <a href="{{ url_for('admin') }}" class="btn btn-secondary">取消</a>
+        </form>
+    </div>
+</body>
+
+</html>

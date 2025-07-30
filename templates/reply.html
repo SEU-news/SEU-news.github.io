@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>回复留言</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>回复留言</h2>
+        <div class="card mb-3">
+            <div class="card-body">
+                <p><strong>{{ orig.author }}</strong> <small>{{ orig.timestamp }}</small></p>
+                <p>{{ orig.content }}</p>
+            </div>
+        </div>
+        <form method="POST" action="{{ url_for('post_message') }}">
+            <div class="mb-3">
+                <textarea name="content" class="form-control" placeholder="请输入回复内容" required></textarea>
+                <input type="hidden" name="reply_to" value="{{ orig.id }}">
+            </div>
+            <button type="submit" class="btn btn-primary">发表回复</button>
+            <a href="{{ url_for('message_board') }}" class="btn btn-secondary">返回留言板</a>
+        </form>
+    </div>
+</body>
+</html>

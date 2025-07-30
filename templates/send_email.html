@@ -1,0 +1,71 @@
+<!-- templates/send_email.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>发送邮件</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>发送新闻邮件</h2>
+        
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>发送邮件</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="date" class="form-label">选择发送日期的新闻：</label>
+                                <input type="date" class="form-control" id="date" name="date" value="{{ today }}" required>
+                                <div class="form-text">选择要发送新闻的日期，系统将自动生成该日期的新闻预览邮件</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <button type="submit" class="btn btn-primary">发送邮件</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>邮件列表</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if mailing_list %}
+                        <p><strong>当前邮件列表包含 {{ mailing_list|length }} 个收件人：</strong></p>
+                        <ul class="list-group list-group-flush">
+                            {% for email in mailing_list %}
+                            <li class="list-group-item py-1">{{ email }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <div class="alert alert-warning">
+                            <strong>邮件列表为空！</strong><br>
+                            请在项目根目录的 <code>mailinglist</code> 文件中添加收件人邮箱地址，每行一个邮箱。
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,129 @@
+<!-- templates/upload.html -->
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>上传新消息</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>上传新消息</h2>
+        <form method="POST">
+            <div class="form-group">
+                <label>标题</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="toggleDeadline"
+                        onchange="toggleDeadlineFunc(this);">
+                    <label class="form-check-label" for="toggleDeadline">使用截止日期</label>
+                </div>
+                <div id="deadlineField" style="display:none;">
+                    <input type="date" id="due_time" name="due_time" class="form-control mt-2">
+                    <input type="button" value="Clear" class="btn btn-primary mt-2"
+                        onclick="document.getElementById('due_time').value=''" />
+                </div>
+                <div id="shortTitleField" style="display:none;">
+                    <label>短标题（将显示在ddl表格）</label>
+                    <input type="text" name="short_title" class="form-control mt-2" placeholder="请输入短标题（默认与标题相同）">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>刊载板块</label>
+                <select name="entry_type" id="typeSelect" onchange='CheckType(this);' class="form-control">
+                    <option value="活动预告">活动预告</option>
+                    <option value="参考消息">参考消息</option>
+                    <option value="DDLOnly">DDLOnly</option>
+                    <option value="others">自定义</option>
+                </select>
+                <input type="text" name="customType" id="customType" class="form-control" style='display:none;'
+                    placeholder="请输入自定义的版块名称" />
+            </div>
+            <div class="form-group">
+                <label>描述</label>
+                <textarea name="description" class="form-control" required rows="10"></textarea>
+            </div>
+            <div class="form-group mt-3">
+                <label>标签 (可选):</label>
+                <div class="btn-group" role="group" aria-label="Tag selection">
+                    <input type="radio" class="btn-check" name="tag" id="tagA" value="校级活动" autocomplete="off">
+                    <label class="btn btn-outline-primary rounded-pill me-1" for="tagA">校级活动</label>
+
+                    <input type="radio" class="btn-check" name="tag" id="tagB" value="院级活动" autocomplete="off">
+                    <label class="btn btn-outline-primary rounded-pill me-1" for="tagB">院级活动</label>
+
+                    <input type="radio" class="btn-check" name="tag" id="tagC" value="社团活动" autocomplete="off">
+                    <label class="btn btn-outline-primary rounded-pill me-2" for="tagC">社团活动</label>
+
+                    <input type="radio" class="btn-check" name="tag" id="tagD" value="讲座" autocomplete="off">
+                    <label class="btn btn-outline-primary rounded-pill me-1" for="tagD">讲座</label>
+
+                    <input type="radio" class="btn-check" name="tag" id="tagNone" value="" autocomplete="off" checked>
+                    <label class="btn btn-outline-secondary rounded-pill" for="tagNone">取消</label>
+                </div>
+            </div>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">上传</button>
+                <a href="{{ url_for('main') }}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
+
+<script type="text/javascript">
+    const form = document.querySelector('form');
+    const input = document.querySelector('input');
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        if (input.value.trim() === '') {
+            alert('Please fill out the input field!');
+        } else {
+            form.submit();
+        }
+    });
+
+    function toggleDeadlineFunc(checkbox) {
+        var deadlineDiv = document.getElementById('deadlineField');
+        var shortTitleDiv = document.getElementById('shortTitleField');
+        var dueInput = document.getElementById('due_time');
+        if (checkbox.checked) {
+            deadlineDiv.style.display = 'block';
+            shortTitleDiv.style.display = 'block';
+            if (!dueInput.value) {
+                var today = new Date().toISOString().split('T')[0];
+                dueInput.value = today;
+            }
+        } else {
+            deadlineDiv.style.display = 'none';
+            shortTitleDiv.style.display = 'none';
+            dueInput.value = '';
+        }
+    }
+</script>
+
+<script type="text/javascript">
+    function CheckType(selector) {
+        var val = selector.value
+        var custom = document.getElementById('customType');
+        if (val == '' || val == 'others') {
+            custom.style.display = 'block';
+            custom.required = true;
+            custom.name = "entry_type"
+            selector.name = ""
+        } else {
+            custom.style.display = 'none';
+            custom.required = false;
+            custom.name = ""
+            selector.name = "entry_type"
+        }
+    }
+</script>

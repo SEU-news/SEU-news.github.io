@@ -1,0 +1,189 @@
+<!-- templates/review.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>审阅报道</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+
+<body>
+    {% block content %}
+    <div class="container">
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">
+            {{ message }}
+        </div>
+        {% endfor %}
+
+        {% block page_content %}{% endblock %}
+    </div>
+    {% endblock %}
+    <div class="container mt-5">
+        {% if entry[4] and not (entry[4].endswith('.png') or entry[4].endswith('.jpg') or entry[4].endswith('.jpeg') or entry[4].endswith('.webp')) %}
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="togglePreview" onchange="togglePreviewFunc(this);">
+            <label class="form-check-label" for="togglePreview">开启网页预览(Experimental)</label>
+        </div>
+        {% endif %}
+        <div id="splitContainer" style="display: flex; flex-direction: row;">
+            <div id="leftPane" style="flex: 1;">
+                <h2>正在审阅: {{ entry[3] }}</h2>
+                <p>对你认为不合适之处作出更改，并点击 Modify 提交修改。如你认为本消息并无不妥请点击 Approve 以完成审阅。</p>
+                {% if entry[4] %}
+                {% if entry[4].endswith('.png') or entry[4].endswith('.jpg') or entry[4].endswith('.jpeg') or
+                entry[4].endswith('.webp') %}
+                <img src="{{ url_for('static', filename='uploads/' ~ entry[4], _external=True) }}" alt="Uploaded image"
+                    class="img-fluid" style="max-width: 100%; max-height: 500px; object-fit: contain;" />
+                {% else %}
+                <p>消息链接: <a target="_blank" rel="noopener noreferrer" href="{{ entry[4] }}">{{ entry[4] }}</a></p>
+                {% endif %}
+                {% else %}
+                <p>本条目没有链接被上传</p>
+                {% endif %}
+                <form method="POST" action="">
+                    <div class="form-group">
+                        {% if entry[4] and (entry[4].endswith('.png') or entry[4].endswith('.jpg') or entry[4].endswith('.jpeg')
+                        or entry[4].endswith('.webp')) %}
+                        <div class="form-check mt-3">
+                            <input class="form-check-input" type="checkbox" id="useImage" name="use_image" {% if entry[13]==1
+                                %}checked{% endif %}>
+                            <label class="form-check-label" for="useImage">利用图片</label>
+                        </div>
+                        {% endif %}
+                        <label>标题</label>
+                        <input type="text" name="title" class="form-control" value="{{ entry[3] }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>刊载板块（讲座不需要填写板块为讲座，在下面的 tag 中选择即可）</label>
+                        <select name="entry_type" id="typeSelect" onchange='CheckType(this);' class="form-control">
+                            <option value="活动预告" {% if entry[10]=='活动预告' %}selected{% endif %}>活动预告</option>
+                            <option value="参考消息" {% if entry[10]=='参考消息' %}selected{% endif %}>参考消息</option>
+                            <option value="others" {% if entry[10] not in ['活动预告','讲座','参考消息'] %}selected{% endif %}>自定义
+                            </option>
+                        </select>
+                        <input type="text" name="customType" id="customType" class="form-control" style='display:none;'
+                        placeholder="请输入自定义的版块名称"
+                        value="{% if entry[10] not in ['活动预告','讲座','参考消息'] %}{{ entry[10] }}{% endif %}" />
+                    </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="toggleDeadline"
+                            onchange="toggleDeadlineFunc(this);" {% if entry[8] %}checked{% endif %}>
+                            <label class="form-check-label" for="toggleDeadline">使用截止日期</label>
+                        </div>
+                        <div id="deadlineField" {% if entry[8] %}style="display:block;" {% else %}style="display:none;" {% endif%}>
+                            <input type="date" id="due_time" name="due_time" class="form-control mt-2"
+                            value="{{ entry[8] if entry[8] else '' }}">
+                            <input type="button" value="Clear" class="btn btn-primary mt-2"
+                            onclick="document.getElementById('due_time').value=''" />
+                        </div>
+                        <div id="shortTitleField"{% if entry[8] %}style="display:block;" {% else %}style="display:none;" {% endif%}>
+                            <label>短标题（将显示在ddl表格）</label>
+                            <input type="text" name="short_title" class="form-control" value="{{ entry[16] }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>描述</label>
+                        <textarea id="description" name="description" class="form-control" rows="5">{{ entry[5] }}</textarea>
+                        <button type="button" class="btn btn-outline-secondary mt-2" onclick="kernLineBreaks()">合并连续换行</button>
+                    </div>
+                    <div class="form-group mt-3">
+                        <label>标签 (可选):</label>
+                        <div class="btn-group" role="group" aria-label="Tag selection">
+                            <input type="radio" class="btn-check" name="tag" id="tagA" value="校级活动" autocomplete="off" {% if
+                                entry[15]=="校级活动" %}checked{% endif %}>
+                            <label class="btn btn-outline-primary rounded-pill me-1" for="tagA">校级活动</label>
+
+                            <input type="radio" class="btn-check" name="tag" id="tagB" value="院级活动" autocomplete="off" {% if
+                                entry[15]=='院级活动' %}checked{% endif %}>
+                            <label class="btn btn-outline-primary rounded-pill me-1" for="tagB">院级活动</label>
+
+                            <input type="radio" class="btn-check" name="tag" id="tagC" value="社团活动" autocomplete="off" {% if
+                                entry[15]=='社团活动' %}checked{% endif %}>
+                            <label class="btn btn-outline-primary rounded-pill me-2" for="tagC">社团活动</label>
+
+                            <input type="radio" class="btn-check" name="tag" id="tagD" value="讲座" autocomplete="off" {% if
+                                entry[15]=="讲座" %}checked{% endif %}>
+                            <label class="btn btn-outline-primary rounded-pill me-1" for="tagD">讲座</label>
+
+                            <input type="radio" class="btn-check" name="tag" id="tagNone" value="" autocomplete="off" {% if not
+                                entry[15] %}checked{% endif %}>
+                            <label class="btn btn-outline-secondary rounded-pill" for="tagNone">取消</label>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" id="approve-button" name="action" value="approve"
+                            class="btn btn-success">Approve</button>
+                        <button type="submit" id="modify-button" name="action" value="modify"
+                            class="btn btn-warning">Modify</button>
+                        <input type="reset" value="Reset" class="btn btn-primary" />
+                        <a href="{{ url_for('cancel', entry_id=entry[0]) }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+            {% if entry[4] and not (entry[4].endswith('.png') or entry[4].endswith('.jpg') or entry[4].endswith('.jpeg') or entry[4].endswith('.webp')) %}
+            <div id="rightPane" style="flex: 1; display: none; margin-left: 24px;">
+                <iframe id="previewFrame" src="{{ entry[4] }}" style="width:100%; min-height:700px; border:1px solid #ccc; border-radius:8px;"></iframe>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+</html>
+
+<script type="text/javascript">
+    function CheckType(selector) {
+        var val = selector.value
+        var custom = document.getElementById('customType');
+        if (val == '' || val == 'others') {
+            custom.style.display = 'block';
+            custom.required = true;
+            custom.name = "entry_type"
+            selector.name = ""
+        } else {
+            custom.style.display = 'none';
+            custom.required = false;
+            custom.name = ""
+            selector.name = "entry_type"
+        }
+    }
+    function toggleDeadlineFunc(checkbox) {
+        var deadlineDiv = document.getElementById('deadlineField');
+        var dueInput = document.getElementById('due_time');
+        var shortTitleDiv = document.getElementById('shortTitleField');
+        if (checkbox.checked) {
+            deadlineDiv.style.display = 'block';
+            if (shortTitleDiv) shortTitleDiv.style.display = 'block';
+            if (!dueInput.value) {
+                var today = new Date().toISOString().split('T')[0];
+                dueInput.value = today;
+            }
+        } else {
+            deadlineDiv.style.display = 'none';
+            if (shortTitleDiv) shortTitleDiv.style.display = 'none';
+            dueInput.value = '';
+        }
+    }
+    function kernLineBreaks() {
+        var textarea = document.getElementsByName('description')[0];
+        if (textarea) {
+            textarea.value = textarea.value.replace(/(\r?\n){2,}/g, '\n');
+        }
+    }
+    function togglePreviewFunc(checkbox) {
+        var left = document.getElementById('leftPane');
+        var right = document.getElementById('rightPane');
+        var container = document.getElementById('splitContainer');
+        if (checkbox.checked) {
+            if (right) right.style.display = 'block';
+            if (left) left.style.flex = '1';
+            if (right) right.style.flex = '1';
+        } else {
+            if (right) right.style.display = 'none';
+            if (left) left.style.flex = 'unset';
+        }
+    }
+</script>

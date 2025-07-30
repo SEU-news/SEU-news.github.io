@@ -1,0 +1,36 @@
+<!-- templates/user_edit.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Edit User - {{ user[1] }}</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>Edit User - {{ user[1] }}</h2>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <form method="POST">
+            <div class="form-group mb-3">
+                <label>Username</label>
+                <input type="text" class="form-control" value="{{ user[1] }}" disabled>
+            </div>
+            <div class="form-group mb-3">
+                <label>New Password</label>
+                <input type="password" name="new_password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Password</button>
+            <a href="{{ url_for('user_admin') }}" class="btn btn-secondary">Back</a>
+        </form>
+    </div>
+</body>
+
+</html>

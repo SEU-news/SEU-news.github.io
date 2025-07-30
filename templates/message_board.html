@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>留言板</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>留言板</h2>
+        <form method="POST" action="{{ url_for('post_message') }}">
+            <div class="mb-3">
+                <textarea name="content" class="form-control" placeholder="请输入留言" required></textarea>
+                <input type="hidden" name="reply_to" value="">
+            </div>
+            <button type="submit" class="btn btn-primary">发表留言</button>
+        </form>
+        <hr>
+        <div class="message-list">
+            {% for message in messages %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <p><strong>{{ message.author }}</strong> <small>{{ message.timestamp }}</small></p>
+                    <p>{{ message.content }}</p>
+                    <a href="{{ url_for('reply_message', message_id=message.id) }}" class="btn btn-sm btn-secondary">回复</a>
+                    {% if message.replies %}
+                    <div class="ms-4 mt-3">
+                        {% for reply in message.replies %}
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <p><strong>{{ reply.author }}</strong> <small>{{ reply.timestamp }}</small></p>
+                                <p>{{ reply.content }}</p>
+                                <a href="{{ url_for('reply_message', message_id=message.id) }}" class="btn btn-sm btn-secondary">回复</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

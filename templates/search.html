@@ -1,0 +1,117 @@
+<!-- templates/search.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Search Entries</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>Search Entries</h2>
+        <form method="GET" action="{{ url_for('search') }}">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" name="q" placeholder="Search by title or description..."
+                    value="{{ query }}" required>
+                <button class="btn btn-outline-secondary" type="submit">Search</button>
+                <a href="{{ url_for('main') }}" class="btn btn-secondary">Back</a>
+            </div>
+        </form>
+        {% if query %}
+        <h4>Results for "{{ query }}":</h4>
+        {% if results %}
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in results %}
+                <tr>
+                    <td>{{ entry[0] }}</td>
+                    <td>{{ entry[3] }}</td>
+                    <td>{{ entry[5] }}</td>
+                    <td>
+                        {% if entry[4] %}
+                        <a href="{{ entry[4] }}" target="_blank">{{ entry[4] }}</a>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination-container">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page > 1 %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('search', q=query, page=page-1) }}">Previous</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                    {% endif %}
+
+                    {% if total_pages <= 5 %} {% for p in range(1, total_pages+1) %} {% if p==page %} <li
+                        class="page-item active"><span class="page-link">{{ p }}</span></li>
+                        {% else %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('search', q=query, page=p) }}">{{ p
+                                }}</a></li>
+                        {% endif %}
+                        {% endfor %}
+                        {% else %}
+                        {% set start_page = page - 3 if page - 3 > 1 else 1 %}
+                        {% set end_page = page + 3 if page + 3 < total_pages else total_pages %} {% if start_page> 1 %}
+                            <li class="page-item"><a class="page-link"
+                                    href="{{ url_for('search', q=query, page=1) }}">1</a></li>
+                            {% if start_page > 2 %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                            {% endif %}
+
+                            {% for p in range(start_page, end_page+1) %}
+                            {% if p == page %}
+                            <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+                            {% else %}
+                            <li class="page-item"><a class="page-link"
+                                    href="{{ url_for('search', q=query, page=p) }}">{{ p }}</a></li>
+                            {% endif %}
+                            {% endfor %}
+
+                            {% if end_page < total_pages %} {% if end_page < total_pages - 1 %} <li
+                                class="page-item disabled"><span class="page-link">...</span></li>
+                                {% endif %}
+                                <li class="page-item"><a class="page-link"
+                                        href="{{ url_for('search', q=query, page=total_pages) }}">{{ total_pages }}</a>
+                                </li>
+                                {% endif %}
+                                {% endif %}
+
+                                {% if page < total_pages %} <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('search', q=query, page=page+1) }}">Next</a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">Next</span>
+                                    </li>
+                                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% else %}
+        <p>No results found.</p>
+        {% endif %}
+        {% endif %}
+    </div>
+</body>
+
+</html>

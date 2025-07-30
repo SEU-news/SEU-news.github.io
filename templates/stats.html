@@ -1,0 +1,75 @@
+<!-- templates/stats.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>统计数据</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <h5>Uploader 统计</h5>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>次数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user, count in uploader_stats %}
+                        <tr>
+                            <td>{{ user }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-4">
+                <h5>Describer 统计</h5>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>次数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user, count in describer_stats %}
+                        <tr>
+                            <td>{{ user }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-4">
+                <h5>Reviewer 统计</h5>
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>用户名</th>
+                            <th>次数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user, count in reviewer_stats %}
+                        <tr>
+                            <td>{{ user }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pastebin</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Create a New Paste</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label>Title (optional)</label>
+            <input type="text" name="title" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label>Content</label>
+            <textarea name="content" class="form-control" rows="10" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Paste</button>
+        <a href="{{ url_for('main') }}" class="btn btn-secondary">Back</a>
+    </form>
+</div>
+</body>
+</html>

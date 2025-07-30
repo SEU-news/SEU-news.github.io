@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ paste[0] if paste[0] else "Untitled Paste" }}</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h2>{{ paste[0] if paste[0] else "Untitled Paste" }}</h2>
+    <p>By {{ paste[2] }} on {{ paste[3] }}</p>
+    <pre>{{ paste[1] }}</pre>
+</div>
+</body>
+</html>

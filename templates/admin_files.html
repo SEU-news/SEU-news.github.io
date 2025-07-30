@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin File Manager</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>文件管理</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="uploadFile" class="form-label">上传 HTML 或 PDF 文件</label>
+                <input type="file" name="uploadFile" id="uploadFile" class="form-control" accept=".html,.pdf" required>
+            </div>
+            <button type="submit" class="btn btn-primary">上传文件</button>
+        </form>
+        <hr>
+        <h3>已上传的文件</h3>
+        {% if files %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>文件名</th>
+                    <th>链接</th>
+                    <th>删除</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                <tr>
+                    <td>{{ file }}</td>
+                    <td><a href="{{ url_for('static', filename='admin_uploads/' ~ file) }}" target="_blank">查看</a></td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin_file_delete', filename=file) }}" onsubmit="return confirm('删除该文件？');">
+                            <button type="submit" class="btn btn-danger btn-sm">删除</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>暂无上传文件</p>
+        {% endif %}
+        <a href="{{ url_for('admin') }}" class="btn btn-secondary mt-3">返回管理首页</a>
+    </div>
+</body>
+</html>
