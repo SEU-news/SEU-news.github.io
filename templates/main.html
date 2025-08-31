@@ -4,7 +4,7 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>南哪小报消息刊载</title>
+    <title>车大消息消息刊载</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
 </head>
@@ -36,12 +36,11 @@
         {% endwith %}
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>南哪小报 消息刊载</h2>
+            <h2>车大消息 消息刊载</h2>
             <div>
                 <a href="{{ url_for('preview_edit') }}" class="btn btn-outline-primary">预览</a>
                 <a href="{{ url_for('add_deadline') }}" class="btn btn-secondary">上传仅有DDL的消息</a>
                 <a href="{{ url_for('upload') }}" class="btn btn-primary">上传纯文本消息</a>
-                <a href="{{ url_for('stats') }}" class="btn btn-success">光荣榜</a>
             </div>
         </div>
         <form method="POST" action="{{ url_for('paste') }}" class="mb-4">
@@ -72,75 +71,66 @@
             </thead>
             <tbody>
                 {% for entry in entries %}
-                {% if entry[10] != "DDLOnly" %}
-                <tr {% if entry[11] == session['username'] %}class="table-danger"{% endif %}>
+                {% if entry.type != "DDLOnly" %}
                     <td>
-                        {% if not entry[5] %}
-                        {% if entry[11] and entry[11] != session['username'] %}
-                        <button class="btn btn-sm btn-secondary" disabled>上工 (锁定)</button>
+                        {% if not entry.description %}
+                        <a href="{{ url_for('describe', entry_id=entry.id) }}" class="btn btn-sm btn-danger">上工</a>
                         {% else %}
-                        <a href="{{ url_for('describe', entry_id=entry[0]) }}" class="btn btn-sm btn-danger">上工</a>
-                        {% endif %}
-                        {% else %}
-                        {% if entry[11] and entry[11] != session['username'] %}
-                        <button class="btn btn-sm btn-secondary" disabled>审核 (锁定)</button>
-                        {% else %}
-                        <a href="{{ url_for('review', entry_id=entry[0]) }}"
-                            class="{% if entry[9] == 'approved' %}btn btn-sm btn-success{% else %}btn btn-sm btn-warning{% endif %}">
-                            {% if entry[9] == 'approved' %} 修改 {% else %} 审核 {% endif %}
+                        <a href="{{ url_for('review', entry_id=entry.id) }}"
+                            class="{% if entry.status == 'approved' %}btn btn-sm btn-success{% else %}btn btn-sm btn-warning{% endif %}">
+                            {% if entry.status == 'approved' %} 修改 {% else %} 审核 {% endif %}
                         </a>
                         {% endif %}
-                        {% endif %}
-                        {% if entry[1] == session['username'] %}
-                        <form action="{{ url_for('delete_entry', entry_id=entry[0]) }}" method="POST"
+                        {% if entry.creator == session['username'] %}
+                        <form action="{{ url_for('delete_entry', entry_id=entry.id) }}" method="POST"
                             style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
                             <button type="submit" class="btn btn-sm btn-danger">删除</button>
                         </form>
                         {% endif %}
                     </td>
                     <td>
-                        {% if entry[4] %}
+                        {% if entry.link %}
                         <a target="_blank" rel="noopener noreferrer"
-                            href="{% if 'http' in entry[4] %}{{ entry[4] }}{% else %}{{ url_for('static', filename='uploads/' ~ entry[4], _external=True) }}{% endif %}">
-                            {% if entry[3]|length > 15 %}
-                            {{ entry[3][:15] }}...
+                            href="{% if 'http' in entry.link %}{{ entry.link }}{% else %}{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}{% endif %}">
+                            {% if entry.title|length > 15 %}
+                            {{ entry.title[:15] }}...
                             {% else %}
-                            {{ entry[3] }}
+                            {{ entry.tile }}
                             {% endif %}
                         </a>
                         {% else %}
-                        {% if entry[3]|length > 15 %}
-                        {{ entry[3][:15] }}...
+                        {% if entry.title|length > 15 %}
+                        {{ entry.title[:15] }}...
                         {% else %}
-                        {{ entry[3] }}
+                        {{ entry.title }}
                         {% endif %}
                         {% endif %}
                     </td>
                     <td
-                        class="{% if entry[9] == 'pending' %}table-secondary{% elif entry[9] == 'described' %}table-warning{% elif entry[9] == 'modified' %}table-warning{% elif entry[9] == 'approved' %}table-success{% endif %}">
-                        {% if entry[9] == "pending" %}
-                        未撰写
-                        {% elif entry[9] == "described" %}
+                        class="{% if entry.status == 'pending' %}table-secondary{% elif entry.status == 'described' %}table-warning{% elif entry.status == 'modified' %}table-warning{% elif entry.status == 'approved' %}table-success{% endif %}">
+                        {% if entry.status == "pending" %}
                         待审核
-                        {% elif entry[9] == "modified" %}
-                        待审核(已修改)
+                        {% elif entry.status == "draft" %}
+                        草稿
+                        {% elif entry.status == "reviewed" %}
+                        已审核
+                        {% elif entry.status == "rejected" %}
+                        已拒绝
                         {% else %}
-                        已完成
+                        已发布
                         {% endif %}
                     </td>
                     <td>
-                        {% if entry[5] and entry[5]|length > 15 %}
-                        {{ entry[5][:15] }}...
+                        {% if entry.description and entry.description|length > 15 %}
+                        {{ entry.description[:15] }}...
                         {% else %}
-                        {{ entry[5] }}
+                        {{ entry.description }}
                         {% endif %}
                     </td>
-                    <td>{{ entry[15] or '' }}</td>
-                    <td>{{ entry[7] or '' }}</td>
-                    <td>{{ entry[2][5:16] if entry[2] else '' }}</td>
-                    <td {% if entry[6]==session['username'] %} class="table-success" {% endif %}>{{ entry[6] or '' }}</td>
-                    <td>{{ entry[11] or '' }}</td>
-                </tr>
+                    <td>{{ entry.short_title or '' }}</td>
+                    <td>{{ entry.reviewer or '' }}</td>
+                    <td>{{ entry.created_at[5:16] if entry.created_at else '' }}</td>
+                    <td {% if entry.describer==session['username'] %} class="table-success" {% endif %}>{{ entry.describer or '' }}</td>
                 {% endif %}
                 {% endfor %}
             </tbody>
