@@ -196,10 +196,20 @@ def register():
 
         # 创建用户
         try:
-            user = User_info.objects.create(
+            # 先创建基础用户对象
+            user = User_info(
                 username=username,
-                password_MD5=hashlib.md5(password.encode('utf-8')).hexdigest()  # 加密密码
+                password_MD5=hashlib.md5(password.encode('utf-8')).hexdigest()
             )
+            # 设置其他必填字段的默认值
+            user.avatar = ''  # 设置默认头像
+            user.realname = ''  # 设置空默认值
+            user.student_id = ''  # 设置空默认值
+            user.role = User_info.PERMISSION_NONE  # 设置默认权限
+
+            # 保存用户对象
+            user.save()
+
             flash('注册成功！请登录')
             return redirect(url_for('login'))
 
