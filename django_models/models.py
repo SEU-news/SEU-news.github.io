@@ -89,9 +89,9 @@ class Content(models.Model):
         verbose_name = '文章'
         verbose_name_plural = '文章管理'
         indexes = [
-            models.Index(fields=['creator'], name='idx_creator_id'),
-            models.Index(fields=['describer'], name='idx_describer_id'),
-            models.Index(fields=['reviewer'], name='idx_reviewer_id'),
+            models.Index(fields=['creator_id'], name='idx_creator_id'),
+            models.Index(fields=['describer_id'], name='idx_describer_id'),
+            models.Index(fields=['reviewer_id'], name='idx_reviewer_id'),
             models.Index(fields=['status'], name='idx_status'),
             models.Index(fields=['type'], name='idx_type'),
             models.Index(fields=['deadline'], name='idx_deadline'),
