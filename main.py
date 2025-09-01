@@ -1,30 +1,31 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
-from functools import wraps
-from datetime import datetime, timedelta
-import sqlite3
-from werkzeug.security import generate_password_hash, check_password_hash
-from bs4 import BeautifulSoup
-import requests
-import os
-import hashlib
-import base64
-from urllib.parse import urlparse
-import re
-import json
-import subprocess
-import email.message
-import smtplib
-import time
-import django
-from django.db.models import Q
-from django_config import configure_django
-from django.db import IntegrityError
 import copy
+import hashlib
+import json
+import logging
+import os
+import re
+import sqlite3
+import subprocess
+from datetime import datetime, timedelta
+from functools import wraps
+from urllib.parse import urlparse
+
+import django
+import requests
+from bs4 import BeautifulSoup
+from django.db import IntegrityError
+from django.db.models import Q
+from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
+
+from django_config import configure_django
+
+logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(asctime)s - %(name)s - %(message)s')
 
 configure_django()
 django.setup()
 
-from django_models.models import User_info, Comment, Content
+from django_models.models import User_info, Content
+
 app = Flask(__name__)
 app.secret_key = 'A_SECRET_KEY_HERE'
 app.permanent_session_lifetime = timedelta(days=7)
@@ -33,6 +34,7 @@ EMAIL_ADDRESS = "test@smail.nju.edu.cn"
 EMAIL_PASSWORD = "A_SECRET_KEY_HERE"
 SMTP_SERVER = "smtp.exmail.qq.com"
 SMTP_PORT = 465
+
 
 def fetch_title(url):
     for _ in range(2):
@@ -61,17 +63,21 @@ def fetch_title(url):
             pass
     return "标题获取失败"
 
-EDITOR_LIST = ["editor1", "editor2","111"]
-ADMIN_LIST = ["admin","222","111"]
+
+EDITOR_LIST = ["editor1", "editor2", "111"]
+ADMIN_LIST = ["admin", "222", "111"]
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 
-LINK_REGEX = re.compile(r"(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)?)")
+LINK_REGEX = re.compile(
+    r"(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)?)")
+
 
 def allowed_file(filename):
     if not filename:
         return False
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def hash_file(file_obj):
     file_obj.seek(0)
@@ -79,6 +85,7 @@ def hash_file(file_obj):
     file_hash = hashlib.md5(file_content).hexdigest()
     file_obj.seek(0)
     return file_hash
+
 
 def is_valid_url(url):
     try:
@@ -94,6 +101,7 @@ def login_required(f):
         if 'username' not in session:
             return redirect(url_for('login'))
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -113,6 +121,7 @@ def admin_required(f):
             abort(403)
 
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -132,6 +141,7 @@ def editor_required(f):
             abort(403)
 
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -159,8 +169,9 @@ def login():
             return redirect(url_for('main'))
         else:
             flash('Invalid username or password')
-    
+
     return render_template('login.html')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 # @admin_required
@@ -177,7 +188,7 @@ def register():
         try:
             user = User_info.objects.create(
                 username=username,
-                password_MD5=hashlib.md5(password.encode('utf-8')).hexdigest() # 加密密码
+                password_MD5=hashlib.md5(password.encode('utf-8')).hexdigest()  # 加密密码
             )
             flash('注册成功！请登录')
             return redirect('login')
@@ -185,18 +196,19 @@ def register():
         except IntegrityError:
             flash('用户名已存在')
             return render_template('register.html')
-    
+
     return render_template('register.html')
+
 
 @app.route('/')
 @login_required
 def main():
-
     contents = Content.objects.filter(
-        published_time__isnull=True
+        publish_at__isnull=True
     ).order_by('updated_at')
 
-    return render_template('main.html',entries=contents)
+    return render_template('main.html', entries=contents)
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -223,7 +235,6 @@ def upload():
         return redirect(url_for('main'))
 
     return render_template('upload.html')
-
 
 
 @app.route('/describe/<int:entry_id>', methods=['GET', 'POST'])
@@ -256,61 +267,64 @@ def describe(entry_id):
             entry = None
 
         return render_template('describe.html', entry=entry)
+
+
 #
-@app.route('/review/<int:entry_id>', methods=[ 'POST'])
+@app.route('/review/<int:entry_id>', methods=['POST'])
 @login_required
 def review(entry_id):
-        action = request.form['action']
+    action = request.form['action']
 
-        content = Content.object.get(id=entry_id)
-        m_content = copy.copy(content)
-        m_content.title = request.form.get('title', content.title)
-        m_content.description = request.form.get('description', content.description)
-        m_content.deadline = request.form.get('due_time', content.deadline)
-        m_content.type = request.form.get('entry_type', content.type)
-        m_content.tag = request.form.get('tag', content.tag)
+    content = Content.object.get(id=entry_id)
+    m_content = copy.copy(content)
+    m_content.title = request.form.get('title', content.title)
+    m_content.content = request.form.get('description', content.content)
+    m_content.deadline = request.form.get('due_time', content.deadline)
+    m_content.type = request.form.get('entry_type', content.type)
+    m_content.tag = request.form.get('tag', content.tag)
 
-        if (session['username'] == content.describer or session['username'] == content.creator) and action != "modify":
-            flash("不可通过自己所写的内容！")
-            return render_template('review.html', entry=content)
-        title = request.form['title']
-        due_time = request.form['due_time']
-        description = request.form['description']
-        entry_type = request.form['entry_type']
-        use_image = 1 if request.form.get('use_image') == 'on' else 0
-        tag = request.form.get('tag')
-        short_title = request.form.get('short_title')
-        is_modified = any([
-            content.title != title,
-            content.description != description,
-            content.deadline != due_time,
-            content.type != entry_type,
-            content.tag != tag,
-            content.short_title != short_title
-        ])
+    if (session['username'] == content.describer_id or session['username'] == content.creator_id) and action != "modify":
+        flash("不可通过自己所写的内容！")
+        return render_template('review.html', entry=content)
+    title = request.form['title']
+    due_time = request.form['due_time']
+    description = request.form['description']
+    entry_type = request.form['entry_type']
+    use_image = 1 if request.form.get('use_image') == 'on' else 0
+    tag = request.form.get('tag')
+    short_title = request.form.get('short_title')
+    is_modified = any([
+        content.title != title,
+        content.content != description,
+        content.deadline != due_time,
+        content.type != entry_type,
+        content.tag != tag,
+        content.short_title != short_title
+    ])
 
-        if action == 'approve':
-            if is_modified:
-                flash("内容已作出修改，无法 approve")
-                return render_template('review.html', entry=m_content)
-            content.reviewer = session['username']
-            content.status = 'reviewed'
-            content.save()
-        else:
-            if not is_modified:
-                flash("内容未作出修改，无法 modify")
-                return render_template('review.html', entry=m_content)
+    if action == 'approve':
+        if is_modified:
+            flash("内容已作出修改，无法 approve")
+            return render_template('review.html', entry=m_content)
+        content.reviewer_id = session['username']
+        content.status = 'reviewed'
+        content.save()
+    else:
+        if not is_modified:
+            flash("内容未作出修改，无法 modify")
+            return render_template('review.html', entry=m_content)
 
-            content.reviewer = session['username']
-            content.status = 'reviewed'
-            content.title = title
-            content.description = description
-            content.deadline = due_time
-            content.type = entry_type
-            content.tag = tag
-            content.short_title = short_title
-            content.save()
-        return redirect(url_for('main'))
+        content.reviewer_id = session['username']
+        content.status = 'reviewed'
+        content.title = title
+        content.content = description
+        content.deadline = due_time
+        content.type = entry_type
+        content.tag = tag
+        content.short_title = short_title
+        content.save()
+    return redirect(url_for('main'))
+
 
 # @app.route('/cancel/<int:entry_id>')
 # @login_required
@@ -329,6 +343,8 @@ def review(entry_id):
 def logout():
     session.pop('username', None)
     return redirect(url_for('login'))
+
+
 #
 # @app.route('/change_password', methods=['GET', 'POST'])
 # @login_required
@@ -382,6 +398,7 @@ def paste():
     flash('地址添加成功')
     return redirect(url_for('main'))
 
+
 @app.route('/upload_image', methods=['POST'])
 @login_required
 def upload_image():
@@ -412,16 +429,19 @@ def upload_image():
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
         c.execute("""INSERT INTO entries
-                     (uploader, upload_time, title, link, due_time, status, type)
+                         (uploader, upload_time, title, link, due_time, status, type)
                      VALUES (?, ?, ?, ?, ?, ?, ?)""",
                   (session['username'], datetime.now(), file.filename, filename, None, 'pending', '活动预告'))
         conn.commit()
         conn.close()
-        flash("图片上传成功，并已添加到条目, 图片链接：<a href='" + dynamic_img_url + "' target='_blank'>" + dynamic_img_url + "</a>")
+        flash(
+            "图片上传成功，并已添加到条目, 图片链接：<a href='" + dynamic_img_url + "' target='_blank'>" + dynamic_img_url + "</a>")
         return redirect(url_for('main'))
     else:
         flash("不支持的文件格式")
         return redirect(url_for('main'))
+
+
 #
 # @app.route('/admin')
 # @editor_required
@@ -606,18 +626,19 @@ def search():
         ).order_by('created_at')[offset:offset + page_size]
 
     return render_template('search.html', query=query, results=results, page=page, total_pages=total_pages)
+
+
 #
 def typst(date):
-
     today_str = datetime.now().strftime("%Y-%m-%d")
     print(date, today_str)
     if date != today_str:
-        content_query = Content.objects.filter(published_time__date=date)
+        content_query = Content.objects.filter(publish_at__date=date)
     else:
         content_query = Content.objects.filter(
-            Q(published_time__date=date) | Q(published_time__isnull=True)
+            Q(publish_at__date=date) | Q(publish_at__isnull=True)
         )
-    other, college, club, lecture  = [], [], [], []
+    other, college, club, lecture = [], [], [], []
     for content_item in content_query:
         title = content_item.title
         description = content_item.description
@@ -625,7 +646,7 @@ def typst(date):
         tag = content_item.tag
         type = content_item.type
         id = content_item.id
-        if type== "DDLOnly":
+        if type == "DDLOnly":
             continue
         try:
             description = re.split(LINK_REGEX, description)
@@ -640,11 +661,11 @@ def typst(date):
         description = splitted
         if allowed_file(link):
             link = None
-        if(tag == "讲座" or type == "讲座"):
+        if (tag == "讲座" or type == "讲座"):
             lecture.append({"title": title, "description": description, "link": link, "id": id})
-        elif(tag == "院级活动"):
+        elif (tag == "院级活动"):
             college.append({"title": title, "description": description, "link": link, "id": id})
-        elif(tag == "社团活动"):
+        elif (tag == "社团活动"):
             club.append({"title": title, "description": description, "link": link, "id": id})
         else:
             other.append({"title": title, "description": description, "link": link, "id": id})
@@ -667,7 +688,7 @@ def typst(date):
         publish_time__date__lte=date,  # DATE(publish_date) <= date
         publish_time__date__gte=date(2023, 1, 1)  # publish_date >= '2023-01-01'
     ).order_by('due_time')
-    other_due, college_due, club_due, lecture_due  = [], [], [], []
+    other_due, college_due, club_due, lecture_due = [], [], [], []
     for content_item in due_content:
         title = content_item.title
         short_title = content_item.short_title
@@ -681,14 +702,18 @@ def typst(date):
             title = short_title
         if allowed_file(link):
             link = None
-        if(tag == "讲座" or type == "讲座"):
-            lecture_due.append({"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
-        elif(tag == "院级活动"):
-            college_due.append({"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
-        elif(tag == "社团活动"):
-            club_due.append({"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
+        if (tag == "讲座" or type == "讲座"):
+            lecture_due.append(
+                {"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
+        elif (tag == "院级活动"):
+            college_due.append(
+                {"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
+        elif (tag == "社团活动"):
+            club_due.append(
+                {"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
         else:
-            other_due.append({"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
+            other_due.append(
+                {"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
     due = {
         "college": college_due,
         "club": club_due,
@@ -698,19 +723,23 @@ def typst(date):
 
     return {"data": data, "due": due}
 
+
 @app.route('/typst/<date>')
 # @login_required
 def typst_pub(date):
-    return json.dumps(typst(date), ensure_ascii=False, indent=2), 200, {'Content-Type': 'application/json; charset=utf-8'}
+    return json.dumps(typst(date), ensure_ascii=False, indent=2), 200, {
+        'Content-Type': 'application/json; charset=utf-8'}
+
 
 @app.route("/preview_edit")
 def preview_edit():
     return render_template("preview_edit.html")
 
+
 @app.route('/latex/<date>')
 @login_required
 def latex_entries(date):
-    content = Content.objects.filter(published_time__date=date)
+    content = Content.objects.filter(publish_at__date=date)
 
     def escape_latex(text):
         if not text:
@@ -736,7 +765,7 @@ def latex_entries(date):
         title = cotent_item.title
         tag = cotent_item.tag
         link = cotent_item.link
-        describer = cotent_item.describer
+        describer = cotent_item.describer_id
         title = escape_latex(title)
         title = title.rstrip('\r\n')
         description = escape_latex(description).replace('\n', r'\\')
@@ -748,12 +777,14 @@ def latex_entries(date):
         if link and len(link) > 10:
             latex_output += "\\\\详见：" + r"\url{" + link + "}" + "\n\n"
     return latex_output, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+
 #
 @app.route('/delete/<int:entry_id>', methods=['POST'])
 @login_required
 def delete_entry(entry_id):
     try:
-        content =Content.objects.get(id=entry_id)
+        content = Content.objects.get(id=entry_id)
         if content.uploader != session['username']:
             flash("你没有权限删除此条目，仅可删除自己上传的条目")
             return redirect(url_for('main'))
@@ -763,6 +794,8 @@ def delete_entry(entry_id):
     except Content.DoesNotExist:
         flash("条目不存在")
         return redirect(url_for('main'))
+
+
 #
 # @app.route('/message_board', methods=['GET'])
 # @login_required
@@ -892,14 +925,14 @@ def add_deadline():
         publish_time = request.form.get('publish_time', today)
         due_time = request.form.get('due_time', today)
         news = Content.objects.create(
-            creator=session['username'],
-            describer=session['username'],
+            creator_id=session['username'],
+            describer_id=session['username'],
             title=short_title,
             link=link_value,
             short_title=short_title,
-            description='',
+            content='',
             deadline=due_time,
-            published_time=publish_time,
+            publish_at=publish_time,
             status='pending',
             tag=tag,
             type="DDLOnly",
@@ -908,6 +941,7 @@ def add_deadline():
         return redirect(url_for('main'))
     today = datetime.now().strftime("%Y-%m-%d")
     return render_template('add_deadline.html', today=today)
+
 
 @app.route('/publish', methods=["GET", "POST"])
 @editor_required
@@ -920,9 +954,11 @@ def publish():
         with open("./archived/" + parsed["data"]["date"] + ".json", "w") as f:
             f.write(new_content)
         try:
-            subprocess.run(["./typst", "compile", "--font-path", "/home/nik_nul/font", "news_template.typ", "./static/latest.pdf"], check=True)
+            subprocess.run(
+                ["./typst", "compile", "--font-path", "/home/nik_nul/font", "news_template.typ", "./static/latest.pdf"],
+                check=True)
         except subprocess.CalledProcessError:
-           flash("Compilation failed. Please check typst installation and source file.")
+            flash("Compilation failed. Please check typst installation and source file.")
         return render_template("publish.html", content=new_content)
     else:
         content = ""
@@ -930,6 +966,8 @@ def publish():
             with open("latest.json", "r") as f:
                 content = f.read()
         return render_template("publish.html", content=content)
+
+
 #
 # def read_mailing_list():
 #     try:

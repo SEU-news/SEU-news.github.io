@@ -1,4 +1,6 @@
 from django.db import models
+
+
 # Create your models here.
 
 class User_info(models.Model):
@@ -13,14 +15,18 @@ class User_info(models.Model):
         (PERMISSION_ADMIN, '管理员'),
         (PERMISSION_ALL, '超级管理员'),
     ]
+
+    id = models.AutoField(primary_key=True)
+
     username = models.CharField(max_length=30, unique=True, verbose_name='用户名')
     password_MD5 = models.CharField(max_length=100, verbose_name='密码')
     avatar = models.CharField(max_length=100, verbose_name='头像')
-    real_name = models.CharField(max_length=30, verbose_name='真名')
-    students_id = models.CharField(max_length=30, verbose_name='学号')
+    realname = models.CharField(max_length=30, verbose_name='真名')
+    student_id = models.CharField(max_length=30, verbose_name='学号')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    role = models.PositiveIntegerField(verbose_name="权限位", choices=PERMISSION_CHOICES, default=0, help_text="●0(00)：一般用户 1(01)：编辑 2(10)：管理员 3(11)：兼任两者")
+    role = models.PositiveIntegerField(verbose_name="权限位", choices=PERMISSION_CHOICES, default=0,
+                                       help_text="●0(00)：一般用户 1(01)：编辑 2(10)：管理员 3(11)：兼任两者")
 
     class Meta:
         db_table = 'user_info'  # 数据库表名
@@ -57,9 +63,14 @@ class Content(models.Model):
         ('rejected', '已拒绝'),
         ('published', '已发布'),
     )
-    creator = models.ForeignKey(User_info, on_delete=models.SET_NULL, null=True, related_name='created_content')
-    describer = models.ForeignKey(User_info, on_delete=models.SET_NULL, null=True, related_name='described_content')
-    reviewer = models.ForeignKey(User_info, on_delete=models.SET_NULL, null=True, related_name='reviewed_content')
+    id=models.AutoField(primary_key=True)
+
+    # 如果你的模型中外键字段定义为 creator_id，那么数据库中对应的列名应该是 creator_id_id
+    creator = models.ForeignKey(User_info, on_delete=models.SET_NULL, null=False, related_name='id', db_constraint=False)
+    describer = models.ForeignKey(User_info, on_delete=models.SET_NULL, null=True, related_name='id',
+                                     db_constraint=False)
+    reviewer = models.ForeignKey(User_info, on_delete=models.SET_NULL, null=True, related_name='id',
+                                    db_constraint=False)
 
     title = models.CharField(max_length=200, verbose_name='标题')
     short_title = models.CharField(max_length=100, verbose_name='短标题')
@@ -68,7 +79,7 @@ class Content(models.Model):
 
     deadline = models.DateTimeField(verbose_name="截止时间")
     image_list = models.TextField(verbose_name='图片list', default=0)
-    published_time = models.DateTimeField(verbose_name="发布时间")
+    publish_at = models.DateTimeField(verbose_name="发布时间")
 
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='draft')
     type = models.CharField(max_length=50, verbose_name='类型')
@@ -87,7 +98,7 @@ class Content(models.Model):
             models.Index(fields=['status'], name='idx_status'),
             models.Index(fields=['type'], name='idx_type'),
             models.Index(fields=['deadline'], name='idx_deadline'),
-            models.Index(fields=['published_time'], name='idx_publish_at'),
+            models.Index(fields=['publish_at'], name='idx_publish_at'),
             models.Index(fields=['created_at'], name='idx_created_at'),
             models.Index(fields=['updated_at'], name='idx_updated_at'),
         ]
@@ -98,7 +109,8 @@ class Comment(models.Model):
     news_id = models.ForeignKey(Content, on_delete=models.CASCADE, related_name='comments')
     creator = models.ForeignKey(User_info, on_delete=models.CASCADE, related_name='comments')
     content = models.TextField(max_length=500)
-    parent_comment_id = models.ForeignKey('self', on_delete=models.CASCADE, related_name='replies', verbose_name="父级评论")
+    parent_comment_id = models.ForeignKey('self', on_delete=models.CASCADE, related_name='replies',
+                                          verbose_name="父级评论")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
