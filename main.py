@@ -180,21 +180,32 @@ def register():
         username = request.form['username']
         password = request.form['password']
 
+        # 基础验证
         if not username or not password:
             flash('用户名和密码不能为空')
             return render_template('register.html')
 
-        # 使用 Django ORM 创建用户
+        if len(password) < 6:  # 添加密码长度检查
+            flash('密码长度至少6位')
+            return render_template('register.html')
+
+        # 检查用户名是否已存在（提前验证）
+        if User_info.objects.filter(username=username).exists():
+            flash('用户名已存在')
+            return render_template('register.html')
+
+        # 创建用户
         try:
             user = User_info.objects.create(
                 username=username,
                 password_MD5=hashlib.md5(password.encode('utf-8')).hexdigest()  # 加密密码
             )
             flash('注册成功！请登录')
-            return redirect('login')
+            return redirect(url_for('login'))
 
         except IntegrityError:
-            flash('用户名已存在')
+            # 作为备用错误处理
+            flash('注册失败，请重试')
             return render_template('register.html')
 
     return render_template('register.html')

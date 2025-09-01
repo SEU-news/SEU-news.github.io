@@ -35,8 +35,8 @@ class User_info(models.Model):
         ordering = [
             models.Index(fields=['created_at'], name='idx_created_at'),
             models.Index(fields=['updated_at'], name='idx_updated_at'),
-            models.Index(fields=['students_id'], name='idx_students_id'),
-            models.Index(fields=['real_name'], name='idx_real_name'),
+            models.Index(fields=['student_id'], name='idx_student_id'),
+            models.Index(fields=['realname'], name='idx_realname'),
         ]  # 默认按创建时间降序排列
 
     def __str__(self):
