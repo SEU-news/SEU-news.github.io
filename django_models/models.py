@@ -65,12 +65,9 @@ class Content(models.Model):
     )
     id=models.AutoField(primary_key=True)
 
-    # 如果你的模型中外键字段定义为 creator_id，那么数据库中对应的列名应该是 creator_id_id
-    creator = models.ForeignKey(User_info, on_delete=models.SET_NULL, null=False, related_name='id', db_constraint=False)
-    describer = models.ForeignKey(User_info, on_delete=models.SET_NULL, null=True, related_name='id',
-                                     db_constraint=False)
-    reviewer = models.ForeignKey(User_info, on_delete=models.SET_NULL, null=True, related_name='id',
-                                    db_constraint=False)
+    creator_id = models.IntegerField(verbose_name='创建者ID', null=False)  # 假设不允许为空
+    describer_id = models.IntegerField(verbose_name='描述者ID', null=True)  # 允许为空
+    reviewer_id = models.IntegerField(verbose_name='审核者ID', null=True)  # 允许为空
 
     title = models.CharField(max_length=200, verbose_name='标题')
     short_title = models.CharField(max_length=100, verbose_name='短标题')
