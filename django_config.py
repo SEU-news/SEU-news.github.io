@@ -7,14 +7,15 @@ from django.conf import settings
 def configure_django():
     # if not settings.configured:
 
-    user_dict=read_credentials()
+    user_dict = read_credentials()
     if user_dict is None:
         logging.error("[Database] No credentials provided")
         sys.exit(1)
 
-    user,password = list(user_dict.items())[0]
+    user, password = list(user_dict.items())[0]
 
-    logging.info(f"[Database] Using database credentials - User: {user}, Password MD5: {md5(password.encode('utf-8')).hexdigest()}")
+    logging.info(
+        f"[Database] Using database credentials - User: {user}, Password MD5: {md5(password.encode('utf-8')).hexdigest()}")
 
     settings.configure(
         DATABASES={
@@ -27,6 +28,7 @@ def configure_django():
                 'PORT': '3306',  # 默认 MySQL 端口
                 'OPTIONS': {
                     'charset': 'utf8mb4',
+                    'unix_socket': '/var/run/mysqld/mysqld.sock',
                 }
             }
         },
@@ -38,6 +40,7 @@ def configure_django():
         SECRET_KEY="django-insecure-8!563mqn=(m8$hryw5_1!j!eb*^i^lidx^v2xh6+@+i@$r@4o5",  # 用于 Django 的会话等
         DEFAULT_AUTO_FIELD='django.db.models.BigAutoField',
     )
+
 
 def read_credentials(file_path="credentials.txt", delimiter=':'):
     """
