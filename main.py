@@ -1118,23 +1118,20 @@ def add_deadline():
         publish_time = request.form.get('publish_time', today)
         due_time = request.form.get('due_time', today)
 
-        # Get user ID instead of username
         user = User_info.objects.get(username=session['username'])
 
-        # Convert dates properly
-        from datetime import datetime
         publish_datetime = datetime.strptime(publish_time, '%Y-%m-%d') if publish_time else None
         deadline_datetime = datetime.strptime(due_time, '%Y-%m-%d') if due_time else None
 
         news = Content.objects.create(
-            creator_id=user.id,  # Use user.id instead of session['username']
-            describer_id=user.id,  # Use user.id instead of session['username']
+            creator_id=user.id,
+            describer_id=user.id,
             title=short_title,
             link=link_value,
             short_title=short_title,
             content='',
-            deadline=deadline_datetime,  # Use proper datetime
-            publish_at=publish_datetime,  # Use proper datetime
+            deadline=deadline_datetime,
+            publish_at=publish_datetime,
             status='pending',
             tag=tag,
             type="DDLOnly",
