@@ -21,12 +21,8 @@ from django_config import configure_django
 
 from django.utils import timezone
 
-# Instead of datetime.now(), use:
-# timezone.now()
 
-# Or for specific dates:
 from datetime import datetime
-import pytz
 
 
 def get_timezone_aware_datetime(date_str):
@@ -237,10 +233,8 @@ def register():
 @app.route('/')
 @login_required
 def main():
-    # Show all content, ordered by most recently updated
     contents = Content.objects.all().order_by('-updated_at')
 
-    # Format datetime fields for each entry
     for content in contents:
         if content.created_at:
             content.formatted_created_at = content.created_at.strftime('%m-%d %H:%M')
@@ -261,26 +255,23 @@ def upload():
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
-        due_time = request.form.get('due_time', '').strip()  # Use get() with default
+        due_time = request.form.get('due_time', '').strip()
         entry_type = request.form['entry_type']
         tag = request.form.get('tag', '')
         short_title = request.form.get('short_title') or title
 
-        # Get the user ID instead of username
         try:
             user = User_info.objects.get(username=session['username'])
         except User_info.DoesNotExist:
             flash('User not found. Please log in again.')
             return redirect(url_for('login'))
 
-        # Handle datetime fields properly
         from datetime import datetime, timedelta
 
-        # Convert due_time to proper datetime, provide default if empty
         deadline_value = None
-        if due_time:  # Only process if due_time is not empty
+        if due_time:
             try:
-                if len(due_time) == 10:  # "YYYY-MM-DD" format
+                if len(due_time) == 10:  # "YYYY-MM-DD"
                     deadline_value = datetime.strptime(due_time, '%Y-%m-%d')
                 else:
                     deadline_value = datetime.fromisoformat(due_time)
@@ -352,7 +343,6 @@ def describe(entry_id):
         tag = request.form.get('tag', '')
         short_title = request.form.get('short_title') or title
 
-        # Get the user ID
         user = User_info.objects.get(username=session['username'])
 
         content = Content.objects.create(
@@ -361,12 +351,12 @@ def describe(entry_id):
             title=title,
             short_title=short_title,
             content=description,
-            link='',  # Provide default
+            link='',
             status='pending',
             type=entry_type,
             tag=tag,
             deadline=due_time,
-            publish_at=None  # or provide a default datetime
+            publish_at=None
         )
         return redirect(url_for('main'))
     else:
@@ -502,13 +492,13 @@ def paste():
     user = User_info.objects.get(username=session['username'])
 
     entry = Content.objects.create(
-        creator_id=user.id,  # Use creator_id instead of uploader
+        creator_id=user.id,
         title=title,
-        short_title=title,  # Add required field
-        content='',  # Add required field
+        short_title=title,
+        content='',
         link=canonical_url,
-        deadline=datetime(2099, 12, 31),  # Use deadline instead of due_time
-        publish_at=None,  # Add required field
+        deadline=datetime(2099, 12, 31),
+        publish_at=None,
         status='draft',
         type='活动预告',
         tag=''  # Add required field
@@ -756,15 +746,14 @@ def search():
     total_pages = 0
 
     if query:
-        # Use 'content' instead of 'description'
         total_count = Content.objects.filter(
-            Q(title__icontains=query) | Q(content__icontains=query)  # Changed from description
+            Q(title__icontains=query) | Q(content__icontains=query)
         ).count()
         total_pages = (total_count + page_size - 1) // page_size
 
         # Get paginated results
         results = Content.objects.filter(
-            Q(title__icontains=query) | Q(content__icontains=query)  # Changed from description
+            Q(title__icontains=query) | Q(content__icontains=query)
         ).order_by('created_at')[offset:offset + page_size]
 
     return render_template('search.html', query=query, results=results, page=page, total_pages=total_pages)
@@ -772,24 +761,23 @@ def search():
 
 #
 def typst(date):
-    from datetime import datetime as dt  # Use alias to avoid conflicts
+    from datetime import datetime as dt
     from django.utils import timezone
     from datetime import date as date_class
 
-    date_str = date  # Add this line to define date_str
     today_str = dt.now().strftime("%Y-%m-%d")
-    print(date_str, today_str)
+    print(date, today_str)
 
-    # Parse the date string and make it timezone aware
+
     try:
-        parsed_date = dt.strptime(date_str, '%Y-%m-%d')
-        # Make it timezone aware
+        parsed_date = dt.strptime(date, '%Y-%m-%d')
+
         parsed_date = timezone.make_aware(parsed_date)
     except ValueError:
-        # If parsing fails, use today's date
+
         parsed_date = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
-    if date_str != today_str:
+    if date != today_str:
         content_query = Content.objects.filter(publish_at__date=parsed_date.date())
     else:
         content_query = Content.objects.filter(
@@ -798,7 +786,7 @@ def typst(date):
     other, college, club, lecture = [], [], [], []
     for content_item in content_query:
         title = content_item.title
-        description = content_item.content  # Changed from description to content
+        description = content_item.content
         link = content_item.link
         tag = content_item.tag
         type = content_item.type
@@ -862,7 +850,6 @@ def typst(date):
         if allowed_file(link):
             link = None
 
-        # Convert datetime objects to strings for JSON serialization
         deadline_str = deadline.strftime('%Y-%m-%d %H:%M:%S') if deadline else None
         publish_time_str = publish_time.strftime('%Y-%m-%d %H:%M:%S') if publish_time else None
 
