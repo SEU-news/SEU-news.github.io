@@ -160,34 +160,6 @@ def editor_required(f):
     return decorated_function
 
 
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     if request.method == 'POST':
-#         username = request.form['username']
-#         password = request.form['password']
-#         if not username or not password:
-#             flash('请填写用户名和密码')
-#             return render_template('login.html')
-#
-#         try:
-#             user = User_info.objects.get(username=username)
-#         except User_info.DoesNotExist:
-#             flash('user doesnot exist')
-#
-#         if user:
-#             # 计算输入密码的MD5
-#             input_hash = hashlib.md5(password.encode('utf-8')).hexdigest()
-#             # 比较哈希值
-#             if user.password_MD5 == input_hash:
-#                 session.permanent = True
-#                 session['username'] = username
-#             return redirect(url_for('main'))
-#         else:
-#             flash('Invalid username or password')
-#
-#     return render_template('login.html')
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -282,32 +254,6 @@ def main():
 
     return render_template('main.html', entries=contents)
 
-
-# @app.route('/upload', methods=['GET', 'POST'])
-# @login_required
-# def upload():
-#     if request.method == 'POST':
-#         title = request.form['title']
-#         description = request.form['description']
-#         due_time = request.form['due_time']
-#         entry_type = request.form['entry_type']
-#         tag = request.form.get('tag')
-#         short_title = request.form.get('short_title') or title
-#
-#         content = Content.objects.create(
-#             uploader=session['username'],
-#             describer=session['username'],
-#             title=title,
-#             short_title=short_title,
-#             content=description,
-#             status='pending',
-#             type=entry_type,
-#             tag=tag,
-#             deadline=due_time
-#         )
-#         return redirect(url_for('main'))
-#
-#     return render_template('upload.html')
 
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -536,30 +482,6 @@ def logout():
 #         return redirect(url_for('change_password'))
 #     return render_template('change_password.html')
 #
-# @app.route('/paste', methods=['POST'])
-# @login_required
-# def paste():
-#     link = request.form['link'].strip()
-#     if not link or not is_valid_url(link):
-#         flash('请输入有效的地址')
-#         return redirect(url_for('main'))
-#     parsed = urlparse(link)
-#     canonical_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
-#     if Content.objects.filter(link=canonical_url).exists():
-#         flash("该链接已经上传")
-#         return redirect(url_for('main'))
-#     title = fetch_title(link)
-#     print(title)
-#     entry = Content.objects.create(
-#         uploader=session['username'],
-#         title=title,
-#         link=canonical_url,
-#         due_time=None,
-#         status='draft',
-#         type='活动预告'
-#     )
-#     flash('地址添加成功')
-#     return redirect(url_for('main'))
 
 @app.route('/paste', methods=['POST'])
 @login_required
@@ -850,14 +772,6 @@ def search():
 
 #
 def typst(date):
-    # today_str = datetime.now().strftime("%Y-%m-%d")
-    # print(date, today_str)
-    # if date != today_str:
-    #     content_query = Content.objects.filter(publish_at__date=date)
-    # else:
-    #     content_query = Content.objects.filter(
-    #         Q(publish_at__date=date) | Q(publish_at__isnull=True)
-    #     )
     today_str = datetime.now().strftime("%Y-%m-%d")
     print(date_str, today_str)
     if date_str != today_str:
