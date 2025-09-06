@@ -772,18 +772,33 @@ def search():
 
 #
 def typst(date):
-    today_str = datetime.now().strftime("%Y-%m-%d")
+    from datetime import datetime as dt  # Use alias to avoid conflicts
+    from django.utils import timezone
+    from datetime import date as date_class
+
+    date_str = date  # Add this line to define date_str
+    today_str = dt.now().strftime("%Y-%m-%d")
     print(date_str, today_str)
+
+    # Parse the date string and make it timezone aware
+    try:
+        parsed_date = dt.strptime(date_str, '%Y-%m-%d')
+        # Make it timezone aware
+        parsed_date = timezone.make_aware(parsed_date)
+    except ValueError:
+        # If parsing fails, use today's date
+        parsed_date = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
     if date_str != today_str:
-        content_query = Content.objects.filter(publish_at__date=date_str)
+        content_query = Content.objects.filter(publish_at__date=parsed_date.date())
     else:
         content_query = Content.objects.filter(
-            Q(publish_at__date=date_str) | Q(publish_at__isnull=True)
+            Q(publish_at__date=parsed_date.date()) | Q(publish_at__isnull=True)
         )
     other, college, club, lecture = [], [], [], []
     for content_item in content_query:
         title = content_item.title
-        description = content_item.description
+        description = content_item.content  # Changed from description to content
         link = content_item.link
         tag = content_item.tag
         type = content_item.type
@@ -824,29 +839,20 @@ def typst(date):
         "lecture": lecture,
         "other": other
     }
-    # due_content = Content.objects.filter(
-    #     deadline__isnull=False,  # due_time IS NOT NULL
-    #     deadline__gt=date,  # due_time > date
-    #     publish_time__date__lte=date,  # DATE(publish_date) <= date
-    #     publish_time__date__gte=date(2023, 1, 1)  # publish_date >= '2023-01-01'
-    # ).order_by('due_time')
-
-    # Fix the date import issue
-    from datetime import date as date_class
 
     due_content = Content.objects.filter(
         deadline__isnull=False,
-        deadline__gt=date_str,
-        publish_at__date__lte=date_str,
-        publish_at__date__gte=date_class(2023, 1, 1)  # Use date_class instead of date
-    ).order_by('deadline')  # Use deadline instead of due_time
+        deadline__gt=parsed_date,
+        publish_at__date__lte=parsed_date.date(),
+        publish_at__date__gte=date_class(2023, 1, 1)
+    ).order_by('deadline')
 
     other_due, college_due, club_due, lecture_due = [], [], [], []
     for content_item in due_content:
         title = content_item.title
         short_title = content_item.short_title
         deadline = content_item.deadline
-        publish_time = content_item.publish_time
+        publish_time = content_item.publish_at
         link = content_item.link
         tag = content_item.tag
         type = content_item.type
@@ -855,18 +861,23 @@ def typst(date):
             title = short_title
         if allowed_file(link):
             link = None
+
+        # Convert datetime objects to strings for JSON serialization
+        deadline_str = deadline.strftime('%Y-%m-%d %H:%M:%S') if deadline else None
+        publish_time_str = publish_time.strftime('%Y-%m-%d %H:%M:%S') if publish_time else None
+
         if (tag == "讲座" or type == "讲座"):
             lecture_due.append(
-                {"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
+                {"title": title, "link": link, "due_time": deadline_str, "publish_date": publish_time_str, "id": id})
         elif (tag == "院级活动"):
             college_due.append(
-                {"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
+                {"title": title, "link": link, "due_time": deadline_str, "publish_date": publish_time_str, "id": id})
         elif (tag == "社团活动"):
             club_due.append(
-                {"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
+                {"title": title, "link": link, "due_time": deadline_str, "publish_date": publish_time_str, "id": id})
         else:
             other_due.append(
-                {"title": title, "link": link, "due_time": deadline, "publish_date": publish_time, "id": id})
+                {"title": title, "link": link, "due_time": deadline_str, "publish_date": publish_time_str, "id": id})
     due = {
         "college": college_due,
         "club": club_due,
