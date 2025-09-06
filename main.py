@@ -19,6 +19,21 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 
 from django_config import configure_django
 
+from django.utils import timezone
+
+# Instead of datetime.now(), use:
+# timezone.now()
+
+# Or for specific dates:
+from datetime import datetime
+import pytz
+
+
+def get_timezone_aware_datetime(date_str):
+    naive_dt = datetime.strptime(date_str, '%Y-%m-%d')
+    return timezone.make_aware(naive_dt)
+
+
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(asctime)s - %(name)s - %(message)s')
 
 configure_django()
@@ -145,6 +160,34 @@ def editor_required(f):
     return decorated_function
 
 
+# @app.route('/login', methods=['GET', 'POST'])
+# def login():
+#     if request.method == 'POST':
+#         username = request.form['username']
+#         password = request.form['password']
+#         if not username or not password:
+#             flash('请填写用户名和密码')
+#             return render_template('login.html')
+#
+#         try:
+#             user = User_info.objects.get(username=username)
+#         except User_info.DoesNotExist:
+#             flash('user doesnot exist')
+#
+#         if user:
+#             # 计算输入密码的MD5
+#             input_hash = hashlib.md5(password.encode('utf-8')).hexdigest()
+#             # 比较哈希值
+#             if user.password_MD5 == input_hash:
+#                 session.permanent = True
+#                 session['username'] = username
+#             return redirect(url_for('main'))
+#         else:
+#             flash('Invalid username or password')
+#
+#     return render_template('login.html')
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -156,18 +199,16 @@ def login():
 
         try:
             user = User_info.objects.get(username=username)
-        except User_info.DoesNotExist:
-            flash('user doesnot exist')
-
-        if user:
             # 计算输入密码的MD5
             input_hash = hashlib.md5(password.encode('utf-8')).hexdigest()
             # 比较哈希值
             if user.password_MD5 == input_hash:
                 session.permanent = True
                 session['username'] = username
-            return redirect(url_for('main'))
-        else:
+                return redirect(url_for('main'))
+            else:
+                flash('Invalid username or password')
+        except User_info.DoesNotExist:
             flash('Invalid username or password')
 
     return render_template('login.html')
@@ -224,12 +265,49 @@ def register():
 @app.route('/')
 @login_required
 def main():
-    contents = Content.objects.filter(
-        publish_at__isnull=True
-    ).order_by('updated_at')
+    # Show all content, ordered by most recently updated
+    contents = Content.objects.all().order_by('-updated_at')
+
+    # Format datetime fields for each entry
+    for content in contents:
+        if content.created_at:
+            content.formatted_created_at = content.created_at.strftime('%m-%d %H:%M')
+        else:
+            content.formatted_created_at = ''
+
+        if content.updated_at:
+            content.formatted_updated_at = content.updated_at.strftime('%m-%d %H:%M')
+        else:
+            content.formatted_updated_at = ''
 
     return render_template('main.html', entries=contents)
 
+
+# @app.route('/upload', methods=['GET', 'POST'])
+# @login_required
+# def upload():
+#     if request.method == 'POST':
+#         title = request.form['title']
+#         description = request.form['description']
+#         due_time = request.form['due_time']
+#         entry_type = request.form['entry_type']
+#         tag = request.form.get('tag')
+#         short_title = request.form.get('short_title') or title
+#
+#         content = Content.objects.create(
+#             uploader=session['username'],
+#             describer=session['username'],
+#             title=title,
+#             short_title=short_title,
+#             content=description,
+#             status='pending',
+#             type=entry_type,
+#             tag=tag,
+#             deadline=due_time
+#         )
+#         return redirect(url_for('main'))
+#
+#     return render_template('upload.html')
 
 @app.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -237,25 +315,84 @@ def upload():
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
-        due_time = request.form['due_time']
+        due_time = request.form.get('due_time', '').strip()  # Use get() with default
         entry_type = request.form['entry_type']
-        tag = request.form.get('tag')
+        tag = request.form.get('tag', '')
         short_title = request.form.get('short_title') or title
 
+        # Get the user ID instead of username
+        try:
+            user = User_info.objects.get(username=session['username'])
+        except User_info.DoesNotExist:
+            flash('User not found. Please log in again.')
+            return redirect(url_for('login'))
+
+        # Handle datetime fields properly
+        from datetime import datetime, timedelta
+
+        # Convert due_time to proper datetime, provide default if empty
+        deadline_value = None
+        if due_time:  # Only process if due_time is not empty
+            try:
+                if len(due_time) == 10:  # "YYYY-MM-DD" format
+                    deadline_value = datetime.strptime(due_time, '%Y-%m-%d')
+                else:
+                    deadline_value = datetime.fromisoformat(due_time)
+            except ValueError:
+                flash('Invalid date format for deadline')
+                return render_template('upload.html')
+
+        if deadline_value is None:
+            deadline_value = datetime(2099, 12, 31)
+
         content = Content.objects.create(
-            uploader=session['username'],
-            describer=session['username'],
+            creator_id=user.id,
+            describer_id=user.id,
             title=title,
             short_title=short_title,
             content=description,
+            link='',
             status='pending',
             type=entry_type,
             tag=tag,
-            deadline=due_time
+            deadline=deadline_value,
+            publish_at=datetime.now()
         )
         return redirect(url_for('main'))
 
     return render_template('upload.html')
+
+
+# @app.route('/describe/<int:entry_id>', methods=['GET', 'POST'])
+# @login_required
+# def describe(entry_id):
+#     if request.method == 'POST':
+#         title = request.form['title']
+#         entry_type = request.form['entry_type']
+#         description = request.form['description']
+#         due_time = request.form['due_time']
+#         use_image = 1 if request.form.get('use_image') == 'on' else 0
+#         tag = request.form.get('tag')
+#         short_title = request.form.get('short_title') or title
+#         content = Content.objects.create(
+#             uploader=session['username'],
+#             describer=session['username'],
+#             title=title,
+#             short_title=short_title,
+#             content=description,
+#             status='pending',
+#             type=entry_type,
+#             tag=tag,
+#             deadline=due_time
+#         )
+#         return redirect(url_for('main'))
+#     else:
+#         try:
+#             entry = Content.objects.get(id=entry_id)
+#         except Content.DoesNotExist:
+#             entry = None
+#
+#         return render_template('describe.html', entry=entry)
 
 
 @app.route('/describe/<int:entry_id>', methods=['GET', 'POST'])
@@ -266,19 +403,24 @@ def describe(entry_id):
         entry_type = request.form['entry_type']
         description = request.form['description']
         due_time = request.form['due_time']
-        use_image = 1 if request.form.get('use_image') == 'on' else 0
-        tag = request.form.get('tag')
+        tag = request.form.get('tag', '')
         short_title = request.form.get('short_title') or title
+
+        # Get the user ID
+        user = User_info.objects.get(username=session['username'])
+
         content = Content.objects.create(
-            uploader=session['username'],
-            describer=session['username'],
+            creator_id=user.id,
+            describer_id=user.id,
             title=title,
             short_title=short_title,
             content=description,
+            link='',  # Provide default
             status='pending',
             type=entry_type,
             tag=tag,
-            deadline=due_time
+            deadline=due_time,
+            publish_at=None  # or provide a default datetime
         )
         return redirect(url_for('main'))
     else:
@@ -286,7 +428,6 @@ def describe(entry_id):
             entry = Content.objects.get(id=entry_id)
         except Content.DoesNotExist:
             entry = None
-
         return render_template('describe.html', entry=entry)
 
 
@@ -304,7 +445,8 @@ def review(entry_id):
     m_content.type = request.form.get('entry_type', content.type)
     m_content.tag = request.form.get('tag', content.tag)
 
-    if (session['username'] == content.describer_id or session['username'] == content.creator_id) and action != "modify":
+    if (session['username'] == content.describer_id or session[
+        'username'] == content.creator_id) and action != "modify":
         flash("不可通过自己所写的内容！")
         return render_template('review.html', entry=content)
     title = request.form['title']
@@ -394,6 +536,31 @@ def logout():
 #         return redirect(url_for('change_password'))
 #     return render_template('change_password.html')
 #
+# @app.route('/paste', methods=['POST'])
+# @login_required
+# def paste():
+#     link = request.form['link'].strip()
+#     if not link or not is_valid_url(link):
+#         flash('请输入有效的地址')
+#         return redirect(url_for('main'))
+#     parsed = urlparse(link)
+#     canonical_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+#     if Content.objects.filter(link=canonical_url).exists():
+#         flash("该链接已经上传")
+#         return redirect(url_for('main'))
+#     title = fetch_title(link)
+#     print(title)
+#     entry = Content.objects.create(
+#         uploader=session['username'],
+#         title=title,
+#         link=canonical_url,
+#         due_time=None,
+#         status='draft',
+#         type='活动预告'
+#     )
+#     flash('地址添加成功')
+#     return redirect(url_for('main'))
+
 @app.route('/paste', methods=['POST'])
 @login_required
 def paste():
@@ -408,13 +575,21 @@ def paste():
         return redirect(url_for('main'))
     title = fetch_title(link)
     print(title)
+
+    # Get user ID
+    user = User_info.objects.get(username=session['username'])
+
     entry = Content.objects.create(
-        uploader=session['username'],
+        creator_id=user.id,  # Use creator_id instead of uploader
         title=title,
+        short_title=title,  # Add required field
+        content='',  # Add required field
         link=canonical_url,
-        due_time=None,
+        deadline=datetime(2099, 12, 31),  # Use deadline instead of due_time
+        publish_at=None,  # Add required field
         status='draft',
-        type='活动预告'
+        type='活动预告',
+        tag=''  # Add required field
     )
     flash('地址添加成功')
     return redirect(url_for('main'))
@@ -622,6 +797,32 @@ def upload_image():
 #     conn.close()
 #     return render_template('user_edit.html', user=user)
 #
+# @app.route('/search', methods=['GET'])
+# @login_required
+# def search():
+#     page = request.args.get('page', default=1, type=int)
+#     page_size = 5
+#     offset = (page - 1) * page_size
+#     query = request.args.get('q', '').strip()
+#     results = []
+#     total_pages = 0
+#
+#     if query:
+#         like_query = query  # 不需要手动添加 %%，Django ORM 的 __icontains 会自动处理
+#
+#         # 获取总数
+#         total_count = Content.objects.filter(
+#             Q(title__icontains=query) | Q(description__icontains=query)
+#         ).count()
+#         total_pages = (total_count + page_size - 1) // page_size
+#
+#         # 获取分页结果
+#         results = Content.objects.filter(
+#             Q(title__icontains=query) | Q(description__icontains=query)
+#         ).order_by('created_at')[offset:offset + page_size]
+#
+#     return render_template('search.html', query=query, results=results, page=page, total_pages=total_pages)
+
 @app.route('/search', methods=['GET'])
 @login_required
 def search():
@@ -633,17 +834,15 @@ def search():
     total_pages = 0
 
     if query:
-        like_query = query  # 不需要手动添加 %%，Django ORM 的 __icontains 会自动处理
-
-        # 获取总数
+        # Use 'content' instead of 'description'
         total_count = Content.objects.filter(
-            Q(title__icontains=query) | Q(description__icontains=query)
+            Q(title__icontains=query) | Q(content__icontains=query)  # Changed from description
         ).count()
         total_pages = (total_count + page_size - 1) // page_size
 
-        # 获取分页结果
+        # Get paginated results
         results = Content.objects.filter(
-            Q(title__icontains=query) | Q(description__icontains=query)
+            Q(title__icontains=query) | Q(content__icontains=query)  # Changed from description
         ).order_by('created_at')[offset:offset + page_size]
 
     return render_template('search.html', query=query, results=results, page=page, total_pages=total_pages)
@@ -651,13 +850,21 @@ def search():
 
 #
 def typst(date):
+    # today_str = datetime.now().strftime("%Y-%m-%d")
+    # print(date, today_str)
+    # if date != today_str:
+    #     content_query = Content.objects.filter(publish_at__date=date)
+    # else:
+    #     content_query = Content.objects.filter(
+    #         Q(publish_at__date=date) | Q(publish_at__isnull=True)
+    #     )
     today_str = datetime.now().strftime("%Y-%m-%d")
-    print(date, today_str)
-    if date != today_str:
-        content_query = Content.objects.filter(publish_at__date=date)
+    print(date_str, today_str)
+    if date_str != today_str:
+        content_query = Content.objects.filter(publish_at__date=date_str)
     else:
         content_query = Content.objects.filter(
-            Q(publish_at__date=date) | Q(publish_at__isnull=True)
+            Q(publish_at__date=date_str) | Q(publish_at__isnull=True)
         )
     other, college, club, lecture = [], [], [], []
     for content_item in content_query:
@@ -703,12 +910,23 @@ def typst(date):
         "lecture": lecture,
         "other": other
     }
+    # due_content = Content.objects.filter(
+    #     deadline__isnull=False,  # due_time IS NOT NULL
+    #     deadline__gt=date,  # due_time > date
+    #     publish_time__date__lte=date,  # DATE(publish_date) <= date
+    #     publish_time__date__gte=date(2023, 1, 1)  # publish_date >= '2023-01-01'
+    # ).order_by('due_time')
+
+    # Fix the date import issue
+    from datetime import date as date_class
+
     due_content = Content.objects.filter(
-        deadline__isnull=False,  # due_time IS NOT NULL
-        deadline__gt=date,  # due_time > date
-        publish_time__date__lte=date,  # DATE(publish_date) <= date
-        publish_time__date__gte=date(2023, 1, 1)  # publish_date >= '2023-01-01'
-    ).order_by('due_time')
+        deadline__isnull=False,
+        deadline__gt=date_str,
+        publish_at__date__lte=date_str,
+        publish_at__date__gte=date_class(2023, 1, 1)  # Use date_class instead of date
+    ).order_by('deadline')  # Use deadline instead of due_time
+
     other_due, college_due, club_due, lecture_due = [], [], [], []
     for content_item in due_content:
         title = content_item.title
@@ -934,6 +1152,35 @@ def delete_entry(entry_id):
 #         flash("文件未找到")
 #     return redirect(url_for('admin_files'))
 #
+# @app.route('/add_deadline', methods=['GET', 'POST'])
+# @login_required
+# def add_deadline():
+#     if request.method == 'POST':
+#         link = request.form.get('link', '').strip()
+#         link_value = link if link else None
+#         short_title = request.form.get('short_title', '').strip()
+#         tag = request.form.get('tag', '').strip()
+#         today = datetime.now().strftime("%Y-%m-%d")
+#         publish_time = request.form.get('publish_time', today)
+#         due_time = request.form.get('due_time', today)
+#         news = Content.objects.create(
+#             creator_id=session['username'],
+#             describer_id=session['username'],
+#             title=short_title,
+#             link=link_value,
+#             short_title=short_title,
+#             content='',
+#             deadline=due_time,
+#             publish_at=publish_time,
+#             status='pending',
+#             tag=tag,
+#             type="DDLOnly",
+#         )
+#         flash("Deadline entry added successfully")
+#         return redirect(url_for('main'))
+#     today = datetime.now().strftime("%Y-%m-%d")
+#     return render_template('add_deadline.html', today=today)
+
 @app.route('/add_deadline', methods=['GET', 'POST'])
 @login_required
 def add_deadline():
@@ -945,15 +1192,24 @@ def add_deadline():
         today = datetime.now().strftime("%Y-%m-%d")
         publish_time = request.form.get('publish_time', today)
         due_time = request.form.get('due_time', today)
+
+        # Get user ID instead of username
+        user = User_info.objects.get(username=session['username'])
+
+        # Convert dates properly
+        from datetime import datetime
+        publish_datetime = datetime.strptime(publish_time, '%Y-%m-%d') if publish_time else None
+        deadline_datetime = datetime.strptime(due_time, '%Y-%m-%d') if due_time else None
+
         news = Content.objects.create(
-            creator_id=session['username'],
-            describer_id=session['username'],
+            creator_id=user.id,  # Use user.id instead of session['username']
+            describer_id=user.id,  # Use user.id instead of session['username']
             title=short_title,
             link=link_value,
             short_title=short_title,
             content='',
-            deadline=due_time,
-            publish_at=publish_time,
+            deadline=deadline_datetime,  # Use proper datetime
+            publish_at=publish_datetime,  # Use proper datetime
             status='pending',
             tag=tag,
             type="DDLOnly",
