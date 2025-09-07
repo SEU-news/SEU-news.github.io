@@ -1,7 +1,9 @@
 from django.db import models
-
+import json
+import base64
 
 # Create your models here.
+
 
 class User_info(models.Model):
     PERMISSION_NONE = 0b00  # 0 - 无权限
@@ -83,6 +85,57 @@ class Content(models.Model):
     tag = models.TextField(verbose_name='标签', default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def add_image(self, image_file):
+        """
+        将上传的图片转换为Base64并添加到image_list中
+        """
+        try:
+            # 读取现有的图片列表
+            images = json.loads(self.image_list) if self.image_list else []
+
+            # 读取图片数据
+            image_data = image_file.read()
+
+            # 转换为Base64
+            base64_data = base64.b64encode(image_data).decode('utf-8')
+
+            # 创建图片信息对象
+            image_info = {
+                'filename': image_file.filename,
+                'original_name': image_file.filename,
+                'size': len(image_data),
+                'content_type': image_file.content_type,
+                'data': base64_data,
+                'upload_time': self.upload_time.isoformat() if hasattr(self, 'upload_time') else None
+            }
+
+            # 添加到图片列表
+            images.append(image_info)
+
+            # 更新image_list字段
+            self.image_list = json.dumps(images)
+            return True
+
+        except Exception as e:
+            print(f"添加图片失败: {e}")
+            return False
+
+    def get_images(self):
+        """
+        获取图片列表
+        """
+        try:
+            return json.loads(self.image_list) if self.image_list else []
+        except json.JSONDecodeError:
+            return []
+
+    def image_exists(self, filename):
+        """
+        检查图片是否已存在
+        """
+        images = self.get_images()
+        return any(img['filename'] == filename for img in images)
 
     class Meta:
         db_table = 'content_management'

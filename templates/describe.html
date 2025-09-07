@@ -5,7 +5,7 @@
 <head>
     <title>撰写报道</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 </head>
 
 <body>
@@ -38,10 +38,10 @@
                     <div class="form-group">
                         <label>刊载板块（讲座不需要填写板块为讲座，在下面的 tag 中选择即可）</label>
                         <select name="entry_type" id="typeSelect" onchange="CheckType(this);" class="form-control">
-                            <option value="活动预告" {% if entry[10]=='活动预告' %}selected{% endif %}>活动预告</option>
-                            <option value="参考消息" {% if entry[10]=='参考消息' %}selected{% endif %}>参考消息</option>
-                            <option value="others" {% if entry[10] not in ['活动预告','讲座','参考消息'] %}selected{% endif %}>自定义
-                            </option>
+                            <option value="活动预告" {% if entry.tag=='活动预告' %}selected{% endif %}>活动预告</option>
+                            <option value="参考消息" {% if entry.tag=='参考消息' %}selected{% endif %}>参考消息</option>
+                            <option value="others" {% with excluded_categories="活动预告,讲座,参考消息" %}{% if entry.tag not in xcluded_categories.split %}selected{% endif %}
+{% endwith %}>自定义</option>
                         </select>
                         <input type="text" name="customType" id="customType" class="form-control" style="display:none;"
                             placeholder="请输入自定义的版块名称"
