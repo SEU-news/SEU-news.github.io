@@ -9,6 +9,7 @@ import subprocess
 from datetime import datetime, timedelta
 from functools import wraps
 from urllib.parse import urlparse
+import base64
 
 import django
 import requests
@@ -517,37 +518,51 @@ def upload_image():
     if file.filename == '':
         flash("未选择文件")
         return redirect(url_for('main'))
+    if (file.size > 2 * 1024 * 1024) :
+        flash('图片大小不能超过2MB')
+        return redirect(url_for('main'))
     if file and allowed_file(file.filename):
-        extension = file.filename.rsplit('.', 1)[1].lower()
-        file_hash = hash_file(file)
-        filename = f"{file_hash}.{extension}"
-        conn = sqlite3.connect('database.db')
-        c = conn.cursor()
-        c.execute("SELECT id FROM entries WHERE link=?", (filename,))
-        if c.fetchone():
-            conn.close()
+        filename = file.filename
+
+        # 检查是否已存在相同文件名的内容
+        user = User_info.objects.get(username=session['username'])
+        existing_content = Content.objects.filter(
+            creator_id=user.id,
+            title=filename
+        ).first()
+        if existing_content and existing_content.image_exists(filename):
             flash("该图片已经上传")
             return redirect(url_for('main'))
-        conn.close()
-        upload_folder = os.path.join(app.root_path, 'static/uploads')
-        os.makedirs(upload_folder, exist_ok=True)
-        file_path = os.path.join(upload_folder, filename)
-        file.save(file_path)
-        dynamic_img_url = url_for('static', filename='uploads/' + filename, _external=True)
-        conn = sqlite3.connect('database.db')
-        c = conn.cursor()
-        c.execute("""INSERT INTO entries
-                         (uploader, upload_time, title, link, due_time, status, type)
-                     VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                  (session['username'], datetime.now(), file.filename, filename, None, 'pending', '活动预告'))
-        conn.commit()
-        conn.close()
-        flash(
-            "图片上传成功，并已添加到条目, 图片链接：<a href='" + dynamic_img_url + "' target='_blank'>" + dynamic_img_url + "</a>")
+        try:
+            # 创建新的Content对象
+
+            content = Content(
+                creator_id=user.id,
+                title=filename,
+                deadline=None,
+                status='draft',
+                type='活动预告'
+            )
+
+            # 先保存获取ID
+            content.save()
+
+            # 添加图片到image_list
+            if content.add_image(file):
+                content.save()  # 保存更新后的image_list
+                flash("图片上传成功，并已添加到数据库")
+            else:
+                flash("图片处理失败")
+                content.delete()  # 删除失败的记录
+
+        except Exception as e:
+            flash(f"保存失败: {str(e)}")
         return redirect(url_for('main'))
+
     else:
         flash("不支持的文件格式")
         return redirect(url_for('main'))
+
 
 
 #
