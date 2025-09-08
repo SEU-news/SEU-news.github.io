@@ -4,12 +4,10 @@ import json
 import logging
 import os
 import re
-import sqlite3
 import subprocess
 from datetime import datetime, timedelta
 from functools import wraps
 from urllib.parse import urlparse
-import base64
 
 import django
 import requests
@@ -46,7 +44,7 @@ EMAIL_ADDRESS = "test@smail.nju.edu.cn"
 EMAIL_PASSWORD = "A_SECRET_KEY_HERE"
 SMTP_SERVER = "smtp.exmail.qq.com"
 SMTP_PORT = 465
-
+FILE_PATH='static/uploads'
 
 def fetch_title(url):
     for _ in range(2):
@@ -340,25 +338,40 @@ def describe(entry_id):
         title = request.form['title']
         entry_type = request.form['entry_type']
         description = request.form['description']
-        due_time = request.form['due_time']
+        due_time_str = request.form['due_time']
         tag = request.form.get('tag', '')
         short_title = request.form.get('short_title') or title
-
+        link = request.form.get('link')
         user = User_info.objects.get(username=session['username'])
-
-        content = Content.objects.create(
-            creator_id=user.id,
-            describer_id=user.id,
-            title=title,
-            short_title=short_title,
-            content=description,
-            link='',
-            status='pending',
-            type=entry_type,
-            tag=tag,
-            deadline=due_time,
-            publish_at=None
-        )
+        deadline_value = None
+        if due_time_str and due_time_str.strip():
+            deadline_value = due_time_str
+        content_data = {
+            'creator_id': user.id,
+            'describer_id': user.id,
+            'title': title,
+            'short_title': short_title,
+            'content': description,
+            'status': 'pending',
+            'type': entry_type,
+            'tag': tag,
+        }
+        if deadline_value is not None:
+            content_data['deadline'] = deadline_value
+        try:
+            content = Content.objects.get(id=entry_id)
+        except Content.DoesNotExist:
+            content = Content.objects.create(**content_data)
+            return redirect(url_for('main'))
+        content.describer_id = content_data.get('describer_id', content.describer_id)
+        content.title = content_data.get('title', content.title)
+        content.short_title = content_data.get('short_title', content.short_title)
+        content.content = content_data.get('content', content.content)
+        content.status = content_data.get('status', content.status)
+        content.type = content_data.get('type', content.type)
+        content.tag = content_data.get('tag', content.tag)
+        content.deadline = content_data.get('deadline', content.deadline)
+        content.save()  # 保存更改
         return redirect(url_for('main'))
     else:
         try:
@@ -426,19 +439,11 @@ def review(entry_id):
     return redirect(url_for('main'))
 
 
-# @app.route('/cancel/<int:entry_id>')
-# @login_required
-# def cancel(entry_id):
-#     conn = sqlite3.connect('database.db')
-#     c = conn.cursor()
-#     c.execute("SELECT locked_by FROM entries WHERE id=?", (entry_id,))
-#     entry_lock_info = c.fetchone()
-#     if entry_lock_info and entry_lock_info[0] == session['username']:
-#         c.execute("UPDATE entries SET locked_by=NULL, lock_time=NULL WHERE id=?", (entry_id,))
-#         conn.commit()
-#     conn.close()
-#     return redirect(url_for('main'))
-#
+@app.route('/cancel/<int:entry_id>')
+@login_required
+def cancel(entry_id):
+    return redirect(url_for('main'))
+
 @app.route('/logout')
 def logout():
     session.pop('username', None)
@@ -531,7 +536,7 @@ def upload_image():
             flash("该图片已经上传")
             return redirect(url_for('main'))
 
-        upload_folder = os.path.join(app.root_path, 'static/uploads')
+        upload_folder = os.path.join(app.root_path, FILE_PATH)
         os.makedirs(upload_folder, exist_ok=True)
         file_path = os.path.join(upload_folder, filename)
         file.save(file_path)
@@ -543,6 +548,7 @@ def upload_image():
                 describer_id=user.id,
                 title=filename,
                 deadline=None,
+                link=filename,
                 status='draft',
                 type='活动预告'
             )

@@ -10,7 +10,7 @@
 
 <body>
     <div class="container mt-5">
-        {% if entry[4] and not (entry[4].endswith('.png') or entry[4].endswith('.jpg') or entry[4].endswith('.jpeg') or entry[4].endswith('.webp')) %}
+        {% if entry.link and not (entry.link.endswith('.png') or entry.link.endswith('.jpg') or entry.link.endswith('.jpeg') or entry.link.endswith('.webp')) %}
         <div class="form-check mb-3">
             <input class="form-check-input" type="checkbox" id="togglePreview" onchange="togglePreviewFunc(this);">
             <label class="form-check-label" for="togglePreview">开启网页预览(Experimental)</label>
@@ -18,14 +18,14 @@
         {% endif %}
         <div id="splitContainer" style="display: flex; flex-direction: row;">
             <div id="leftPane" style="flex: 1;">
-                <h2>撰写报道: {{ entry[3] }}</h2>
-                {% if entry[4] %}
-                {% if entry[4].endswith('.png') or entry[4].endswith('.jpg') or entry[4].endswith('.jpeg') or
-                entry[4].endswith('.webp') %}
-                <img src="{{ url_for('static', filename='uploads/' ~ entry[4], _external=True) }}" alt="Uploaded image"
+                <h2>撰写报道: {{ entry.title }}</h2>
+                {% if entry.link %}
+                {% if entry.link.endswith('.png') or entry.link.endswith('.jpg') or entry.link.endswith('.jpeg') or
+                entry.link.endswith('.webp') %}
+                <img src="{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}" alt="Uploaded image"
                     class="img-fluid" style="max-width: 100%; max-height: 500px; object-fit: contain;" />
                 {% else %}
-                <p>消息链接: <a target="_blank" rel="noopener noreferrer" href="{{ entry[4] }}">{{ entry[4] }}</a></p>
+                <p>消息链接: <a target="_blank" rel="noopener noreferrer" href="{{ entry.link }}">{{ entry.link }}</a></p>
                 {% endif %}
                 {% else %}
                 <p>本条目没有链接被上传</p>
@@ -33,14 +33,14 @@
                 <form method="POST">
                     <div class="form-group">
                         <label>标题</label>
-                        <input type="text" name="title" class="form-control" value="{{ entry[3] }}" required>
+                        <input type="text" name="title" class="form-control" value="{{ entry.title }}" required>
                     </div>
                     <div class="form-group">
                         <label>刊载板块（讲座不需要填写板块为讲座，在下面的 tag 中选择即可）</label>
                         <select name="entry_type" id="typeSelect" onchange="CheckType(this);" class="form-control">
                             <option value="活动预告" {% if entry.tag=='活动预告' %}selected{% endif %}>活动预告</option>
                             <option value="参考消息" {% if entry.tag=='参考消息' %}selected{% endif %}>参考消息</option>
-                            <option value="自定义" {% if entry.tag not in ['活动预告', '讲座', '参考消息'] %}selected{% endif %}自定义</option>
+                            <option value="自定义" {% if entry.tag not in ['活动预告', '讲座', '参考消息'] %}selected{% endif %}>自定义</option>
                         </select>
                         <input type="text" name="customType" id="customType" class="form-control" style="display:none;"
                             placeholder="请输入自定义的版块名称"
@@ -57,54 +57,53 @@
                             <input type="button" value="Clear" class="btn btn-primary mt-2"
                                 onclick="document.getElementById('due_time').value=''" />
                         </div>
-                        <div id="shortTitleField"{% if entry.shortTitle %}style="display:block;" {% else %}style="display:none;" {% endif%}>
+                        <div id="shortTitleField"{% if entry.short_title %}style="display:block;" {% else %}style="display:none;" {% endif%}>
                             <label>短标题（将显示在ddl表格）</label>
                             <input type="text" name="short_title" class="form-control">
                         </div>
                     </div>
                     <div class="form-group">
                         <label>描述</label>
-                        <textarea name="description" class="form-control" required rows="10">{{ entry[5] }}</textarea>
+                        <textarea name="description" class="form-control" required rows="10">{{ entry.description }}</textarea>
                         <button type="button" class="btn btn-outline-secondary mt-2" onclick="kernLineBreaks()">合并连续换行</button>
                     </div>
                     
                     <div class="form-group mt-3">
                         <label>标签 (可选):</label>
                         <div class="btn-group" role="group" aria-label="Tag selection">
-                            <input type="radio" class="btn-check" name="tag" id="tagA" value="校级活动" autocomplete="off" {% if entry[15]=="校级活动" %}checked{% endif %}>
+                            <input type="radio" class="btn-check" name="tag" id="tagA" value="校级活动" autocomplete="off" {% if entry.tag=="校级活动" %}checked{% endif %}>
                             <label class="btn btn-outline-primary rounded-pill me-1" for="tagA">校级活动</label>
 
-                            <input type="radio" class="btn-check" name="tag" id="tagB" value="院级活动" autocomplete="off" {% if entry[15]=='院级活动' %}checked{% endif %}>
+                            <input type="radio" class="btn-check" name="tag" id="tagB" value="院级活动" autocomplete="off" {% if entry.tag=='院级活动' %}checked{% endif %}>
                             <label class="btn btn-outline-primary rounded-pill me-1" for="tagB">院级活动</label>
 
-                            <input type="radio" class="btn-check" name="tag" id="tagC" value="社团活动" autocomplete="off" {% if entry[15]=='社团活动' %}checked{% endif %}>
+                            <input type="radio" class="btn-check" name="tag" id="tagC" value="社团活动" autocomplete="off" {% if entry.tag=='社团活动' %}checked{% endif %}>
                             <label class="btn btn-outline-primary rounded-pill me-2" for="tagC">社团活动</label>
 
-                            <input type="radio" class="btn-check" name="tag" id="tagD" value="讲座" autocomplete="off" {% if entry[15]=="讲座" %}checked{% endif %}>
+                            <input type="radio" class="btn-check" name="tag" id="tagD" value="讲座" autocomplete="off" {% if entry.tag=="讲座" %}checked{% endif %}>
                             <label class="btn btn-outline-primary rounded-pill me-1" for="tagD">讲座</label>
 
-                            <input type="radio" class="btn-check" name="tag" id="tagNone" value="" autocomplete="off" {% if not entry[15] %}checked{% endif %}>
+                            <input type="radio" class="btn-check" name="tag" id="tagNone" value="" autocomplete="off" {% if not entry.tag %}checked{% endif %}>
                             <label class="btn btn-outline-secondary rounded-pill" for="tagNone">取消</label>
                         </div>
                     </div>
                     
-                    {% if entry[4] and (entry[4].endswith('.png') or entry[4].endswith('.jpg') or entry[4].endswith('.jpeg') or
-                    entry[4].endswith('.webp')) %}
+                    {% if entry.link and (entry.link.endswith('.png') or entry.link.endswith('.jpg') or entry.link.endswith('.jpeg') or
+                    entry.link.endswith('.webp')) %}
                     <div class="form-check mt-3">
-                        <input class="form-check-input" type="checkbox" id="useImage" name="use_image" {% if entry[13]==1
-                            %}checked{% endif %}>
+                        <input class="form-check-input" type="checkbox" id="useImage" name="use_image" {% if entry.image_list %}checked{% endif %}>
                         <label class="form-check-label" for="useImage">利用图片</label>
                     </div>
                     {% endif %}
                     <div class="mt-3">
                     <button type="submit" class="btn btn-primary">提交</button>
-                    <a href="{{ url_for('cancel', entry_id=entry[0]) }}" class="btn btn-secondary">取消</a>
+                    <a href="{{ url_for('cancel', entry_id=entry.id) }}" class="btn btn-secondary">取消</a>
                     </div>
                 </form>
             </div>
-            {% if entry[4] and not (entry[4].endswith('.png') or entry[4].endswith('.jpg') or entry[4].endswith('.jpeg') or entry[4].endswith('.webp')) %}
+            {% if entry.link and not (entry.link.endswith('.png') or entry.link.endswith('.jpg') or entry.link.endswith('.jpeg') or entry.link.endswith('.webp')) %}
             <div id="rightPane" style="flex: 1; display: none; margin-left: 24px;">
-                <iframe id="previewFrame" src="{{ entry[4] }}" style="width:100%; min-height:700px; border:1px solid #ccc; border-radius:8px;"></iframe>
+                <iframe id="previewFrame" src="{{ entry.link }}" style="width:100%; min-height:700px; border:1px solid #ccc; border-radius:8px;"></iframe>
             </div>
             {% endif %}
         </div>

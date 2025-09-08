@@ -65,7 +65,7 @@ class Content(models.Model):
         ('rejected', '已拒绝'),
         ('published', '已发布'),
     )
-    id=models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
 
     creator_id = models.IntegerField(verbose_name='创建者ID', null=False)  # 假设不允许为空
     describer_id = models.IntegerField(verbose_name='描述者ID', null=True)  # 允许为空
@@ -76,9 +76,9 @@ class Content(models.Model):
     link = models.TextField(verbose_name='链接')
     content = models.TextField(verbose_name='详细内容')
 
-    deadline = models.DateTimeField(verbose_name="截止时间")
-    image_list = models.TextField(default='[]',verbose_name='图片列表',help_text='JSON格式的图片路径数组')
-    publish_at = models.DateTimeField(verbose_name="发布时间")
+    deadline = models.DateField(verbose_name="截止时间", null=True, blank=True)
+    image_list = models.TextField(default='[]', verbose_name='图片列表', help_text='JSON格式的图片路径数组')
+    publish_at = models.DateTimeField(verbose_name="发布时间", null=True, blank=True)
 
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='draft')
     type = models.CharField(max_length=50, verbose_name='类型')
