@@ -40,12 +40,11 @@
                         <select name="entry_type" id="typeSelect" onchange="CheckType(this);" class="form-control">
                             <option value="活动预告" {% if entry.tag=='活动预告' %}selected{% endif %}>活动预告</option>
                             <option value="参考消息" {% if entry.tag=='参考消息' %}selected{% endif %}>参考消息</option>
-                            <option value="others" {% with excluded_categories="活动预告,讲座,参考消息" %}{% if entry.tag not in xcluded_categories.split %}selected{% endif %}
-{% endwith %}>自定义</option>
+                            <option value="自定义" {% if entry.tag not in ['活动预告', '讲座', '参考消息'] %}selected{% endif %}自定义</option>
                         </select>
                         <input type="text" name="customType" id="customType" class="form-control" style="display:none;"
                             placeholder="请输入自定义的版块名称"
-                            value="{% if entry[10] not in ['活动预告','讲座','参考消息'] %}{{ entry[10] }}{% endif %}" />
+                            value="{% if entry.tag not in ['活动预告','讲座','参考消息'] %}{{ entry.tag }}{% endif %}" />
                     </div>
                     <div class="form-group">
                         <div class="form-check">
@@ -58,7 +57,7 @@
                             <input type="button" value="Clear" class="btn btn-primary mt-2"
                                 onclick="document.getElementById('due_time').value=''" />
                         </div>
-                        <div id="shortTitleField"{% if entry[8] %}style="display:block;" {% else %}style="display:none;" {% endif%}>
+                        <div id="shortTitleField"{% if entry.shortTitle %}style="display:block;" {% else %}style="display:none;" {% endif%}>
                             <label>短标题（将显示在ddl表格）</label>
                             <input type="text" name="short_title" class="form-control">
                         </div>

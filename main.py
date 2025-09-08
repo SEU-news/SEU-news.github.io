@@ -518,42 +518,41 @@ def upload_image():
     if file.filename == '':
         flash("未选择文件")
         return redirect(url_for('main'))
-    if (file.size > 2 * 1024 * 1024) :
-        flash('图片大小不能超过2MB')
-        return redirect(url_for('main'))
+        # 修复：检查文件大小的方法
     if file and allowed_file(file.filename):
         filename = file.filename
 
         # 检查是否已存在相同文件名的内容
         user = User_info.objects.get(username=session['username'])
         existing_content = Content.objects.filter(
-            creator_id=user.id,
             title=filename
-        ).first()
-        if existing_content and existing_content.image_exists(filename):
+        )
+        if existing_content:
             flash("该图片已经上传")
             return redirect(url_for('main'))
+
+        upload_folder = os.path.join(app.root_path, 'static/uploads')
+        os.makedirs(upload_folder, exist_ok=True)
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)
         try:
             # 创建新的Content对象
 
             content = Content(
                 creator_id=user.id,
+                describer_id=user.id,
                 title=filename,
                 deadline=None,
                 status='draft',
                 type='活动预告'
             )
 
-            # 先保存获取ID
-            content.save()
-
             # 添加图片到image_list
-            if content.add_image(file):
-                content.save()  # 保存更新后的image_list
+            if content.add_image(file_path):
+                content.save()
                 flash("图片上传成功，并已添加到数据库")
             else:
                 flash("图片处理失败")
-                content.delete()  # 删除失败的记录
 
         except Exception as e:
             flash(f"保存失败: {str(e)}")

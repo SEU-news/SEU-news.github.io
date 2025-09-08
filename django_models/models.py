@@ -1,7 +1,7 @@
 from django.db import models
+import os
 import json
-import base64
-
+from django.conf import settings
 # Create your models here.
 
 
@@ -77,7 +77,7 @@ class Content(models.Model):
     content = models.TextField(verbose_name='详细内容')
 
     deadline = models.DateTimeField(verbose_name="截止时间")
-    image_list = models.TextField(verbose_name='图片list', default=0)
+    image_list = models.TextField(default='[]',verbose_name='图片列表',help_text='JSON格式的图片路径数组')
     publish_at = models.DateTimeField(verbose_name="发布时间")
 
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='draft')
@@ -86,56 +86,28 @@ class Content(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def add_image(self, image_file):
-        """
-        将上传的图片转换为Base64并添加到image_list中
-        """
+    def add_image(self, image_path):
         try:
-            # 读取现有的图片列表
-            images = json.loads(self.image_list) if self.image_list else []
+            # 解析现有的JSON字符串
+            if self.image_list:
+                image_list_data = json.loads(self.image_list)
+            else:
+                image_list_data = []
 
-            # 读取图片数据
-            image_data = image_file.read()
-
-            # 转换为Base64
-            base64_data = base64.b64encode(image_data).decode('utf-8')
-
-            # 创建图片信息对象
-            image_info = {
-                'filename': image_file.filename,
-                'original_name': image_file.filename,
-                'size': len(image_data),
-                'content_type': image_file.content_type,
-                'data': base64_data,
-                'upload_time': self.upload_time.isoformat() if hasattr(self, 'upload_time') else None
-            }
+            # 生成相对路径
+            relative_path = f"uploads/{os.path.basename(image_path)}"
 
             # 添加到图片列表
-            images.append(image_info)
+            image_list_data.append(relative_path)
 
-            # 更新image_list字段
-            self.image_list = json.dumps(images)
+            # 重新保存为JSON字符串
+            self.image_list = json.dumps(image_list_data)
             return True
 
         except Exception as e:
-            print(f"添加图片失败: {e}")
+            print(f"添加图片失败: {str(e)}")
             return False
 
-    def get_images(self):
-        """
-        获取图片列表
-        """
-        try:
-            return json.loads(self.image_list) if self.image_list else []
-        except json.JSONDecodeError:
-            return []
-
-    def image_exists(self, filename):
-        """
-        检查图片是否已存在
-        """
-        images = self.get_images()
-        return any(img['filename'] == filename for img in images)
 
     class Meta:
         db_table = 'content_management'
