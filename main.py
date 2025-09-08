@@ -5,7 +5,7 @@ import logging
 import os
 import re
 import subprocess
-from datetime import datetime, timedelta
+from datetime import  timedelta
 from functools import wraps
 from urllib.parse import urlparse
 
@@ -535,10 +535,12 @@ def upload_image():
         if existing_content:
             flash("该图片已经上传")
             return redirect(url_for('main'))
-
+        filename, extension = os.path.splitext(file.filename)
+        md5_hash = hashlib.md5(filename.encode('utf-8')).hexdigest()
+        link = f"{md5_hash}{extension}"
         upload_folder = os.path.join(app.root_path, FILE_PATH)
         os.makedirs(upload_folder, exist_ok=True)
-        file_path = os.path.join(upload_folder, filename)
+        file_path = os.path.join(upload_folder, link)
         file.save(file_path)
         try:
             # 创建新的Content对象
@@ -546,9 +548,9 @@ def upload_image():
             content = Content(
                 creator_id=user.id,
                 describer_id=user.id,
-                title=filename,
+                title=md5_hash,
                 deadline=None,
-                link=filename,
+                link=link,
                 status='draft',
                 type='活动预告'
             )
