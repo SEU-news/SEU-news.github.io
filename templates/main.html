@@ -6,175 +6,182 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>车大消息消息刊载</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+    <!--    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 
 <body>
-    <div class="container mt-5">
-        <div class="row mb-3">
-            <div class="col-md-6">
-                <form method="GET" action="{{ url_for('search') }}">
-                    <div class="input-group">
-                        <input type="text" class="form-control" name="q" placeholder="Search entries..." required>
-                        <button class="btn btn-outline-secondary" type="submit">Search</button>
-                    </div>
-                </form>
-            </div>
-            <div class="col-md-6 text-end">
-                <strong>您好, {{ session['username'] }}</strong>
-                <a href="{{ url_for('logout') }}" class="btn btn-danger">登出</a>
-            </div>
+<div class="container mt-5">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <form method="GET" action="{{ url_for('search') }}">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="q" placeholder="Search entries..." required>
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </form>
         </div>
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-        <div class="alert alert-info" role="alert">
-            {% for message in messages %}
-            <div>{{ message|safe }}</div>
-            {% endfor %}
+        <div class="col-md-6 text-end">
+            <strong>您好, {{ session['username'] }}</strong>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger">登出</a>
         </div>
-        {% endif %}
-        {% endwith %}
+    </div>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="alert alert-info" role="alert">
+        {% for message in messages %}
+        <div>{{ message|safe }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>车大消息 消息刊载</h2>
-            <div>
-                <a href="{{ url_for('preview_edit') }}" class="btn btn-outline-primary">预览</a>
-                <a href="{{ url_for('add_deadline') }}" class="btn btn-secondary">上传仅有DDL的消息</a>
-                <a href="{{ url_for('upload') }}" class="btn btn-primary">上传纯文本消息</a>
-            </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>车大消息 消息刊载</h2>
+        <div>
+            <a href="{{ url_for('preview_edit') }}" class="btn btn-outline-primary">预览</a>
+            <a href="{{ url_for('add_deadline') }}" class="btn btn-secondary">上传仅有DDL的消息</a>
+            <a href="{{ url_for('upload') }}" class="btn btn-primary">上传纯文本消息</a>
         </div>
-        <form method="POST" action="{{ url_for('paste') }}" class="mb-4">
-            <div class="input-group">
-                <input type="text" class="form-control" name="link" placeholder="Paste url here..." required>
-                <button class="btn btn-outline-secondary" type="submit">添加地址</button>
-            </div>
-        </form>
-        <form method="POST" action="{{ url_for('upload_image') }}" enctype="multipart/form-data" class="mb-4">
-            <div class="input-group">
-                <input type="file" class="form-control" name="image" accept="image/*" required>
-                <button class="btn btn-outline-secondary" type="submit">上传图片</button>
-            </div>
-        </form>
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>操作</th>
-                    <th>标题</th>
-                    <th>状态</th>
-                    <th>描述</th>
-                    <th>刊载板块</th>
-                    <th>审阅人</th>
-                    <th>上传时间</th>
-                    <th>上工者</th>
-                    <th>锁定者</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for entry in entries %}
-                {% if entry.type != "DDLOnly" %}
-                    <td>
-                        {% if not entry.description %}
-                        <a href="{{ url_for('describe', entry_id=entry.id) }}" class="btn btn-sm btn-danger">上工</a>
-                        {% else %}
-                        <a href="{{ url_for('review', entry_id=entry.id) }}"
-                            class="{% if entry.status == 'approved' %}btn btn-sm btn-success{% else %}btn btn-sm btn-warning{% endif %}">
-                            {% if entry.status == 'approved' %} 修改 {% else %} 审核 {% endif %}
-                        </a>
-                        {% endif %}
-                        {% if entry.creator == session['username'] %}
-                        <form action="{{ url_for('delete_entry', entry_id=entry.id) }}" method="POST"
-                            style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
-                            <button type="submit" class="btn btn-sm btn-danger">删除</button>
-                        </form>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if entry.link %}
-                        <a target="_blank" rel="noopener noreferrer"
-                            href="{% if 'http' in entry.link %}{{ entry.link }}{% else %}{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}{% endif %}">
-                            {% if entry.title|length > 15 %}
-                            {{ entry.title[:15] }}...
-                            {% else %}
-                            {{ entry.tile }}
-                            {% endif %}
-                        </a>
-                        {% else %}
-                        {% if entry.title|length > 15 %}
-                        {{ entry.title[:15] }}...
-                        {% else %}
-                        {{ entry.title }}
-                        {% endif %}
-                        {% endif %}
-                    </td>
-                    <td
-                        class="{% if entry.status == 'pending' %}table-secondary{% elif entry.status == 'described' %}table-warning{% elif entry.status == 'modified' %}table-warning{% elif entry.status == 'approved' %}table-success{% endif %}">
-                        {% if entry.status == "pending" %}
-                        待审核
-                        {% elif entry.status == "draft" %}
-                        草稿
-                        {% elif entry.status == "reviewed" %}
-                        已审核
-                        {% elif entry.status == "rejected" %}
-                        已拒绝
-                        {% else %}
-                        已发布
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if entry.description and entry.description|length > 15 %}
-                        {{ entry.description[:15] }}...
-                        {% else %}
-                        {{ entry.description }}
-                        {% endif %}
-                    </td>
-                    <td>{{ entry.short_title or '' }}</td>
-                    <td>{{ entry.reviewer or '' }}</td>
-                    <td>{{ entry.created_at[5:16] if entry.created_at else '' }}</td>
-                    <td {% if entry.describer==session['username'] %} class="table-success" {% endif %}>{{ entry.describer or '' }}</td>
+    </div>
+    <form method="POST" action="{{ url_for('paste') }}" class="mb-4">
+        <div class="input-group">
+            <input type="text" class="form-control" name="link" placeholder="Paste url here..." required>
+            <button class="btn btn-outline-secondary" type="submit">添加地址</button>
+        </div>
+    </form>
+    <form method="POST" action="{{ url_for('upload_image') }}" enctype="multipart/form-data" class="mb-4">
+        <div class="input-group">
+            <input type="file" class="form-control" name="image" accept="image/*" required>
+            <button class="btn btn-outline-secondary" type="submit">上传图片</button>
+        </div>
+    </form>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>操作</th>
+            <th>标题</th>
+            <th>状态</th>
+            <th>描述</th>
+            <th>刊载板块</th>
+            <th>审阅人</th>
+            <th>上传时间</th>
+            <th>上工者</th>
+            <th>锁定者</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entry in entries %}
+        {% if entry.type != "DDLOnly" %}
+        <tr>  <!-- ADD THIS LINE -->
+            <td>
+                {% if not entry.content %}  <!-- Changed from entry.description -->
+                <a href="{{ url_for('describe', entry_id=entry.id) }}" class="btn btn-sm btn-danger">上工</a>
+                {% else %}
+                <a href="{{ url_for('review', entry_id=entry.id) }}"
+                   class="{% if entry.status == 'approved' %}btn btn-sm btn-success{% else %}btn btn-sm btn-warning{% endif %}">
+                    {% if entry.status == 'approved' %} 修改 {% else %} 审核 {% endif %}
+                </a>
                 {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                {% if entry.creator_id == session['username'] %}  <!-- Fixed field name -->
+                <form action="{{ url_for('delete_entry', entry_id=entry.id) }}" method="POST"
+                      style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
+                    <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                </form>
+                {% endif %}
+            </td>
+            <td>
+                {% if entry.link %}
+                <a target="_blank" rel="noopener noreferrer"
+                   href="{% if 'http' in entry.link %}{{ entry.link }}{% else %}{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}{% endif %}">
+                    {% if entry.title|length > 15 %}
+                    {{ entry.title[:15] }}...
+                    {% else %}
+                    {{ entry.title }}  <!-- Fixed typo: was entry.tile -->
+                    {% endif %}
+                </a>
+                {% else %}
+                {% if entry.title|length > 15 %}
+                {{ entry.title[:15] }}...
+                {% else %}
+                {{ entry.title }}
+                {% endif %}
+                {% endif %}
+            </td>
+            <td
+                    class="{% if entry.status == 'pending' %}table-secondary{% elif entry.status == 'described' %}table-warning{% elif entry.status == 'modified' %}table-warning{% elif entry.status == 'approved' %}table-success{% endif %}">
+                {% if entry.status == "pending" %}
+                待审核
+                {% elif entry.status == "draft" %}
+                草稿
+                {% elif entry.status == "reviewed" %}
+                已审核
+                {% elif entry.status == "rejected" %}
+                已拒绝
+                {% else %}
+                已发布
+                {% endif %}
+            </td>
+            <td>
+                {% if entry.content and entry.content|length > 15 %}  <!-- Changed from entry.description -->
+                {{ entry.content[:15] }}...
+                {% else %}
+                {{ entry.content }}  <!-- Changed from entry.description -->
+                {% endif %}
+            </td>
+            <td>{{ entry.type or '' }}</td>  <!-- Changed from entry.short_title -->
+            <td>{{ entry.reviewer_id or '' }}</td>  <!-- Fixed field name -->
+            <td>{{ entry.formatted_created_at }}</td>
+            <td {% if entry.describer_id==session['username'] %} class="table-success" {% endif %}>{{ entry.describer_id
+                or '' }}
+            </td>  <!-- Fixed field name -->
+            <td></td>  <!-- Empty cell for 锁定者 column -->
+        </tr>  <!-- ADD THIS LINE -->
+        {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-    <div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="descriptionModalLabel">描述详情</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
-                </div>
-                <div class="modal-body" id="description-content">
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-                </div>
+<div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="descriptionModalLabel">描述详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body" id="description-content">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
-    <script>
-        var descriptionModal = document.getElementById('descriptionModal')
-        descriptionModal.addEventListener('show.bs.modal', function (event) {
-            var trigger = event.relatedTarget
-            var description = trigger.getAttribute('data-description')
-            var modalBody = descriptionModal.querySelector('#description-content')
-            modalBody.textContent = description
-        })
-    </script>
-    <script type="text/javascript">
-        function doubleConfirmDelete() {
-            if (!confirm("确定删除此条目？")) {
-                return false;
-            }
-            if (!confirm("你确定要删除吗？此操作不可撤销！")) {
-                return false;
-            }
-            return true;
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+    var descriptionModal = document.getElementById('descriptionModal')
+    descriptionModal.addEventListener('show.bs.modal', function (event) {
+        var trigger = event.relatedTarget
+        var description = trigger.getAttribute('data-description')
+        var modalBody = descriptionModal.querySelector('#description-content')
+        modalBody.textContent = description
+    })
+</script>
+<script type="text/javascript">
+    function doubleConfirmDelete() {
+        if (!confirm("确定删除此条目？")) {
+            return false;
         }
-    </script>
+        if (!confirm("你确定要删除吗？此操作不可撤销！")) {
+            return false;
+        }
+        return true;
+    }
+</script>
 </body>
 
 </html>
