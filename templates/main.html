@@ -131,9 +131,9 @@
                 {% endif %}
             </td>
             <td>{{ entry.type or '' }}</td>  <!-- Changed from entry.short_title -->
-            <td>{{ entry.reviewer_id or '' }}</td>  <!-- Fixed field name -->
+            <td>{{ entry.reviewer_username or '' }}</td>  <!-- Fixed field name -->
             <td>{{ entry.formatted_created_at }}</td>
-            <td {% if entry.describer_id==session['username'] %} class="table-success" {% endif %}>{{ entry.describer_id
+            <td {% if entry.describer_username==session['username'] %} class="table-success" {% endif %}>{{ entry.describer_username
                 or '' }}
             </td>  <!-- Fixed field name -->
             <td></td>  <!-- Empty cell for 锁定者 column -->

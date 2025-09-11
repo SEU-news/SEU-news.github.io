@@ -395,8 +395,8 @@ def review(entry_id):
     m_content.type = request.form.get('entry_type', content.type)
     m_content.tag = request.form.get('tag', content.tag)
 
-    if (session['username'] == content.describer_id or session[
-        'username'] == content.creator_id) and action != "modify":
+    if ((session['username'] == content.describer_id or session['username'] == content.creator_id)
+            and action != "modify"):
         flash("不可通过自己所写的内容！")
         return render_template('review.html', entry=content)
     title = request.form['title']
