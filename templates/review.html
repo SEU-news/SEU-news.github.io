@@ -43,6 +43,7 @@
                 <p>本条目没有链接被上传</p>
                 {% endif %}
                 <form method="POST" action="">
+                    {% csrf_token %}
                     <div class="form-group">
                         {% if entry.link and (entry.link.endswith('.png') or entry.link.endswith('.jpg') or entry.link.endswith('.jpeg')
                         or entry.link.endswith('.webp')) %}
