@@ -37,7 +37,7 @@
                 <img src="{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}" alt="Uploaded image"
                     class="img-fluid" style="max-width: 100%; max-height: 500px; object-fit: contain;" />
                 {% else %}
-                <p>消息链接: <a target="_blank" rel="noopener noreferrer" href="{{ entry[4] }}">{{ entry[4] }}</a></p>
+                <p>消息链接: <a target="_blank" rel="noopener noreferrer" href="{{ entry.link }}">{{ entry.link }}</a></p>
                 {% endif %}
                 {% else %}
                 <p>本条目没有链接被上传</p>

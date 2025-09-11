@@ -382,62 +382,68 @@ def describe(entry_id):
 
 
 #
-@app.route('/review/<int:entry_id>', methods=['POST'])
+@app.route('/review/<int:entry_id>', methods=['GET', 'POST'])
 @login_required
 def review(entry_id):
-    action = request.form['action']
+    if request.method == 'POST':
+        action = request.form['action']
 
-    content = Content.object.get(id=entry_id)
-    m_content = copy.copy(content)
-    m_content.title = request.form.get('title', content.title)
-    m_content.content = request.form.get('description', content.content)
-    m_content.deadline = request.form.get('due_time', content.deadline)
-    m_content.type = request.form.get('entry_type', content.type)
-    m_content.tag = request.form.get('tag', content.tag)
+        content = Content.object.get(id=entry_id)
+        m_content = copy.copy(content)
+        m_content.title = request.form.get('title', content.title)
+        m_content.content = request.form.get('description', content.content)
+        m_content.deadline = request.form.get('due_time', content.deadline)
+        m_content.type = request.form.get('entry_type', content.type)
+        m_content.tag = request.form.get('tag', content.tag)
 
-    if ((session['username'] == content.describer_id or session['username'] == content.creator_id)
-            and action != "modify"):
-        flash("不可通过自己所写的内容！")
-        return render_template('review.html', entry=content)
-    title = request.form['title']
-    due_time = request.form['due_time']
-    description = request.form['description']
-    entry_type = request.form['entry_type']
-    use_image = 1 if request.form.get('use_image') == 'on' else 0
-    tag = request.form.get('tag')
-    short_title = request.form.get('short_title')
-    is_modified = any([
-        content.title != title,
-        content.content != description,
-        content.deadline != due_time,
-        content.type != entry_type,
-        content.tag != tag,
-        content.short_title != short_title
-    ])
+        if ((session['username'] == content.describer_username or session['username'] == content.creator_username)
+                and action != "modify"):
+            flash("不可通过自己所写的内容！")
+            return render_template('review.html', entry=content)
+        title = request.form['title']
+        due_time = request.form['due_time']
+        description = request.form['description']
+        entry_type = request.form['entry_type']
+        tag = request.form.get('tag')
+        short_title = request.form.get('short_title')
+        is_modified = any([
+            content.title != title,
+            content.content != description,
+            content.deadline != due_time,
+            content.type != entry_type,
+            content.tag != tag,
+            content.short_title != short_title
+        ])
 
-    if action == 'approve':
-        if is_modified:
-            flash("内容已作出修改，无法 approve")
-            return render_template('review.html', entry=m_content)
-        content.reviewer_id = session['username']
-        content.status = 'reviewed'
-        content.save()
+        if action == 'approve':
+            if is_modified:
+                flash("内容已作出修改，无法 approve")
+                return render_template('review.html', entry=m_content)
+            content.reviewer_id = session['username']
+            content.status = 'reviewed'
+            content.save()
+        else:
+            if not is_modified:
+                flash("内容未作出修改，无法 modify")
+                return render_template('review.html', entry=m_content)
+
+            user = User_info.objects.get(username=session['username'])
+            content.reviewer_id = user.id
+            content.status = 'reviewed'
+            content.title = title
+            content.content = description
+            content.deadline = due_time
+            content.type = entry_type
+            content.tag = tag
+            content.short_title = short_title
+            content.save()
+        return redirect(url_for('main'))
     else:
-        if not is_modified:
-            flash("内容未作出修改，无法 modify")
-            return render_template('review.html', entry=m_content)
-
-        content.reviewer_id = session['username']
-        content.status = 'reviewed'
-        content.title = title
-        content.content = description
-        content.deadline = due_time
-        content.type = entry_type
-        content.tag = tag
-        content.short_title = short_title
-        content.save()
-    return redirect(url_for('main'))
-
+        try:
+            entry = Content.objects.get(id=entry_id)
+        except Content.DoesNotExist:
+            entry = None
+        return render_template('describe.html', entry=entry)
 
 @app.route('/cancel/<int:entry_id>')
 @login_required
