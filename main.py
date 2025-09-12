@@ -644,7 +644,7 @@ def paste():
         content='',
         link=canonical_url,
         deadline=datetime(2099, 12, 31),
-        publish_at=None,
+        publish_at=datetime.now(),
         status='draft',
         type='活动预告',
         tag=''  # Add required field
@@ -690,7 +690,8 @@ def upload_image():
                 creator_id=user.id,
                 describer_id=user.id,
                 title=md5_hash,
-                deadline=None,
+                deadline=datetime(2099, 12, 31),
+                publish_at=datetime.now(),
                 link=link,
                 status='draft',
                 type='活动预告'
