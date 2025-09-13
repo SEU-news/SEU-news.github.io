@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import subprocess
+
 from datetime import timedelta
 from functools import wraps
 from urllib.parse import urlparse
@@ -58,8 +59,8 @@ EMAIL_ADDRESS = "test@smail.nju.edu.cn"
 EMAIL_PASSWORD = "A_SECRET_KEY_HERE"
 SMTP_SERVER = "smtp.exmail.qq.com"
 SMTP_PORT = 465
-FILE_PATH = 'static/uploads'
 
+FILE_PATH = 'static/uploads'
 
 def fetch_title(url):
     """从URL获取网页标题"""
@@ -580,6 +581,12 @@ def cancel(entry_id):
     return redirect(url_for('main'))
 
 
+
+@app.route('/cancel/<int:entry_id>')
+@login_required
+def cancel(entry_id):
+    return redirect(url_for('main'))
+
 @app.route('/logout')
 def logout():
     """用户登出"""
@@ -666,6 +673,8 @@ def upload_image():
         flash("未选择文件")
         return redirect(url_for('main'))
 
+        # 修复：检查文件大小的方法
+
     if file and allowed_file(file.filename):
         filename = file.filename
 
@@ -714,6 +723,7 @@ def upload_image():
     else:
         flash("不支持的文件格式")
         return redirect(url_for('main'))
+
 
 
 #

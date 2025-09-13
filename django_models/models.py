@@ -107,7 +107,7 @@ class Content(models.Model):
         except Exception as e:
             print(f"添加图片失败: {str(e)}")
             return False
-
+          
     @property
     def reviewer_username(self):
         try:
@@ -131,6 +131,7 @@ class Content(models.Model):
             return user.username
         except User_info.DoesNotExist:
             return ''
+
 
     class Meta:
         db_table = 'content_management'
