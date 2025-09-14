@@ -39,7 +39,7 @@ def get_timezone_aware_datetime(date_str):
 # 配置日志系统
 logging.basicConfig(
     level=logging.DEBUG,
-    format='%(levelname)s - %(asctime)s - %(name)s - %(message)s',
+    format='%(levelname)s - %(asctime)s - %(name)s - [%(filename)s:%(lineno)d] - %(message)s',
     handlers=[
         logging.FileHandler('app.log'),
         logging.StreamHandler()
