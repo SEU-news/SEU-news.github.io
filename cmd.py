@@ -39,6 +39,18 @@ if __name__ == '__main__':
     else:
         logging.info("Django initialized successfully")
 
+    try:
+        from django_models.models import Content, User_info, Comment
+
+        # Fix the problematic ordering by clearing it entirely
+        Content._meta.ordering = []
+        User_info._meta.ordering = []
+        Comment._meta.ordering = []
+
+        logging.info("Fixed Django model ordering issues")
+    except Exception as e:
+        logging.error(f"Failed to fix model ordering: {e}")
+
     # 从环境变量获取端口，如果没有则使用默认值
     port = int(os.environ.get('APP_PORT', 42610))
     logging.info(f"Starting server on port {port}")
