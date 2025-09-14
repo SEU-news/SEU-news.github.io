@@ -6,7 +6,6 @@ import django
 
 from django_config import configure_django
 
-
 if __name__ == '__main__':
     # 配置日志系统
     try:
@@ -42,6 +41,6 @@ if __name__ == '__main__':
     # 从环境变量获取端口，如果没有则使用默认值
     port = int(os.environ.get('APP_PORT', 42610))
     logging.info(f"Starting server on port {port}")
+    from apis_flask import create_app
 
-    from apis_flask import app
-    app.run(host="0.0.0.0", debug=False, port=port)
+    create_app().run(host="0.0.0.0", debug=True, port=port)

@@ -13,40 +13,77 @@ from urllib.parse import urlparse
 # Django相关导入 (Django framework)
 from django.db import IntegrityError
 from django.db.models import Q
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session,current_app
 from django.db import transaction
+from flask.views import MethodView
 
-from common import fetch_title
+from common.fetch_title import fetch_title
 # 本地应用导入 (Local application imports)
-from common.decorator.allowed_file import allowed_file
-from common.decorator.is_valid_url import is_valid_url
-from decorators import login_required, editor_required
+from common.allowed_file import allowed_file
+from common.is_valid_url import is_valid_url
+from common.decorator.permission_required import login_required, editor_required
 from django_models.models import User_info, Content
 from global_static import *
 
 
-app = Flask(__name__)
-app.secret_key = 'A_SECRET_KEY_HERE'
-app.permanent_session_lifetime = timedelta(days=7)
+def create_app():
+    app = Flask(__name__)
+    app.config.from_mapping(
+        SECRET_KEY='A_SECRET_KEY_HERE',
+        PERMANENT_SESSION_LIFETIME=timedelta(days=7),
+        # 其他配置，如数据库连接等
+    )
+
+    # 确保实例文件夹存在
+    try:
+        os.makedirs(app.instance_path)
+    except FileExistsError:
+        pass
+
+    # 注册蓝图或类视图
+    app.add_url_rule('/login', view_func=LoginView.as_view('login'))
+    app.add_url_rule('/register', view_func=RegisterView.as_view('register'))
+    app.add_url_rule('/', view_func=MainView.as_view('main'))
+    app.add_url_rule('/upload', view_func=UploadView.as_view('upload'), methods=['GET', 'POST'])
+    app.add_url_rule('/describe/<int:entry_id>', view_func=DescribeView.as_view('describe'), methods=['GET', 'POST'])
+    app.add_url_rule('/review/<int:entry_id>', view_func=ReviewView.as_view('review'), methods=['GET', 'POST'])
+    app.add_url_rule('/cancel/<int:entry_id>', view_func=CancelView.as_view('cancel'))
+    app.add_url_rule('/logout', view_func=LogoutView.as_view('logout'))
+    app.add_url_rule('/paste', view_func=PasteView.as_view('paste'), methods=['POST'])
+    app.add_url_rule('/upload_image', view_func=UploadImageView.as_view('upload_image'), methods=['POST'])
+    app.add_url_rule('/search', view_func=SearchView.as_view('search'), methods=['GET'])
+    app.add_url_rule('/typst/<date>', view_func=TypstView.as_view('typst_pub'))
+    app.add_url_rule('/preview_edit', view_func=PreviewEditView.as_view('preview_edit'))
+    app.add_url_rule('/latex/<date>', view_func=LatexView.as_view('latex_entries'))
+    app.add_url_rule('/delete/<int:entry_id>', view_func=DeleteEntryView.as_view('delete_entry'), methods=['POST'])
+    app.add_url_rule('/add_deadline', view_func=AddDeadlineView.as_view('add_deadline'), methods=['GET', 'POST'])
+    app.add_url_rule('/publish', view_func=PublishView.as_view('publish'), methods=['GET', 'POST'])
+
+    return app
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    """用户登录页面"""
-    if request.method == 'POST':
+class LoginView(MethodView):
+    """登录类视图"""
+
+    def get(self):
+        """处理 GET 请求，展示登录页面"""
+        return render_template('login.html')
+
+    def post(self):
+        """处理 POST 请求，验证登录信息"""
         username = request.form['username']
         password = request.form['password']
+
         if not username or not password:
             flash('请填写用户名和密码')
             return render_template('login.html')
 
         try:
             user = User_info.objects.get(username=username)
-            # 计算输入密码的MD5
             input_hash = hashlib.md5(password.encode('utf-8')).hexdigest()
-            # 比较哈希值
+
             if user.password_MD5 == input_hash:
-                session.permanent = True
+                session.permanent = True  # 设置持久会话
                 session['username'] = username
                 logging.info(f"用户登录成功: {username}")
                 return redirect(url_for('main'))
@@ -57,14 +94,34 @@ def login():
             logging.warning(f"用户登录失败，用户不存在: {username}")
             flash('Invalid username or password')
 
-    return render_template('login.html')
+        return render_template('login.html')
 
 
-@app.route('/register', methods=['GET', 'POST'])
-# @admin_required
-def register():
-    """用户注册页面"""
-    if request.method == 'POST':
+class RegisterView(MethodView):
+    """
+    用户注册视图类
+
+    处理用户注册的GET和POST请求，提供注册表单展示和用户创建功能。
+    """
+
+    def get(self):
+        """
+        处理GET请求，显示注册表单页面
+
+        返回:
+            render_template: 注册页面模板
+        """
+        return render_template('register.html')
+
+    def post(self):
+        """
+        处理POST请求，执行用户注册逻辑
+
+        从表单获取用户名和密码，进行验证后创建新用户。
+
+        返回:
+            redirect: 注册成功重定向到登录页面，失败则返回注册页面
+        """
         username = request.form['username']
         password = request.form['password']
 
@@ -108,58 +165,92 @@ def register():
             flash('注册失败，请重试')
             return render_template('register.html')
 
-    return render_template('register.html')
+
+class MainView(MethodView):
+    """
+    主页面视图类
+
+    处理主页面的GET请求，显示所有内容条目。
+    """
+
+    decorators = [login_required]  # 应用装饰器到整个视图类
+
+    def get(self):
+        """
+        处理GET请求，显示主页面
+
+        获取所有内容条目并按更新时间倒序排列，处理状态显示和权限控制。
+
+        返回:
+            render_template: 主页面模板，包含内容条目列表
+        """
+        contents = Content.objects.select_related().all().order_by('-updated_at')
+
+        status_map = {
+            'pending': '待审核',
+            'published': '已发布',
+            'reviewed': '已审核',
+            'rejected': '已拒绝',
+            'draft': '草稿'
+        }
+
+        try:
+            current_user = User_info.objects.get(username=session['username'])
+            current_user_id = current_user.id
+        except User_info.DoesNotExist:
+            current_user_id = None
+
+        for content in contents:
+            if content.created_at:
+                content.formatted_created_at = content.created_at.strftime('%m-%d %H:%M')
+            else:
+                content.formatted_created_at = ''
+
+            if content.updated_at:
+                content.formatted_updated_at = content.updated_at.strftime('%m-%d %H:%M')
+            else:
+                content.formatted_updated_at = ''
+
+            content.status_display = status_map.get(content.status, content.status)
+
+            content.creator_id = content.creator_id
+            content.describer_id = content.describer_id
+            content.reviewer_id = content.reviewer_id
+
+            content.can_delete = (current_user_id == content.creator_id)
+
+            logging.debug(f"Content ID: {content.id}, Status: {content.status}, Display: {content.status_display}")
+
+        return render_template('main.html', entries=contents)
 
 
-@app.route('/')
-@login_required
-def main():
-    """主页面，显示所有内容"""
-    contents = Content.objects.select_related().all().order_by('-updated_at')
-
-    status_map = {
-        'pending': '待审核',
-        'published': '已发布',
-        'reviewed': '已审核',
-        'rejected': '已拒绝',
-        'draft': '草稿'
-    }
-
-    try:
-        current_user = User_info.objects.get(username=session['username'])
-        current_user_id = current_user.id
-    except User_info.DoesNotExist:
-        current_user_id = None
-
-    for content in contents:
-        if content.created_at:
-            content.formatted_created_at = content.created_at.strftime('%m-%d %H:%M')
-        else:
-            content.formatted_created_at = ''
-
-        if content.updated_at:
-            content.formatted_updated_at = content.updated_at.strftime('%m-%d %H:%M')
-        else:
-            content.formatted_updated_at = ''
-
-        content.status_display = status_map.get(content.status, content.status)
-
-        content.creator_id = content.creator_id
-        content.describer_id = content.describer_id
-        content.reviewer_id = content.reviewer_id
-
-        content.can_delete = (current_user_id == content.creator_id)
-
-        logging.debug(f"Content ID: {content.id}, Status: {content.status}, Display: {content.status_display}")
-
-    return render_template('main.html', entries=contents)
-
-
-@app.route('/upload', methods=['GET', 'POST'])
-@login_required
-def upload():
-    """上传新内容页面"""
-    if request.method == 'POST':
+class UploadView(MethodView):
+    """
+    上传内容视图类
+    
+    处理内容上传的GET和POST请求。
+    """
+    
+    decorators = [login_required]  # 应用登录_required装饰器
+    
+    def get(self):
+        """
+        处理GET请求，显示上传内容页面
+        
+        返回:
+            render_template: 上传页面模板
+        """
+        return render_template('upload.html')
+    
+    def post(self):
+        """
+        处理POST请求，执行内容上传逻辑
+        
+        从表单获取内容信息，进行处理后创建新内容条目。
+        
+        返回:
+            redirect: 上传成功重定向到主页面
+        """
         title = request.form['title']
         description = request.form['description']
         due_time = request.form.get('due_time', '').strip()
@@ -172,8 +263,6 @@ def upload():
         except User_info.DoesNotExist:
             flash('User not found. Please log in again.')
             return redirect(url_for('login'))
-
-        from datetime import datetime, timedelta
 
         deadline_value = None
         if due_time:
@@ -206,13 +295,42 @@ def upload():
         logging.info(f"用户 {user.username} 创建了新内容: {title}")
         return redirect(url_for('main'))
 
-    return render_template('upload.html')
 
-
-@app.route('/describe/<int:entry_id>', methods=['GET', 'POST'])
-@login_required
-def describe(entry_id):
-    if request.method == 'POST':
+class DescribeView(MethodView):
+    """
+    描述内容视图类
+    
+    处理内容描述的GET和POST请求。
+    """
+    
+    decorators = [login_required]  # 应用登录_required装饰器
+    
+    def get(self, entry_id):
+        """
+        处理GET请求，显示描述内容页面
+        
+        参数:
+            entry_id (int): 内容条目ID
+            
+        返回:
+            render_template: 描述页面模板
+        """
+        try:
+            entry = Content.objects.get(id=entry_id)
+        except Content.DoesNotExist:
+            entry = None
+        return render_template('describe.html', entry=entry)
+    
+    def post(self, entry_id):
+        """
+        处理POST请求，执行内容描述逻辑
+        
+        参数:
+            entry_id (int): 内容条目ID
+            
+        返回:
+            redirect: 处理完成后重定向到主页面
+        """
         title = request.form['title']
         entry_type = request.form['entry_type']
         description = request.form['description']
@@ -251,18 +369,44 @@ def describe(entry_id):
         content.deadline = content_data.get('deadline', content.deadline)
         content.save()  # 保存更改
         return redirect(url_for('main'))
-    else:
+
+
+class ReviewView(MethodView):
+    """
+    审核内容视图类
+    
+    处理内容审核的GET和POST请求。
+    """
+    
+    decorators = [login_required]  # 应用登录_required装饰器
+    
+    def get(self, entry_id):
+        """
+        处理GET请求，显示审核内容页面
+        
+        参数:
+            entry_id (int): 内容条目ID
+            
+        返回:
+            render_template: 审核页面模板
+        """
         try:
             entry = Content.objects.get(id=entry_id)
+            return render_template('review.html', entry=entry)
         except Content.DoesNotExist:
-            entry = None
-        return render_template('describe.html', entry=entry)
-
-
-@app.route('/review/<int:entry_id>', methods=['GET', 'POST'])
-@login_required
-def review(entry_id):
-    if request.method == 'POST':
+            flash("内容不存在")
+            return redirect(url_for('main'))
+    
+    def post(self, entry_id):
+        """
+        处理POST请求，执行内容审核逻辑
+        
+        参数:
+            entry_id (int): 内容条目ID
+            
+        返回:
+            redirect: 处理完成后重定向到主页面
+        """
         try:
             action = request.form.get('action')
             logging.info(f"开始处理审核请求，entry_id: {entry_id}, action: {action}")
@@ -383,156 +527,235 @@ def review(entry_id):
 
         return redirect(url_for('main'))
 
-    else:
-        try:
-            entry = Content.objects.get(id=entry_id)
-            return render_template('review.html', entry=entry)
-        except Content.DoesNotExist:
-            flash("内容不存在")
+
+class CancelView(MethodView):
+    """
+    取消操作视图类
+    
+    处理取消操作请求。
+    """
+    
+    decorators = [login_required]  # 应用登录_required装饰器
+    
+    def get(self, entry_id):
+        """
+        处理GET请求，取消操作并返回主页
+        
+        参数:
+            entry_id (int): 内容条目ID
+            
+        返回:
+            redirect: 重定向到主页面
+        """
+        return redirect(url_for('main'))
+
+
+class LogoutView(MethodView):
+    """
+    用户登出视图类
+    
+    处理用户登出请求。
+    """
+    
+    def get(self):
+        """
+        处理GET请求，执行用户登出操作
+        
+        返回:
+            redirect: 重定向到登录页面
+        """
+        username = session.get('username', 'unknown')
+        session.pop('username', None)
+        logging.info(f"用户登出: {username}")
+        return redirect(url_for('login'))
+
+
+class PasteView(MethodView):
+    """
+    粘贴链接视图类
+    
+    处理粘贴链接并自动获取标题的请求。
+    """
+    
+    decorators = [login_required]  # 应用登录_required装饰器
+    
+    def post(self):
+        """
+        处理POST请求，粘贴链接并自动获取标题
+        
+        返回:
+            redirect: 重定向到主页面
+        """
+        link = request.form['link'].strip()
+        if not link or not is_valid_url(link):
+            flash('请输入有效的地址')
             return redirect(url_for('main'))
+        parsed = urlparse(link)
+        canonical_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
+        if Content.objects.filter(link=canonical_url).exists():
+            flash("该链接已经上传")
+            return redirect(url_for('main'))
+        title = fetch_title(link)
+        logging.info(f"获取链接标题: {title} from {link}")
 
-
-@app.route('/cancel/<int:entry_id>')
-@login_required
-def cancel(entry_id):
-    """取消操作，返回主页"""
-    return redirect(url_for('main'))
-
-
-@app.route('/logout')
-def logout():
-    """用户登出"""
-    username = session.get('username', 'unknown')
-    session.pop('username', None)
-    logging.info(f"用户登出: {username}")
-    return redirect(url_for('login'))
-
-
-@app.route('/paste', methods=['POST'])
-@login_required
-def paste():
-    """粘贴链接并自动获取标题"""
-    link = request.form['link'].strip()
-    if not link or not is_valid_url(link):
-        flash('请输入有效的地址')
-        return redirect(url_for('main'))
-    parsed = urlparse(link)
-    canonical_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
-    if Content.objects.filter(link=canonical_url).exists():
-        flash("该链接已经上传")
-        return redirect(url_for('main'))
-    title = fetch_title(link)
-    logging.info(f"获取链接标题: {title} from {link}")
-
-    # Get user ID
-    user = User_info.objects.get(username=session['username'])
-
-    entry = Content.objects.create(
-        creator_id=user.id,
-        title=title,
-        short_title=title,
-        content='',
-        link=canonical_url,
-        deadline=datetime(2099, 12, 31),
-        publish_at=datetime.now(),
-        status='draft',
-        type='活动预告',
-        tag=''  # Add required field
-    )
-    logging.info(f"用户 {user.username} 通过链接创建了内容: {title}")
-    flash('地址添加成功')
-    return redirect(url_for('main'))
-
-
-@app.route('/upload_image', methods=['POST'])
-@login_required
-def upload_image():
-    """上传图片"""
-    if 'image' not in request.files:
-        flash("没有文件上传")
-        return redirect(url_for('main'))
-    file = request.files['image']
-    if file.filename == '':
-        flash("未选择文件")
-        return redirect(url_for('main'))
-
-        # 修复：检查文件大小的方法
-
-    if file and allowed_file(file.filename):
-        filename = file.filename
-
-        # 检查是否已存在相同文件名的内容
+        # Get user ID
         user = User_info.objects.get(username=session['username'])
-        existing_content = Content.objects.filter(
-            title=filename
+
+        entry = Content.objects.create(
+            creator_id=user.id,
+            title=title,
+            short_title=title,
+            content='',
+            link=canonical_url,
+            deadline=datetime(2099, 12, 31),
+            publish_at=datetime.now(),
+            status='draft',
+            type='活动预告',
+            tag=''  # Add required field
         )
-        if existing_content:
-            flash("该图片已经上传")
+        logging.info(f"用户 {user.username} 通过链接创建了内容: {title}")
+        flash('地址添加成功')
+        return redirect(url_for('main'))
+
+
+class UploadImageView(MethodView):
+    """
+    上传图片视图类
+    
+    处理图片上传请求。
+    """
+    
+    decorators = [login_required]  # 应用登录_required装饰器
+    
+    def post(self):
+        """
+        处理POST请求，执行图片上传逻辑
+        
+        返回:
+            redirect: 重定向到主页面
+        """
+        if 'image' not in request.files:
+            flash("没有文件上传")
             return redirect(url_for('main'))
-        filename, extension = os.path.splitext(file.filename)
-        md5_hash = hashlib.md5(filename.encode('utf-8')).hexdigest()
-        link = f"{md5_hash}{extension}"
-        upload_folder = os.path.join(app.root_path, FILE_PATH)
-        os.makedirs(upload_folder, exist_ok=True)
-        file_path = os.path.join(upload_folder, link)
-        file.save(file_path)
-        try:
-            # 创建新的Content对象
-            content = Content(
-                creator_id=user.id,
-                describer_id=user.id,
-                title=md5_hash,
-                deadline=datetime(2099, 12, 31),
-                publish_at=datetime.now(),
-                link=link,
-                status='draft',
-                type='活动预告'
+        file = request.files['image']
+        if file.filename == '':
+            flash("未选择文件")
+            return redirect(url_for('main'))
+
+            # 修复：检查文件大小的方法
+
+        if file and allowed_file(file.filename):
+            filename = file.filename
+
+            # 检查是否已存在相同文件名的内容
+            user = User_info.objects.get(username=session['username'])
+            existing_content = Content.objects.filter(
+                title=filename
             )
+            if existing_content:
+                flash("该图片已经上传")
+                return redirect(url_for('main'))
+            filename, extension = os.path.splitext(file.filename)
+            md5_hash = hashlib.md5(filename.encode('utf-8')).hexdigest()
+            link = f"{md5_hash}{extension}"
+            upload_folder = os.path.join(current_app.root_path, FILE_PATH)
+            os.makedirs(upload_folder, exist_ok=True)
+            file_path = os.path.join(upload_folder, link)
+            file.save(file_path)
+            try:
+                # 创建新的Content对象
+                content = Content(
+                    creator_id=user.id,
+                    describer_id=user.id,
+                    title=md5_hash,
+                    deadline=datetime(2099, 12, 31),
+                    publish_at=datetime.now(),
+                    link=link,
+                    status='draft',
+                    type='活动预告'
+                )
 
-            # 添加图片到image_list
-            if content.add_image(file_path):
-                content.save()
-                logging.info(f"用户 {user.username} 上传了图片: {filename}")
-                flash("图片上传成功，并已添加到数据库")
-            else:
-                logging.error(f"图片处理失败: {filename}")
-                flash("图片处理失败")
+                # 添加图片到image_list
+                if content.add_image(file_path):
+                    content.save()
+                    logging.info(f"用户 {user.username} 上传了图片: {filename}")
+                    flash("图片上传成功，并已添加到数据库")
+                else:
+                    logging.error(f"图片处理失败: {filename}")
+                    flash("图片处理失败")
 
-        except Exception as e:
-            logging.error(f"保存图片失败: {str(e)}")
-            flash(f"保存失败: {str(e)}")
-        return redirect(url_for('main'))
+            except Exception as e:
+                logging.error(f"保存图片失败: {str(e)}")
+                flash(f"保存失败: {str(e)}")
+            return redirect(url_for('main'))
 
-    else:
-        flash("不支持的文件格式")
-        return redirect(url_for('main'))
+        else:
+            flash("不支持的文件格式")
+            return redirect(url_for('main'))
 
 
-@app.route('/search', methods=['GET'])
-@login_required
-def search():
-    """搜索内容"""
-    page = request.args.get('page', default=1, type=int)
-    page_size = 5
-    offset = (page - 1) * page_size
-    query = request.args.get('q', '').strip()
-    results = []
-    total_pages = 0
 
-    if query:
-        total_count = Content.objects.filter(
-            Q(title__icontains=query) | Q(content__icontains=query)
-        ).count()
-        total_pages = (total_count + page_size - 1) // page_size
 
-        # Get paginated results
-        results = Content.objects.filter(
-            Q(title__icontains=query) | Q(content__icontains=query)
-        ).order_by('created_at')[offset:offset + page_size]
+class SearchView(MethodView):
+    """
+    搜索内容视图类
+    
+    处理内容搜索请求。
+    """
+    
+    decorators = [login_required]  # 应用登录_required装饰器
+    
+    def get(self):
+        """
+        处理GET请求，执行内容搜索逻辑
+        
+        返回:
+            render_template: 搜索结果页面
+        """
+        page = request.args.get('page', default=1, type=int)
+        page_size = 5
+        offset = (page - 1) * page_size
+        query = request.args.get('q', '').strip()
+        results = []
+        total_pages = 0
 
-        logging.info(f"搜索查询: '{query}', 找到 {total_count} 条结果")
+        if query:
+            total_count = Content.objects.filter(
+                Q(title__icontains=query) | Q(content__icontains=query)
+            ).count()
+            total_pages = (total_count + page_size - 1) // page_size
 
-    return render_template('search.html', query=query, results=results, page=page, total_pages=total_pages)
+            # Get paginated results
+            results = Content.objects.filter(
+                Q(title__icontains=query) | Q(content__icontains=query)
+            ).order_by('created_at')[offset:offset + page_size]
+
+            logging.info(f"搜索查询: '{query}', 找到 {total_count} 条结果")
+
+        return render_template('search.html', query=query, results=results, page=page, total_pages=total_pages)
+
+
+class TypstView(MethodView):
+    """
+    Typst数据视图类
+    
+    处理Typst格式数据的请求。
+    """
+    
+    def get(self, date):
+        """
+        处理GET请求，发布typst格式的数据API
+        
+        参数:
+            date (str): 日期字符串
+            
+        返回:
+            json: Typst格式的数据
+        """
+        logging.info(f"请求typst数据，日期: {date}")
+        return json.dumps(typst(date), ensure_ascii=False, indent=2), 200, {
+            'Content-Type': 'application/json; charset=utf-8'}
+
 
 #
 def typst(date):
@@ -648,98 +871,159 @@ def typst(date):
     return {"data": data, "due": due}
 
 
-@app.route('/typst/<date>')
-# @login_required
-def typst_pub(date):
-    """发布typst格式的数据API"""
-    logging.info(f"请求typst数据，日期: {date}")
-    return json.dumps(typst(date), ensure_ascii=False, indent=2), 200, {
-        'Content-Type': 'application/json; charset=utf-8'}
 
 
-@app.route("/preview_edit")
-def preview_edit():
-    """预览编辑页面"""
-    return render_template("preview_edit.html")
+class PreviewEditView(MethodView):
+    """
+    预览编辑视图类
+    
+    处理预览编辑页面的请求。
+    """
+    
+    def get(self):
+        """
+        处理GET请求，显示预览编辑页面
+        
+        返回:
+            render_template: 预览编辑页面模板
+        """
+        return render_template("preview_edit.html")
 
 
-@app.route('/latex/<date>')
-@login_required
-def latex_entries(date):
-    """生成LaTeX格式的内容"""
-    content = Content.objects.filter(publish_at__date=date)
 
-    def escape_latex(text):
-        """转义LaTeX特殊字符"""
-        if not text:
-            return ""
-        text = text.replace('\\', r'\textbackslash{}')
-        special_chars = {
-            '&': r'\&',
-            '%': r'\%',
-            '$': r'\$',
-            '#': r'\#',
-            '_': r'\_',
-            '{': r'\{',
-            '}': r'\}',
-            '~': r'\textasciitilde{}',
-            '^': r'\^{}',
-        }
-        for char, replacement in special_chars.items():
-            text = text.replace(char, replacement)
-        return text
 
-    latex_output = ""
-    for content_item in content:
-        title = content_item.title
-        tag = content_item.tag
-        link = content_item.link
-        describer = content_item.describer_id
-        description = content_item.content
-        title = escape_latex(title)
-        title = title.rstrip('\r\n')
-        description = escape_latex(description).replace('\n', r'\\')
-        if tag in ["讲座", "院级活动", "社团活动"]:
-            latex_output += r"\subsection{" + title + "} % " + tag + " describer: " + str(describer) + "\n"
-        else:
-            latex_output += r"\section{" + title + "} % " + tag + " describer: " + str(describer) + "\n"
-        latex_output += description + "\n"
-        if link and len(link) > 10:
-            latex_output += "\\\\详见：" + r"\url{" + link + "}" + "\n\n"
+class LatexView(MethodView):
+    """
+    LaTeX内容视图类
+    
+    处理生成LaTeX格式内容的请求。
+    """
+    
+    decorators = [login_required]  # 应用登录_required装饰器
+    
+    def get(self, date):
+        """
+        处理GET请求，生成LaTeX格式的内容
+        
+        参数:
+            date (str): 日期字符串
+            
+        返回:
+            str: LaTeX格式的内容
+        """
+        content = Content.objects.filter(publish_at__date=date)
 
-    logging.info(f"生成LaTeX内容，日期: {date}")
-    return latex_output, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+        def escape_latex(text):
+            """转义LaTeX特殊字符"""
+            if not text:
+                return ""
+            text = text.replace('\\', r'\textbackslash{}')
+            special_chars = {
+                '&': r'\&',
+                '%': r'\%',
+                '$': r'\$',
+                '#': r'\#',
+                '_': r'\_',
+                '{': r'\{',
+                '}': r'\}',
+                '~': r'\textasciitilde{}',
+                '^': r'\^{}',
+            }
+            for char, replacement in special_chars.items():
+                text = text.replace(char, replacement)
+            return text
+
+        latex_output = ""
+        for content_item in content:
+            title = content_item.title
+            tag = content_item.tag
+            link = content_item.link
+            describer = content_item.describer_id
+            description = content_item.content
+            title = escape_latex(title)
+            title = title.rstrip('\r\n')
+            description = escape_latex(description).replace('\n', r'\\')
+            if tag in ["讲座", "院级活动", "社团活动"]:
+                latex_output += r"\subsection{" + title + "} % " + tag + " describer: " + str(describer) + "\n"
+            else:
+                latex_output += r"\section{" + title + "} % " + tag + " describer: " + str(describer) + "\n"
+            latex_output += description + "\n"
+            if link and len(link) > 10:
+                latex_output += "\\\\详见：" + r"\url{" + link + "}" + "\n\n"
+
+        logging.info(f"生成LaTeX内容，日期: {date}")
+        return latex_output, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+
 #
-@app.route('/delete/<int:entry_id>', methods=['POST'])
-@login_required
-def delete_entry(entry_id):
-    """删除内容条目"""
-    try:
-        content = Content.objects.get(id=entry_id)
-        current_user = User_info.objects.get(username=session['username'])
+class DeleteEntryView(MethodView):
+    """
+    删除内容条目视图类
+    
+    处理删除内容条目的请求。
+    """
+    
+    decorators = [login_required]  # 应用登录_required装饰器
+    
+    def post(self, entry_id):
+        """
+        处理POST请求，删除内容条目
+        
+        参数:
+            entry_id (int): 内容条目ID
+            
+        返回:
+            redirect: 重定向到主页面
+        """
+        try:
+            content = Content.objects.get(id=entry_id)
+            current_user = User_info.objects.get(username=session['username'])
 
-        if content.creator_id != current_user.id:
-            flash("你没有权限删除此条目，仅可删除自己上传的条目")
+            if content.creator_id != current_user.id:
+                flash("你没有权限删除此条目，仅可删除自己上传的条目")
+                return redirect(url_for('main'))
+            content.delete()
+            logging.info(f"用户 {current_user.username} 删除了内容: {content.title}")
+            flash("条目已删除")
             return redirect(url_for('main'))
-        content.delete()
-        logging.info(f"用户 {current_user.username} 删除了内容: {content.title}")
-        flash("条目已删除")
-        return redirect(url_for('main'))
-    except Content.DoesNotExist:
-        logging.warning(f"尝试删除不存在的内容ID: {entry_id}")
-        flash("条目不存在")
-        return redirect(url_for('main'))
-    except User_info.DoesNotExist:
-        logging.error(f"删除操作时用户不存在: {session.get('username')}")
-        flash("用户信息错误，请重新登录")
-        return redirect(url_for('login'))
+        except Content.DoesNotExist:
+            logging.warning(f"尝试删除不存在的内容ID: {entry_id}")
+            flash("条目不存在")
+            return redirect(url_for('main'))
+        except User_info.DoesNotExist:
+            logging.error(f"删除操作时用户不存在: {session.get('username')}")
+            flash("用户信息错误，请重新登录")
+            return redirect(url_for('login'))
 
 
-@app.route('/add_deadline', methods=['GET', 'POST'])
-@login_required
-def add_deadline():
-    """添加截止日期条目"""
-    if request.method == 'POST':
+
+
+class AddDeadlineView(MethodView):
+    """
+    添加截止日期视图类
+    
+    处理添加截止日期条目的请求。
+    """
+    
+    decorators = [login_required]  # 应用登录_required装饰器
+    
+    def get(self):
+        """
+        处理GET请求，显示添加截止日期页面
+        
+        返回:
+            render_template: 添加截止日期页面模板
+        """
+        today = datetime.now().strftime("%Y-%m-%d")
+        return render_template('add_deadline.html', today=today)
+    
+    def post(self):
+        """
+        处理POST请求，执行添加截止日期逻辑
+        
+        返回:
+            redirect: 重定向到主页面
+        """
         link = request.form.get('link', '').strip()
         link_value = link if link else None
         short_title = request.form.get('short_title', '').strip()
@@ -769,16 +1053,38 @@ def add_deadline():
         logging.info(f"用户 {user.username} 添加了截止日期条目: {short_title}")
         flash("Deadline entry added successfully")
         return redirect(url_for('main'))
-    today = datetime.now().strftime("%Y-%m-%d")
-    return render_template('add_deadline.html', today=today)
 
 
 
-@app.route('/publish', methods=["GET", "POST"])
-@editor_required
-def publish():
-    """发布内容管理页面"""
-    if request.method == "POST":
+class PublishView(MethodView):
+    """
+    发布内容视图类
+    
+    处理发布内容管理页面的请求。
+    """
+    
+    decorators = [editor_required]  # 应用editor_required装饰器
+    
+    def get(self):
+        """
+        处理GET请求，显示发布内容管理页面
+        
+        返回:
+            render_template: 发布内容管理页面模板
+        """
+        content = ""
+        if os.path.exists("latest.json"):
+            with open("latest.json", "r") as f:
+                content = f.read()
+        return render_template("publish.html", content=content)
+    
+    def post(self):
+        """
+        处理POST请求，执行发布内容管理逻辑
+        
+        返回:
+            render_template: 发布内容管理页面模板
+        """
         new_content = request.form.get("content", "")
         with open("./latest.json", "w") as f:
             f.write(new_content)
@@ -794,12 +1100,7 @@ def publish():
             logging.error(f"typst编译失败: {str(e)}")
             flash("Compilation failed. Please check typst installation and source file.")
         return render_template("publish.html", content=new_content)
-    else:
-        content = ""
-        if os.path.exists("latest.json"):
-            with open("latest.json", "r") as f:
-                content = f.read()
-        return render_template("publish.html", content=content)
+
 
 
 if __name__ == '__main__':

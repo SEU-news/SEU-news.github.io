@@ -1,29 +1,7 @@
 import logging
-from datetime import datetime
 
 import requests
 from bs4 import BeautifulSoup
-
-from global_static import SHANGHAI_TZ
-
-
-def get_timezone_aware_datetime(date_str):
-    """
-    将字符串日期转换为时区感知的datetime对象
-
-    参数:
-        date_str (str): 日期字符串，格式为'YYYY-MM-DD'
-
-    返回:
-        datetime: 时区感知的datetime对象
-
-    异常:
-        ValueError: 当日期字符串格式不正确时抛出
-    """
-    # 将字符串解析为naive datetime对象
-    naive_dt = datetime.strptime(date_str, '%Y-%m-%d')
-    # 使用上海时区对象为datetime添加时区信息
-    return SHANGHAI_TZ.localize(naive_dt)
 
 
 def fetch_title(url):
@@ -73,4 +51,3 @@ def fetch_title(url):
             # 记录获取标题失败的日志信息
             logging.warning(f"获取标题失败，URL: {url}, 错误: {str(e)}")
     return "标题获取失败"
-
