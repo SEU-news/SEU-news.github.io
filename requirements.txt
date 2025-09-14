@@ -3,3 +3,4 @@ Flask
 beautifulsoup4
 django
 mysqlclient
+pytz
