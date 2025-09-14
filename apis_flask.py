@@ -4,26 +4,26 @@ import logging
 import os
 import subprocess
 import traceback
-
 from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
-# 第三方库导入 (Third-party packages)
-
 # Django相关导入 (Django framework)
 from django.db import IntegrityError
-from django.db.models import Q
-from flask import Flask, render_template, request, redirect, url_for, flash, session,current_app
 from django.db import transaction
+from django.db.models import Q
+from flask import Flask, render_template, request, redirect, url_for, flash, session, current_app
 from flask.views import MethodView
 
-from common.fetch_title import fetch_title
 # 本地应用导入 (Local application imports)
 from common.allowed_file import allowed_file
-from common.is_valid_url import is_valid_url
 from common.decorator.permission_required import login_required, editor_required
+from common.fetch_title import fetch_title
+from common.is_valid_url import is_valid_url
 from django_models.models import User_info, Content
 from global_static import *
+
+
+# 第三方库导入 (Third-party packages)
 
 
 def create_app():
@@ -230,9 +230,9 @@ class UploadView(MethodView):
     
     处理内容上传的GET和POST请求。
     """
-    
+
     decorators = [login_required]  # 应用登录_required装饰器
-    
+
     def get(self):
         """
         处理GET请求，显示上传内容页面
@@ -241,7 +241,7 @@ class UploadView(MethodView):
             render_template: 上传页面模板
         """
         return render_template('upload.html')
-    
+
     def post(self):
         """
         处理POST请求，执行内容上传逻辑
@@ -302,9 +302,9 @@ class DescribeView(MethodView):
     
     处理内容描述的GET和POST请求。
     """
-    
+
     decorators = [login_required]  # 应用登录_required装饰器
-    
+
     def get(self, entry_id):
         """
         处理GET请求，显示描述内容页面
@@ -320,7 +320,7 @@ class DescribeView(MethodView):
         except Content.DoesNotExist:
             entry = None
         return render_template('describe.html', entry=entry)
-    
+
     def post(self, entry_id):
         """
         处理POST请求，执行内容描述逻辑
@@ -377,9 +377,9 @@ class ReviewView(MethodView):
     
     处理内容审核的GET和POST请求。
     """
-    
+
     decorators = [login_required]  # 应用登录_required装饰器
-    
+
     def get(self, entry_id):
         """
         处理GET请求，显示审核内容页面
@@ -396,7 +396,7 @@ class ReviewView(MethodView):
         except Content.DoesNotExist:
             flash("内容不存在")
             return redirect(url_for('main'))
-    
+
     def post(self, entry_id):
         """
         处理POST请求，执行内容审核逻辑
@@ -534,9 +534,9 @@ class CancelView(MethodView):
     
     处理取消操作请求。
     """
-    
+
     decorators = [login_required]  # 应用登录_required装饰器
-    
+
     def get(self, entry_id):
         """
         处理GET请求，取消操作并返回主页
@@ -556,7 +556,7 @@ class LogoutView(MethodView):
     
     处理用户登出请求。
     """
-    
+
     def get(self):
         """
         处理GET请求，执行用户登出操作
@@ -576,9 +576,9 @@ class PasteView(MethodView):
     
     处理粘贴链接并自动获取标题的请求。
     """
-    
+
     decorators = [login_required]  # 应用登录_required装饰器
-    
+
     def post(self):
         """
         处理POST请求，粘贴链接并自动获取标题
@@ -624,9 +624,9 @@ class UploadImageView(MethodView):
     
     处理图片上传请求。
     """
-    
+
     decorators = [login_required]  # 应用登录_required装饰器
-    
+
     def post(self):
         """
         处理POST请求，执行图片上传逻辑
@@ -694,17 +694,15 @@ class UploadImageView(MethodView):
             return redirect(url_for('main'))
 
 
-
-
 class SearchView(MethodView):
     """
     搜索内容视图类
     
     处理内容搜索请求。
     """
-    
+
     decorators = [login_required]  # 应用登录_required装饰器
-    
+
     def get(self):
         """
         处理GET请求，执行内容搜索逻辑
@@ -741,7 +739,7 @@ class TypstView(MethodView):
     
     处理Typst格式数据的请求。
     """
-    
+
     def get(self, date):
         """
         处理GET请求，发布typst格式的数据API
@@ -871,15 +869,13 @@ def typst(date):
     return {"data": data, "due": due}
 
 
-
-
 class PreviewEditView(MethodView):
     """
     预览编辑视图类
     
     处理预览编辑页面的请求。
     """
-    
+
     def get(self):
         """
         处理GET请求，显示预览编辑页面
@@ -890,17 +886,15 @@ class PreviewEditView(MethodView):
         return render_template("preview_edit.html")
 
 
-
-
 class LatexView(MethodView):
     """
     LaTeX内容视图类
     
     处理生成LaTeX格式内容的请求。
     """
-    
+
     decorators = [login_required]  # 应用登录_required装饰器
-    
+
     def get(self, date):
         """
         处理GET请求，生成LaTeX格式的内容
@@ -962,9 +956,9 @@ class DeleteEntryView(MethodView):
     
     处理删除内容条目的请求。
     """
-    
+
     decorators = [login_required]  # 应用登录_required装饰器
-    
+
     def post(self, entry_id):
         """
         处理POST请求，删除内容条目
@@ -996,17 +990,15 @@ class DeleteEntryView(MethodView):
             return redirect(url_for('login'))
 
 
-
-
 class AddDeadlineView(MethodView):
     """
     添加截止日期视图类
     
     处理添加截止日期条目的请求。
     """
-    
+
     decorators = [login_required]  # 应用登录_required装饰器
-    
+
     def get(self):
         """
         处理GET请求，显示添加截止日期页面
@@ -1016,7 +1008,7 @@ class AddDeadlineView(MethodView):
         """
         today = datetime.now().strftime("%Y-%m-%d")
         return render_template('add_deadline.html', today=today)
-    
+
     def post(self):
         """
         处理POST请求，执行添加截止日期逻辑
@@ -1055,16 +1047,15 @@ class AddDeadlineView(MethodView):
         return redirect(url_for('main'))
 
 
-
 class PublishView(MethodView):
     """
     发布内容视图类
     
     处理发布内容管理页面的请求。
     """
-    
+
     decorators = [editor_required]  # 应用editor_required装饰器
-    
+
     def get(self):
         """
         处理GET请求，显示发布内容管理页面
@@ -1077,7 +1068,7 @@ class PublishView(MethodView):
             with open("latest.json", "r") as f:
                 content = f.read()
         return render_template("publish.html", content=content)
-    
+
     def post(self):
         """
         处理POST请求，执行发布内容管理逻辑
@@ -1102,7 +1093,5 @@ class PublishView(MethodView):
         return render_template("publish.html", content=new_content)
 
 
-
 if __name__ == '__main__':
     logging.info("已迁移到cmd.py")
-

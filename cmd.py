@@ -4,6 +4,7 @@ import sys
 
 import django
 
+from Flask.errHandler import register_error_handlers
 from django_config import configure_django
 
 if __name__ == '__main__':
@@ -43,4 +44,6 @@ if __name__ == '__main__':
     logging.info(f"Starting server on port {port}")
     from apis_flask import create_app
 
-    create_app().run(host="0.0.0.0", debug=True, port=port)
+    app = create_app()
+    register_error_handlers(app)
+    app.run(host="0.0.0.0", debug=True, port=port)

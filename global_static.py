@@ -12,7 +12,6 @@ ADMIN_LIST = ["admin", "222", "111"]
 LINK_REGEX = re.compile(
     r"(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)?)")
 
-
 FILE_PATH = 'static/uploads'
 
 # 创建时区对象

@@ -1,5 +1,5 @@
-from urllib.parse import urlparse
 from typing import Union
+from urllib.parse import urlparse
 
 
 def is_valid_url(url: str, allowed_schemes: Union[list, tuple] = None) -> bool:
@@ -26,6 +26,7 @@ def is_valid_url(url: str, allowed_schemes: Union[list, tuple] = None) -> bool:
         ])
     except (ValueError, AttributeError):
         return False
+
 
 if __name__ == '__main__':
     # 基本使用

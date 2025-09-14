@@ -3,7 +3,7 @@ from datetime import datetime
 from global_static import SHANGHAI_TZ
 
 
-def str2datetime(date_str:str):
+def str2datetime(date_str: str):
     """
     将字符串日期转换为时区感知的datetime对象
 

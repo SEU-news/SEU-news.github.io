@@ -1,7 +1,7 @@
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 
 
-def allowed_file(filename:str)->bool:
+def allowed_file(filename: str) -> bool:
     """
     检查文件名是否具有允许的后缀名。
 

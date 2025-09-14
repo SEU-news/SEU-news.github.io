@@ -1,6 +1,8 @@
 import logging
 import sys
+
 from django.conf import settings
+
 
 def configure_django():
     """
@@ -59,8 +61,6 @@ def configure_django():
         except Exception as e:
             logging.error(f"[Configure Django] Failed to configure Django: {e}")
             sys.exit(1)
-
-
 
 
 def read_credentials(file_path="credentials.txt", delimiter=':'):
