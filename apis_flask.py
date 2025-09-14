@@ -6,13 +6,17 @@ import os
 import re
 import subprocess
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from functools import wraps
 from urllib.parse import urlparse
 
-import django
+# 第三方库导入 (Third-party packages)
 import requests
 from bs4 import BeautifulSoup
+from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
+
+# Django相关导入 (Django framework)
+import django
 from django.db import IntegrityError
 from django.db.models import Q
 from flask import Flask, render_template, request, redirect, url_for, flash, session, abort
@@ -22,7 +26,10 @@ from django_config import configure_django
 
 from django.utils import timezone
 
-from datetime import datetime
+# 本地应用导入 (Local application imports)
+from common.decorator.allowed_file import allowed_file
+from common.decorator.is_valid_url import is_valid_url
+from django_config import configure_django
 
 import logging
 import traceback
@@ -94,35 +101,9 @@ def fetch_title(url):
 EDITOR_LIST = ["editor1", "editor2", "111"]
 ADMIN_LIST = ["admin", "222", "111"]
 
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
-
 LINK_REGEX = re.compile(
     r"(https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&//=]*)?)")
 
-
-def allowed_file(filename):
-    """检查文件扩展名是否被允许"""
-    if not filename:
-        return False
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def hash_file(file_obj):
-    """计算文件的MD5哈希值"""
-    file_obj.seek(0)
-    file_content = file_obj.read()
-    file_hash = hashlib.md5(file_content).hexdigest()
-    file_obj.seek(0)
-    return file_hash
-
-
-def is_valid_url(url):
-    """验证URL格式是否正确"""
-    try:
-        result = urlparse(url)
-        return all([result.scheme, result.netloc])
-    except Exception:
-        return False
 
 
 def login_required(f):
@@ -580,12 +561,6 @@ def cancel(entry_id):
     """取消操作，返回主页"""
     return redirect(url_for('main'))
 
-
-
-@app.route('/cancel/<int:entry_id>')
-@login_required
-def cancel(entry_id):
-    return redirect(url_for('main'))
 
 @app.route('/logout')
 def logout():
@@ -1515,6 +1490,5 @@ def publish():
 
 
 if __name__ == '__main__':
-    logging.info("App Start")
-    # app.run(host="localhost", debug=True, port=45251)
-    app.run(host="0.0.0.0", debug=True, port=42610)
+    logging.info("已迁移到cmd.py")
+
