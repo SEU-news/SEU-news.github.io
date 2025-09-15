@@ -34,12 +34,15 @@ class User_info(models.Model):
         db_table = 'user_info'  # 数据库表名
         verbose_name = '用户'  # 单数名称
         verbose_name_plural = '用户管理'  # 复数名称
-        ordering = [
-            models.Index(fields=['created_at'], name='idx_created_at'),
-            models.Index(fields=['updated_at'], name='idx_updated_at'),
-            models.Index(fields=['student_id'], name='idx_student_id'),
-            models.Index(fields=['realname'], name='idx_realname'),
-        ]  # 默认按创建时间降序排列
+        # 按创建时间降序排列
+        ordering = ['-created_at']
+        # 创建数据库索引
+        indexes = [
+            models.Index(fields=['created_at'], name='idx_user_created_at'),
+            models.Index(fields=['updated_at'], name='idx_user_updated_at'),
+            models.Index(fields=['student_id'], name='idx_user_student_id'),
+            models.Index(fields=['realname'], name='idx_user_realname'),
+        ]
 
     def __str__(self):
         return self.username  # 对象显示为用户名
@@ -107,7 +110,7 @@ class Content(models.Model):
         except Exception as e:
             print(f"添加图片失败: {str(e)}")
             return False
-          
+
     @property
     def reviewer_username(self):
         try:
@@ -132,21 +135,23 @@ class Content(models.Model):
         except User_info.DoesNotExist:
             return ''
 
-
     class Meta:
         db_table = 'content_management'
         verbose_name = '文章'
         verbose_name_plural = '文章管理'
+        # 按更新时间和创建时间降序排列
+        ordering = ['-updated_at', '-created_at']
+        # 创建数据库索引
         indexes = [
-            models.Index(fields=['creator_id'], name='idx_creator_id'),
-            models.Index(fields=['describer_id'], name='idx_describer_id'),
-            models.Index(fields=['reviewer_id'], name='idx_reviewer_id'),
-            models.Index(fields=['status'], name='idx_status'),
-            models.Index(fields=['type'], name='idx_type'),
-            models.Index(fields=['deadline'], name='idx_deadline'),
-            models.Index(fields=['publish_at'], name='idx_publish_at'),
-            models.Index(fields=['created_at'], name='idx_created_at'),
-            models.Index(fields=['updated_at'], name='idx_updated_at'),
+            models.Index(fields=['creator_id'], name='idx_content_creator_id'),
+            models.Index(fields=['describer_id'], name='idx_content_describer_id'),
+            models.Index(fields=['reviewer_id'], name='idx_content_reviewer_id'),
+            models.Index(fields=['status'], name='idx_content_status'),
+            models.Index(fields=['type'], name='idx_content_type'),
+            models.Index(fields=['deadline'], name='idx_content_deadline'),
+            models.Index(fields=['publish_at'], name='idx_content_publish_at'),
+            models.Index(fields=['created_at'], name='idx_content_created_at'),
+            models.Index(fields=['updated_at'], name='idx_content_updated_at'),
         ]
 
 
@@ -164,10 +169,13 @@ class Comment(models.Model):
         db_table = 'comment'
         verbose_name = '评论'
         verbose_name_plural = '评论管理'
-        ordering = [
-            models.Index(fields=['creator'], name='idx_creator_id'),
-            models.Index(fields=['news_id'], name='idx_news_id'),
-            models.Index(fields=['created_at'], name='idx_created'),
-            models.Index(fields=['parent_comment_id'], name='idx_parent_comment_id'),
-            models.Index(fields=['updated_at'], name='idx_updated_at'),
+        # 按创建时间降序排列
+        ordering = ['-created_at']
+        # 创建数据库索引
+        indexes = [
+            models.Index(fields=['creator'], name='idx_comment_creator_id'),
+            models.Index(fields=['news_id'], name='idx_comment_news_id'),
+            models.Index(fields=['created_at'], name='idx_comment_created_at'),
+            models.Index(fields=['parent_comment_id'], name='idx_comment_parent_id'),
+            models.Index(fields=['updated_at'], name='idx_comment_updated_at'),
         ]
