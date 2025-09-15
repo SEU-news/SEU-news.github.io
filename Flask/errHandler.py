@@ -9,18 +9,7 @@ def register_error_handlers(app):
         app (Flask): Flask应用实例
     """
 
-    @app.errorhandler(404)
-    def page_not_found(e):
-        """
-        处理404错误
 
-        参数:
-            e (Exception): 错误异常对象
-
-        返回:
-            tuple: 渲染的模板和HTTP状态码
-        """
-        return render_template('404.html'), 404
 
     @app.errorhandler(401)
     def unauthorized(e):
@@ -47,6 +36,19 @@ def register_error_handlers(app):
             tuple: 渲染的模板和HTTP状态码
         """
         return render_template('403.html'), 403
+
+    @app.errorhandler(404)
+    def page_not_found(e):
+        """
+        处理404错误
+
+        参数:
+            e (Exception): 错误异常对象
+
+        返回:
+            tuple: 渲染的模板和HTTP状态码
+        """
+        return render_template('404.html'), 404
 
     @app.errorhandler(500)
     def internal_server_error(e):
