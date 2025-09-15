@@ -6,10 +6,10 @@ from datetime import datetime
 from flask import request, flash, redirect, url_for, session, current_app
 from flask.views import MethodView
 
-from common.allowed_file import allowed_file
+from common.methods.allowed_file import allowed_file
 from common.decorator.permission_required import login_required
 from django_models.models import User_info, Content
-from global_static import FILE_PATH
+from common.global_static import UPLOAD_FILE_PATH
 
 
 class UploadImageView(MethodView):
@@ -52,7 +52,7 @@ class UploadImageView(MethodView):
             filename, extension = os.path.splitext(file.filename)
             md5_hash = hashlib.md5(filename.encode('utf-8')).hexdigest()
             link = f"{md5_hash}{extension}"
-            upload_folder = os.path.join(current_app.root_path, FILE_PATH)
+            upload_folder = os.path.join(current_app.root_path, UPLOAD_FILE_PATH)
             os.makedirs(upload_folder, exist_ok=True)
             file_path = os.path.join(upload_folder, link)
             file.save(file_path)

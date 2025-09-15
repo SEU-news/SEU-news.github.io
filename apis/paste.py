@@ -6,8 +6,8 @@ from flask import request, flash, redirect, url_for, session
 from flask.views import MethodView
 
 from common.decorator.permission_required import login_required
-from common.fetch_title import fetch_title
-from common.is_valid_url import is_valid_url
+from common.methods.fetch_title import fetch_title
+from common.methods.is_valid_url import is_valid_url
 from django_models.models import Content, User_info
 
 

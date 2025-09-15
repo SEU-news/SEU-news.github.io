@@ -5,10 +5,10 @@ import re
 from django.db.models import Q
 from flask.views import MethodView
 
-from common.allowed_file import allowed_file
-from common.is_valid_url import is_valid_url
+from common.methods.allowed_file import allowed_file
+from common.methods.is_valid_url import is_valid_url
 from django_models.models import Content
-from global_static import LINK_REGEX
+from common.global_static import LINK_REGEX
 
 
 class TypstView(MethodView):
