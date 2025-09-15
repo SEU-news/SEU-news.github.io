@@ -4,7 +4,7 @@ import sys
 
 import django
 
-from Flask.errHandler import register_error_handlers
+from apis.errHandler import register_error_handlers
 from django_config import configure_django
 
 if __name__ == '__main__':
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     # 从环境变量获取端口，如果没有则使用默认值
     port = int(os.environ.get('APP_PORT', 42610))
     logging.info(f"Starting server on port {port}")
-    from apis_flask import create_app
+    from API_register import create_app
 
     app = create_app()
     register_error_handlers(app)

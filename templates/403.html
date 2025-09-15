@@ -1,19 +1,19 @@
-<!-- templates/404.html -->
+<!-- templates/403.html -->
 <!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="UTF-8">
-    <title>404 Not Found</title>
+    <title>403 Forbidden</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="https://cdn.bootcdn.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 </head>
 
 <body>
     <div class="container mt-5 text-center">
-        <h1 class="display-4">404</h1>
-        <h2>Not Found</h2>
-        <p class="lead">The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.</p>
+        <h1 class="display-4">403</h1>
+        <h2>Forbidden</h2>
+        <p class="lead">Forbidden: You don't have permission to access the requested resource. This might be due to insufficient privileges or access restrictions.</p>
         <a href="{{ url_for('main') }}" class="btn btn-primary">Return to Home</a>
     </div>
 </body>
