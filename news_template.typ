@@ -74,7 +74,7 @@ column-gutter: 2em
   
 // ]
 #align(center)[
-  #text(size: 2.3em, weight: "bold", font: ("Noto Serif CJK SC", "Noto Serif SC"))[南哪大专醒前消息]
+  #text(size: 2.3em, weight: "bold", font: ("Noto Serif CJK SC", "Noto Serif SC"))[你车消息试行特刊]
 ]
 
 #v(-4mm)
@@ -84,8 +84,8 @@ column-gutter: 2em
   columns: (20%, 60%, 20%),
   align: (left + horizon, center + horizon, right + horizon),
   [#date No. #no],
-  [#emph[#set text(font: "FandolKai", size: 1.2em);"秉中持正、求新博闻。"]],
-  [#text(font: ("Noto Serif CJK SC", "Noto Serif SC"), weight: "bold", size: 1.1em)[南京市栖霞区]]
+  [#emph[#set text(font: "FandolKai", size: 1.2em);"实事求是，止于至善。"]],
+  [#text(font: ("Noto Serif CJK SC", "Noto Serif SC"), weight: "bold", size: 1.1em)[南京市江宁区]]
 )
 
 #header-table
@@ -101,8 +101,8 @@ column-gutter: 2em
 
 #eqcolumns(2,)[
 = 订阅方式和加入编辑部
-// 编辑部招聘人才，用爱发电，工作轻松，详情可联系QQ：1329527951 客服小千\
-想订阅本消息或获取PDF版（便于查看超链接和往期），可加QQ群：#link("https://qm.qq.com/q/4HL41Nt3sQ")[466863272]
+// 编辑部招聘人才，用爱发电，工作轻松，详情可联系QQ：1628838461 BLOB\
+想订阅本消息或获取PDF版（便于查看超链接和往期），可加QQ群：#link("https://qm.qq.com/q/NFsQlwIKey")[728248484]
 = 活动清单
 #table(
   columns: (auto, auto, auto),
