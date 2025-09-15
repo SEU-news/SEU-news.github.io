@@ -1,45 +1,66 @@
-import sys
-from hashlib import md5
 import logging
+import sys
+
 from django.conf import settings
 
 
 def configure_django():
-    # if not settings.configured:
+    """
+    配置Django运行环境和数据库连接参数
 
-    user_dict = read_credentials()
-    if user_dict is None:
-        logging.error("[Database] No credentials provided")
-        sys.exit(1)
+    该函数读取数据库凭证信息并配置Django的数据库连接，包括MySQL连接参数、
+    时区设置、安全密钥等必要配置项，使Django能够在独立环境中运行。
 
-    user, password = list(user_dict.items())[0]
+    参数:
+        无
 
-    logging.info(
-        f"[Database] Using database credentials - User: {user}, Password MD5: {md5(password.encode('utf-8')).hexdigest()}")
+    返回值:
+        无
 
-    settings.configure(
-        DATABASES={
-            "default": {
-                "ENGINE": "django.db.backends.mysql",
-                "NAME": "seu_news",
-                'USER': user,
-                'PASSWORD': password,
-                'HOST': 'localhost',  # 或者 '127.0.0.1'
-                'PORT': '3306',  # 默认 MySQL 端口
-                'OPTIONS': {
-                    'charset': 'utf8mb4',
-                    'unix_socket': '/var/run/mysqld/mysqld.sock',
-                }
-            }
-        },
-        INSTALLED_APPS=[
-            'django_models',  # 你的模型应用
-        ],
-        USE_TZ=True,
-        TIME_ZONE='UTC',
-        SECRET_KEY="django-insecure-8!563mqn=(m8$hryw5_1!j!eb*^i^lidx^v2xh6+@+i@$r@4o5",  # 用于 Django 的会话等
-        DEFAULT_AUTO_FIELD='django.db.models.BigAutoField',
-    )
+    异常:
+        当无法读取数据库凭证时，程序将记录错误日志并退出
+    """
+    if not settings.configured:
+        try:
+            # 读取数据库用户凭证信息
+            user_dict = read_credentials()
+            if not user_dict or not isinstance(user_dict, dict):
+                logging.error("[Database] No valid credentials provided")
+                sys.exit(1)
+
+            # 获取第一个用户凭证
+            user, password = next(iter(user_dict.items()))
+
+            # 不要记录密码！仅记录用户名用于调试
+            logging.info(f"[Database] Using database credentials - User: {user}")
+
+            # 配置Django设置，包括数据库连接、已安装应用和基本配置
+            settings.configure(
+                DATABASES={
+                    "default": {
+                        "ENGINE": "django.db.backends.mysql",
+                        "NAME": "seu_news",
+                        'USER': user,
+                        'PASSWORD': password,
+                        'HOST': 'localhost',  # 或者 '127.0.0.1'
+                        'PORT': '3306',  # 默认 MySQL 端口
+                        'OPTIONS': {
+                            'charset': 'utf8mb4',
+                            'unix_socket': '/var/run/mysqld/mysqld.sock',
+                        }
+                    }
+                },
+                INSTALLED_APPS=[
+                    'django_models',  # 你的模型应用
+                ],
+                USE_TZ=True,
+                TIME_ZONE='UTC',
+                SECRET_KEY="django-insecure-8!563mqn=(m8$hryw5_1!j!eb*^i^lidx^v2xh6+@+i@$r@4o5",  # 建议改为从环境变量读取
+                DEFAULT_AUTO_FIELD='django.db.models.BigAutoField',
+            )
+        except Exception as e:
+            logging.error(f"[Configure Django] Failed to configure Django: {e}")
+            sys.exit(1)
 
 
 def read_credentials(file_path="credentials.txt", delimiter=':'):
