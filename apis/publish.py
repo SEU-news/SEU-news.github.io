@@ -27,7 +27,7 @@ class PublishView(MethodView):
         """
         content = ""
         if os.path.exists("latest.json"):
-            with open("latest.json", "r") as f:
+            with open("latest.json", "r", encoding='utf-8') as f:
                 content = f.read()
         return render_template("publish.html", content=content)
 
@@ -39,17 +39,44 @@ class PublishView(MethodView):
             render_template: 发布内容管理页面模板
         """
         new_content = request.form.get("content", "")
-        with open("./latest.json", "w") as f:
+
+        os.makedirs("./archived", exist_ok=True)
+        os.makedirs("./static", exist_ok=True)
+
+        with open("./latest.json", "w", encoding='utf-8') as f:
             f.write(new_content)
-        parsed = json.loads(new_content)
-        with open("./archived/" + parsed["data"]["date"] + ".json", "w") as f:
-            f.write(new_content)
+
         try:
-            subprocess.run(
-                ["./typst", "compile", "--font-path", "/home/nik_nul/font", "news_template.typ", "./static/latest.pdf"],
-                check=True)
-            logging.info(f"成功编译typst文件，日期: {parsed['data']['date']}")
-        except subprocess.CalledProcessError as e:
-            logging.error(f"typst编译失败: {str(e)}")
-            flash("Compilation failed. Please check typst installation and source file.")
+            parsed = json.loads(new_content)
+            # 写入归档文件
+            with open("./archived/" + parsed["data"]["date"] + ".json", "w", encoding='utf-8') as f:
+                f.write(new_content)
+
+            try:
+                subprocess.run(
+                    ["./typst", "compile", "--font-path", "/home/nik_nul/font", "news_template.typ",
+                     "./static/latest.pdf"],
+                    # windows debug
+                    # ["typst.exe", "compile", "--font-path", "./fonts", "news_template.typ",
+                    #  "./static/latest.pdf"],
+                    check=True)
+                logging.info(f"成功编译typst文件，日期: {parsed['data']['date']}")
+                flash("内容发布成功，PDF已生成")
+            except subprocess.CalledProcessError as e:
+                logging.error(f"typst编译失败: {str(e)}")
+                flash("Compilation failed. Please check typst installation and source file.")
+            except FileNotFoundError:
+                logging.error("typst命令未找到")
+                flash("Typst not found. Please install typst or check the path.")
+
+        except json.JSONDecodeError as e:
+            logging.error(f"JSON解析失败: {str(e)}")
+            flash("Invalid JSON format in content.")
+        except KeyError as e:
+            logging.error(f"JSON格式错误，缺少必要字段: {str(e)}")
+            flash("Invalid JSON structure. Missing required fields.")
+        except Exception as e:
+            logging.error(f"发布过程中出现错误: {str(e)}")
+            flash(f"发布失败: {str(e)}")
+
         return render_template("publish.html", content=new_content)
