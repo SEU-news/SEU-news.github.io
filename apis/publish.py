@@ -6,7 +6,7 @@ import subprocess
 from flask import render_template, request, flash
 from flask.views import MethodView
 
-from common.decorator.permission_required import editor_required
+from common.decorator.permission_required import PermissionDecorators
 
 
 class PublishView(MethodView):
@@ -16,7 +16,7 @@ class PublishView(MethodView):
     处理发布内容管理页面的请求。
     """
 
-    decorators = [editor_required]  # 应用editor_required装饰器
+    decorators = [PermissionDecorators.editor_required]  # 应用editor_required装饰器
 
     def get(self):
         """

@@ -3,7 +3,7 @@ import logging
 from flask import session, render_template
 from flask.views import MethodView
 
-from common.decorator.permission_required import login_required
+from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
 
 
@@ -14,7 +14,7 @@ class MainView(MethodView):
     处理主页面的GET请求，显示所有内容条目。
     """
 
-    decorators = [login_required]  # 应用装饰器到整个视图类
+    decorators = [PermissionDecorators.login_required]  # 应用装饰器到整个视图类
 
     def get(self):
         """

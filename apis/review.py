@@ -5,7 +5,7 @@ from django.db import transaction
 from flask import render_template, flash, redirect, url_for, request, session
 from flask.views import MethodView
 
-from common.decorator.permission_required import login_required
+from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
 
 
@@ -16,7 +16,7 @@ class ReviewView(MethodView):
     处理内容审核的GET和POST请求。
     """
 
-    decorators = [login_required]  # 应用登录_required装饰器
+    decorators = [PermissionDecorators.login_required, PermissionDecorators.editor_required]  # 应用登录_required装饰器
 
     def get(self, entry_id):
         """

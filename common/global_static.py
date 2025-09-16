@@ -9,3 +9,4 @@ UPLOAD_FILE_PATH = 'static/uploads'
 
 # 创建时区对象
 GLOBAL_TIMEZONE = pytz.timezone('Asia/Shanghai')
+

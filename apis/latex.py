@@ -2,7 +2,7 @@ import logging
 
 from flask.views import MethodView
 
-from common.decorator.permission_required import login_required
+from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content
 
 
@@ -13,7 +13,7 @@ class LatexView(MethodView):
     处理生成LaTeX格式内容的请求。
     """
 
-    decorators = [login_required]  # 应用登录_required装饰器
+    decorators = [PermissionDecorators.login_required]  # 应用登录_required装饰器
 
     def get(self, date):
         """

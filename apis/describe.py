@@ -1,7 +1,7 @@
 from flask import render_template, request, session, redirect, url_for
 from flask.views import MethodView
 
-from common.decorator.permission_required import login_required
+from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
 
 
@@ -12,7 +12,7 @@ class DescribeView(MethodView):
     处理内容描述的GET和POST请求。
     """
 
-    decorators = [login_required]  # 应用登录_required装饰器
+    decorators = [PermissionDecorators.login_required, PermissionDecorators.editor_required]  # 应用登录_required装饰器
 
     def get(self, entry_id):
         """

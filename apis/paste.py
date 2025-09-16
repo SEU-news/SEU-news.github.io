@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from flask import request, flash, redirect, url_for, session
 from flask.views import MethodView
 
-from common.decorator.permission_required import login_required
+from common.decorator.permission_required import PermissionDecorators
 from common.methods.fetch_title import fetch_title
 from common.methods.is_valid_url import is_valid_url
 from django_models.models import Content, User_info
@@ -18,7 +18,7 @@ class PasteView(MethodView):
     处理粘贴链接并自动获取标题的请求。
     """
 
-    decorators = [login_required]  # 应用登录_required装饰器
+    decorators = [PermissionDecorators.login_required]  # 应用登录_required装饰器
 
     def post(self):
         """

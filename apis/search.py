@@ -4,7 +4,7 @@ from django.db.models import Q
 from flask import request, render_template
 from flask.views import MethodView
 
-from common.decorator.permission_required import login_required
+from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content
 
 
@@ -15,7 +15,7 @@ class SearchView(MethodView):
     处理内容搜索请求。
     """
 
-    decorators = [login_required]  # 应用登录_required装饰器
+    decorators = [PermissionDecorators.login_required]  # 应用登录_required装饰器
 
     def get(self):
         """

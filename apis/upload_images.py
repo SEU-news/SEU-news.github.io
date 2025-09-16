@@ -6,10 +6,10 @@ from datetime import datetime
 from flask import request, flash, redirect, url_for, session, current_app
 from flask.views import MethodView
 
-from common.methods.allowed_file import allowed_file
-from common.decorator.permission_required import login_required
-from django_models.models import User_info, Content
+from common.decorator.permission_required import PermissionDecorators
 from common.global_static import UPLOAD_FILE_PATH
+from common.methods.allowed_file import allowed_file
+from django_models.models import User_info, Content
 
 
 class UploadImageView(MethodView):
@@ -19,7 +19,7 @@ class UploadImageView(MethodView):
     处理图片上传请求。
     """
 
-    decorators = [login_required]  # 应用登录_required装饰器
+    decorators = [PermissionDecorators.login_required, PermissionDecorators.editor_required]  # 应用登录_required装饰器
 
     def post(self):
         """

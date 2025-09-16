@@ -3,7 +3,7 @@ import logging
 from flask import session, flash, redirect, url_for
 from flask.views import MethodView
 
-from common.decorator.permission_required import login_required
+from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
 
 
@@ -14,7 +14,7 @@ class DeleteEntryView(MethodView):
     处理删除内容条目的请求。
     """
 
-    decorators = [login_required]  # 应用登录_required装饰器
+    decorators = [PermissionDecorators.login_required, PermissionDecorators.editor_required]  # 应用登录_required装饰器
 
     def post(self, entry_id):
         """
