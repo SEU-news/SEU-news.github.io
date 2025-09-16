@@ -28,10 +28,13 @@ class DeleteEntryView(MethodView):
         """
         try:
             content = Content.objects.get(id=entry_id)
+            if not content:
+                flash("项目不存在")
+                return redirect(url_for('main'))
             current_user = User_info.objects.get(username=session['username'])
 
             if content.creator_id != current_user.id:
-                flash("你没有权限删除此条目，仅可删除自己上传的条目")
+                flash("你没有权限删除此项目，仅可删除自己上传的项目")
                 return redirect(url_for('main'))
             content.delete()
             logging.info(f"用户 {current_user.username} 删除了内容: {content.title}")
