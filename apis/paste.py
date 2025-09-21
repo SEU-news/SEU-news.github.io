@@ -44,6 +44,7 @@ class PasteView(MethodView):
 
         entry = Content.objects.create(
             creator_id=user.id,
+            describer_id=user.id,
             title=title,
             short_title=title,
             content='',
