@@ -18,11 +18,10 @@ class PublishView(MethodView):
     """
 
     decorators = [PermissionDecorators.editor_required]
-    json_path = "./static/latest.json"
-    # 添加typst模板路径类属性
-    typst_template_path = "news_template.typ"
-    # 添加字体目录和PDF输出路径类属性
+
     fonts_dir = "./fonts"
+    typst_template_path = "./static/news_template.typ"
+    json_path = "./static/latest.json"
     pdf_path = "./static/latest.pdf"
 
     def __init__(self):
