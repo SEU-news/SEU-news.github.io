@@ -22,7 +22,7 @@ def setup_global_logging(log_file: str = 'app.log') -> None:
         'disable_existing_loggers': False,  # 非常重要：允许其他模块的日志器正常工作[4](@ref)
         'formatters': {
             'standard': {
-                'format': '%(levelname)s - %(asctime)s - %(name)s - [%(filename)s:%(lineno)d] - %(message)s'
+                'format': '%(levelname)s - %(asctime)s - [%(name)s] - [%(filename)s:%(lineno)d] - %(message)s'
             },
         },
         'handlers': {

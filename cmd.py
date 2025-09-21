@@ -5,7 +5,8 @@ import sys
 import django
 
 from apis.errHandler import register_error_handlers
-from django_config import configure_django
+from config.django_config import configure_django
+from config.load_config import GLOBAL_CONFIG
 from loggers import setup_global_logging
 
 if __name__ == '__main__':
@@ -16,9 +17,8 @@ if __name__ == '__main__':
         logging.error(f"[Logging] 日志配置失败: {e}")
         sys.exit(1)
     else:
-        logging.info("[Logging] 日志系统配置成功")
-
-    init_logger = logging.getLogger('initial')
+        init_logger = logging.getLogger('initial')
+        init_logger.info("[Logging] 日志系统配置成功")
 
     try:
         configure_django()
@@ -36,4 +36,8 @@ if __name__ == '__main__':
 
     app = create_app()
     register_error_handlers(app)
-    app.run(host="0.0.0.0", debug=True, port=port)
+    env = GLOBAL_CONFIG.get_config_value("env", "test")
+    if env == "prod":
+        app.run(host="0.0.0.0", debug=False, port=port)
+    else:
+        app.run(host="0.0.0.0", debug=True, port=port)

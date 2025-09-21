@@ -7,7 +7,7 @@ from flask import render_template, request, flash
 from flask.views import MethodView
 
 from common.decorator.permission_required import PermissionDecorators
-from load_config import GLOBAL_CONFIG
+from config.load_config import GLOBAL_CONFIG
 
 
 class PublishView(MethodView):
