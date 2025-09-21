@@ -55,13 +55,16 @@ class PublishView(MethodView):
 
             try:
                 # 检查当前系统并选择相应的typst命令
-                os_name=GLOBAL_CONFIG.get_config_value("os.name")
+                os_name = GLOBAL_CONFIG.get_config_value("os.name")
                 if os_name == 'windows':  # Windows系统
                     typst_cmd = ["typst.exe", "compile", "--font-path", "./fonts", "news_template.typ",
                                  "./static/latest.pdf"]
-                elif os_name=="linux":  # Unix/Linux/MacOS系统
-                    typst_cmd = ["./typst", "compile", "--font-path", "/home/nik_nul/font", "news_template.typ",
+                elif os_name == "linux":  # Unix/Linux/MacOS系统
+                    typst_cmd = ["./typst", "compile", "--font-path", "./fonts", "news_template.typ",
                                  "./static/latest.pdf"]
+                else:
+                    raise Exception("Unsupported operating system")
+                subprocess.run(typst_cmd, check=True)
                 logging.info(f"成功编译typst文件，日期: {parsed['data']['date']}")
                 flash("内容发布成功，PDF已生成")
             except subprocess.CalledProcessError as e:
