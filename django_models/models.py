@@ -157,13 +157,13 @@ class Content(models.Model):
 
 # 3. 评论表
 class Comment(models.Model):
-    news_id = models.ForeignKey(Content, on_delete=models.CASCADE, related_name='comments')
-    creator = models.ForeignKey(User_info, on_delete=models.CASCADE, related_name='comments')
-    content = models.TextField(max_length=500)
-    parent_comment_id = models.ForeignKey('self', on_delete=models.CASCADE, related_name='replies',
-                                          verbose_name="父级评论")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    id = models.AutoField(primary_key=True, verbose_name='唯一主键')
+    comment = models.TextField(verbose_name='评论内容')
+    creator_id = models.IntegerField(verbose_name='评论创建者ID')
+    news_id = models.IntegerField(verbose_name='关联新闻ID')
+    parent_comment_id = models.IntegerField(null=True, blank=True, default=None, verbose_name='回复的上级评论ID（NULL表示顶层评论）')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='最后更新时间')
 
     class Meta:
         db_table = 'comment_management'
@@ -173,9 +173,9 @@ class Comment(models.Model):
         ordering = ['-created_at']
         # 创建数据库索引
         indexes = [
-            models.Index(fields=['creator'], name='idx_comment_creator_id'),
-            models.Index(fields=['news_id'], name='idx_comment_news_id'),
-            models.Index(fields=['created_at'], name='idx_comment_created_at'),
-            models.Index(fields=['parent_comment_id'], name='idx_comment_parent_id'),
-            models.Index(fields=['updated_at'], name='idx_comment_updated_at'),
+            models.Index(fields=['creator_id'], name='idx_creator_id'),
+            models.Index(fields=['news_id'], name='idx_news_id'),
+            models.Index(fields=['parent_comment_id'], name='idx_parent_comment_id'),
+            models.Index(fields=['created_at'], name='idx_created_at'),
+            models.Index(fields=['updated_at'], name='idx_updated_at'),
         ]
