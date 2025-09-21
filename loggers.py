@@ -47,11 +47,6 @@ def setup_global_logging(log_file: str = 'app.log') -> None:
                 'level': 'INFO',
                 'propagate': False,  # 防止向上传播到根日志器，避免重复
             },
-            'api_manage': {
-                'handlers': ['console', 'file'],
-                'level': 'DEBUG',
-                'propagate': False,  # 防止向上传播到根日志器，避免重复
-            },
         },
         'root': {  # 根日志器配置，捕获所有未在'loggers'中显式配置的日志器
             'handlers': ['console', 'file'],
