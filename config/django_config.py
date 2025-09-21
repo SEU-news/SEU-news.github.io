@@ -3,7 +3,6 @@ import sys
 
 from django.conf import settings
 
-from common.global_static import GLOBAL_TIMEZONE
 from config.load_config import GLOBAL_CONFIG
 
 

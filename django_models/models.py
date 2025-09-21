@@ -166,7 +166,7 @@ class Comment(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = 'comment'
+        db_table = 'comment_management'
         verbose_name = '评论'
         verbose_name_plural = '评论管理'
         # 按创建时间降序排列
