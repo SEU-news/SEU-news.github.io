@@ -3,6 +3,8 @@ import sys
 
 from django.conf import settings
 
+from load_config import GLOBAL_CONFIG
+
 
 def configure_django():
     """
@@ -23,16 +25,9 @@ def configure_django():
     if not settings.configured:
         try:
             # 读取数据库用户凭证信息
-            user_dict = read_credentials()
-            if not user_dict or not isinstance(user_dict, dict):
-                logging.error("[Database] No valid credentials provided")
-                sys.exit(1)
-
-            # 获取第一个用户凭证
-            user, password = next(iter(user_dict.items()))
-
-            # 不要记录密码！仅记录用户名用于调试
-            logging.info(f"[Database] Using database credentials - User: {user}")
+            username = GLOBAL_CONFIG.get_config_value("MYSQL_username")
+            password = GLOBAL_CONFIG.get_config_value("MYSQL_password")
+            logging.info(f"[Database] Using database credentials - User: {username}")
 
             # 配置Django设置，包括数据库连接、已安装应用和基本配置
             settings.configure(
@@ -40,7 +35,7 @@ def configure_django():
                     "default": {
                         "ENGINE": "django.db.backends.mysql",
                         "NAME": "seu_news",
-                        'USER': user,
+                        'USER': username,
                         'PASSWORD': password,
                         'HOST': 'localhost',  # 或者 '127.0.0.1'
                         'PORT': '3306',  # 默认 MySQL 端口
@@ -61,33 +56,3 @@ def configure_django():
         except Exception as e:
             logging.error(f"[Configure Django] Failed to configure Django: {e}")
             sys.exit(1)
-
-
-def read_credentials(file_path="credentials.txt", delimiter=':'):
-    """
-    从文本文件中读取账户名和密码对。
-
-    参数:
-        file_path (str): 凭证文件的路径。
-        delimiter (str): 用于分隔用户名和密码的分隔符，默认为冒号（:）。
-
-    返回:
-        dict: 一个字典，键是用户名，值是对应的密码。
-    """
-    credentials = {}
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            for line in file:
-                line = line.strip()  # 去除行首尾的空白字符（包括换行符）
-                if line:  # 确保不是空行
-                    parts = line.split(delimiter)
-                    if len(parts) == 2:
-                        username, password = parts
-                        credentials[username] = password
-                    else:
-                        logging.warn(f"警告: 跳过格式无效的行: {line}")
-    except FileNotFoundError:
-        logging.error(f"错误: 文件未找到 '{file_path}'")
-    except Exception as e:
-        logging.error(f"读取文件时发生错误: {e}")
-    return credentials
