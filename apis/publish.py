@@ -18,6 +18,17 @@ class PublishView(MethodView):
     """
 
     decorators = [PermissionDecorators.editor_required]  # 应用editor_required装饰器
+    json_path = "./static/latest.json"
+    # 添加typst模板路径类属性
+    typst_template_path = "news_template.typ"
+    # 添加字体目录和PDF输出路径类属性
+    fonts_dir = "./fonts"
+    pdf_path = "./static/latest.pdf"
+
+    def __init__(self):
+        os_name = GLOBAL_CONFIG.get_config_value("os.name")
+        # 添加系统命令路径类属性
+        self.typst_cmd = "typst.exe" if os_name == "windows" else "./typst"
 
     def get(self):
         """
@@ -27,8 +38,9 @@ class PublishView(MethodView):
             render_template: 发布内容管理页面模板
         """
         content = ""
-        if os.path.exists("latest.json"):
-            with open("latest.json", "r", encoding='utf-8') as f:
+        # 修复：使用self.json_path访问类属性
+        if os.path.exists(self.json_path):
+            with open(self.json_path, "r", encoding="utf-8") as f:
                 content = f.read()
         return render_template("publish.html", content=content)
 
@@ -44,32 +56,36 @@ class PublishView(MethodView):
         os.makedirs("./archived", exist_ok=True)
         os.makedirs("./static", exist_ok=True)
 
-        with open("./latest.json", "w", encoding='utf-8') as f:
+        # 统一使用类属性路径
+        with open(self.json_path, "w", encoding="utf-8") as f:
             f.write(new_content)
 
         try:
             parsed = json.loads(new_content)
             # 写入归档文件
-            with open("./archived/" + parsed["data"]["date"] + ".json", "w", encoding='utf-8') as f:
+            with open(
+                "./archived/" + parsed["data"]["date"] + ".json", "w", encoding="utf-8"
+            ) as f:
                 f.write(new_content)
 
             try:
                 # 检查当前系统并选择相应的typst命令
-                os_name = GLOBAL_CONFIG.get_config_value("os.name")
-                if os_name == 'windows':  # Windows系统
-                    typst_cmd = ["typst.exe", "compile", "--font-path", "./fonts", "news_template.typ",
-                                 "./static/latest.pdf"]
-                elif os_name == "linux":  # Unix/Linux/MacOS系统
-                    typst_cmd = ["./typst", "compile", "--font-path", "./fonts", "news_template.typ",
-                                 "./static/latest.pdf"]
-                else:
-                    raise Exception("Unsupported operating system")
+                typst_cmd = [
+                    self.typst_cmd,
+                    "compile",
+                    "--font-path",
+                    self.fonts_dir,
+                    self.typst_template_path,
+                    self.pdf_path,
+                ]
                 subprocess.run(typst_cmd, check=True)
                 logging.info(f"成功编译typst文件，日期: {parsed['data']['date']}")
                 flash("内容发布成功，PDF已生成")
             except subprocess.CalledProcessError as e:
                 logging.error(f"typst编译失败: {str(e)}")
-                flash("Compilation failed. Please check typst installation and source file.")
+                flash(
+                    "Compilation failed. Please check typst installation and source file."
+                )
             except FileNotFoundError:
                 logging.error("typst命令未找到")
                 flash("Typst not found. Please install typst or check the path.")
