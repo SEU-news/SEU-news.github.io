@@ -17,7 +17,24 @@ class PublishView(MethodView):
     处理发布内容管理页面的请求。
     """
 
-    decorators = [PermissionDecorators.editor_required]  # 应用editor_required装饰器
+    decorators = [PermissionDecorators.editor_required]
+
+    fonts_dir = "./fonts"
+    typst_template_path = "./static/news_template.typ"
+    json_path = "./static/latest.json"
+    pdf_path = "./static/latest.pdf"
+
+    def __init__(self):
+        try:
+            os_name = GLOBAL_CONFIG.get_config_value("os.name")
+            # 添加系统命令路径类属性
+            self.typst_cmd = "typst.exe" if os_name == "windows" else "./typst"
+        except Exception as e:
+            logging.error(f"初始化PublishView时获取配置失败: {str(e)}")
+            # 设置默认值
+            self.typst_cmd = "./typst"
+        # 初始化logger实例
+        self.logger = logging.getLogger(__name__)
 
     def get(self):
         """
@@ -27,9 +44,20 @@ class PublishView(MethodView):
             render_template: 发布内容管理页面模板
         """
         content = ""
-        if os.path.exists("latest.json"):
-            with open("latest.json", "r", encoding='utf-8') as f:
-                content = f.read()
+        try:
+            # 修复：使用self.json_path访问类属性
+            if os.path.exists(self.json_path):
+                with open(self.json_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+        except FileNotFoundError:
+            self.logger.warning(f"JSON文件未找到: {self.json_path}")
+            flash("内容文件未找到")
+        except PermissionError:
+            self.logger.error(f"没有权限读取文件: {self.json_path}")
+            flash("没有权限读取内容文件")
+        except Exception as e:
+            self.logger.error(f"读取内容时发生未知错误: {str(e)}")
+            flash("读取内容时发生错误")
         return render_template("publish.html", content=content)
 
     def post(self):
@@ -41,47 +69,90 @@ class PublishView(MethodView):
         """
         new_content = request.form.get("content", "")
 
-        os.makedirs("./archived", exist_ok=True)
-        os.makedirs("./static", exist_ok=True)
+        try:
+            os.makedirs("./archived", exist_ok=True)
+            os.makedirs("./static", exist_ok=True)
+        except PermissionError:
+            self.logger.error("没有权限创建目录")
+            flash("没有权限创建必要的目录")
+            return render_template("publish.html", content=new_content)
+        except Exception as e:
+            self.logger.error(f"创建目录时发生错误: {str(e)}")
+            flash("创建目录时发生错误")
+            return render_template("publish.html", content=new_content)
 
-        with open("./latest.json", "w", encoding='utf-8') as f:
-            f.write(new_content)
+        try:
+            # 统一使用类属性路径
+            with open(self.json_path, "w", encoding="utf-8") as f:
+                f.write(new_content)
+        except PermissionError:
+            self.logger.error(f"没有权限写入文件: {self.json_path}")
+            flash("没有权限写入内容文件")
+            return render_template("publish.html", content=new_content)
+        except Exception as e:
+            self.logger.error(f"写入内容文件时发生错误: {str(e)}")
+            flash("保存内容时发生错误")
+            return render_template("publish.html", content=new_content)
 
         try:
             parsed = json.loads(new_content)
             # 写入归档文件
-            with open("./archived/" + parsed["data"]["date"] + ".json", "w", encoding='utf-8') as f:
-                f.write(new_content)
+            try:
+                with open(
+                        "./archived/" + parsed["data"]["date"] + ".json", "w", encoding="utf-8"
+                ) as f:
+                    f.write(new_content)
+            except KeyError as e:
+                self.logger.error(f"JSON格式错误，缺少必要字段: {str(e)}")
+                flash("JSON结构错误，缺少日期字段")
+                return render_template("publish.html", content=new_content)
+            except PermissionError:
+                self.logger.error("没有权限写入归档文件")
+                flash("没有权限写入归档文件")
+                return render_template("publish.html", content=new_content)
+            except Exception as e:
+                self.logger.error(f"写入归档文件时发生错误: {str(e)}")
+                flash("保存归档文件时发生错误")
+                return render_template("publish.html", content=new_content)
 
             try:
                 # 检查当前系统并选择相应的typst命令
-                os_name = GLOBAL_CONFIG.get_config_value("os.name")
-                if os_name == 'windows':  # Windows系统
-                    typst_cmd = ["typst.exe", "compile", "--font-path", "./fonts", "news_template.typ",
-                                 "./static/latest.pdf"]
-                elif os_name == "linux":  # Unix/Linux/MacOS系统
-                    typst_cmd = ["./typst", "compile", "--font-path", "./fonts", "news_template.typ",
-                                 "./static/latest.pdf"]
+                typst_cmd = [
+                    self.typst_cmd,
+                    "compile",
+                    "--font-path",
+                    self.fonts_dir,
+                    self.typst_template_path,
+                    self.pdf_path,
+                ]
+                result = subprocess.run(typst_cmd, capture_output=True, text=True, timeout=60)
+                if result.returncode == 0:
+                    self.logger.info(f"成功编译typst文件，日期: {parsed['data']['date']}")
+                    flash("内容发布成功，PDF已生成")
                 else:
-                    raise Exception("Unsupported operating system")
-                subprocess.run(typst_cmd, check=True)
-                logging.info(f"成功编译typst文件，日期: {parsed['data']['date']}")
-                flash("内容发布成功，PDF已生成")
+                    self.logger.error(f"typst编译失败: {result.stderr}")
+                    flash("PDF生成失败，请检查内容格式")
+            except subprocess.TimeoutExpired:
+                self.logger.error("typst编译超时")
+                flash("PDF生成超时，请稍后重试")
             except subprocess.CalledProcessError as e:
-                logging.error(f"typst编译失败: {str(e)}")
-                flash("Compilation failed. Please check typst installation and source file.")
+                self.logger.error(f"typst编译失败: {str(e)}")
+                flash("PDF生成失败，请检查内容格式")
             except FileNotFoundError:
-                logging.error("typst命令未找到")
-                flash("Typst not found. Please install typst or check the path.")
+                self.logger.error("typst命令未找到")
+                flash("PDF生成工具未找到，请联系管理员")
+            except Exception as e:
+                self.logger.error(f"执行PDF生成时发生未知错误: {str(e)}")
+                flash("生成PDF时发生未知错误")
 
         except json.JSONDecodeError as e:
-            logging.error(f"JSON解析失败: {str(e)}")
-            flash("Invalid JSON format in content.")
+            self.logger.error(f"JSON解析失败: {str(e)}")
+            flash("内容格式错误，不是有效的JSON格式")
         except KeyError as e:
-            logging.error(f"JSON格式错误，缺少必要字段: {str(e)}")
-            flash("Invalid JSON structure. Missing required fields.")
+            self.logger.error(f"JSON格式错误，缺少必要字段: {str(e)}")
+            flash("JSON结构错误，缺少必要字段")
         except Exception as e:
-            logging.error(f"发布过程中出现错误: {str(e)}")
+            self.logger.error(f"发布过程中出现错误: {str(e)}")
             flash(f"发布失败: {str(e)}")
 
         return render_template("publish.html", content=new_content)
