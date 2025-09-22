@@ -125,7 +125,7 @@ class PublishView(MethodView):
                     self.typst_template_path,
                     self.pdf_path,
                 ]
-                result = subprocess.run(typst_cmd, capture_output=True, text=True, timeout=60)
+                result = subprocess.run(typst_cmd, capture_output=True, text=True, timeout=60, encoding='utf-8')
                 if result.returncode == 0:
                     self.logger.info(f"成功编译typst文件，日期: {parsed['data']['date']}")
                     flash("内容发布成功，PDF已生成")
