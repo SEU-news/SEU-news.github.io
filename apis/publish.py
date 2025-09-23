@@ -77,7 +77,7 @@ class PublishView(MethodView):
                 with open(self.json_path, "r", encoding="utf-8") as f:
                     content = f.read()
                 # 这里调用自动生成 PDF
-                self.generate_pdf(content)
+                # self.generate_pdf(content)
         except FileNotFoundError:
             self.logger.warning(f"JSON文件未找到: {self.json_path}")
             flash("内容文件未找到")
