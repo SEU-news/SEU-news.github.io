@@ -36,6 +36,33 @@ class PublishView(MethodView):
         # 初始化logger实例
         self.logger = logging.getLogger(__name__)
 
+    def generate_pdf(self, content):
+        """
+        根据content生成pdf
+        """
+        try:
+            parsed = json.loads(content)
+            typst_cmd = [
+                self.typst_cmd,
+                "compile",
+                "--font-path",
+                self.fonts_dir,
+                self.typst_template_path,
+                self.pdf_path,
+            ]
+            result = subprocess.run(
+                typst_cmd, capture_output=True, text=True, encoding="utf-8", errors="ignore", timeout=60
+            )
+            if result.returncode == 0:
+                self.logger.info(f"成功编译typst文件，日期: {parsed['data']['date']}")
+                flash("PDF已自动更新")
+            else:
+                self.logger.error(f"typst编译失败: {result.stderr}")
+                flash("PDF生成失败，请检查内容格式")
+        except Exception as e:
+            self.logger.error(f"自动生成PDF失败: {str(e)}")
+            flash("自动生成PDF失败")
+
     def get(self):
         """
         处理GET请求，显示发布内容管理页面
@@ -49,6 +76,8 @@ class PublishView(MethodView):
             if os.path.exists(self.json_path):
                 with open(self.json_path, "r", encoding="utf-8") as f:
                     content = f.read()
+                # 这里调用自动生成 PDF
+                self.generate_pdf(content)
         except FileNotFoundError:
             self.logger.warning(f"JSON文件未找到: {self.json_path}")
             flash("内容文件未找到")
