@@ -4,6 +4,7 @@ import re
 
 from django.db.models import Q
 from flask.views import MethodView
+from datetime import datetime as dt, time
 
 from common.methods.allowed_file import allowed_file
 from common.methods.is_valid_url import is_valid_url
@@ -40,19 +41,31 @@ def typst(date):
     from datetime import date as date_class
 
     today_str = dt.now().strftime("%Y-%m-%d")
-    logging.debug(f"生成typst数据，日期: {date}, 今日: {today_str}")
+    logging.info(f"生成typst数据，日期: {date}, 今日: {today_str}")
 
     try:
-        parsed_date = dt.strptime(date, '%Y-%m-%d')
-        parsed_date = timezone.make_aware(parsed_date)
-    except ValueError:
-        parsed_date = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        target_date = dt.strptime(date, '%Y-%m-%d').date()
+        # 创建当天的开始和结束时间
+        start_of_day = timezone.make_aware(dt.combine(target_date, time.min))
+        end_of_day = timezone.make_aware(dt.combine(target_date, time.max))
+        logging.info(f"查询时间范围: {start_of_day} 到 {end_of_day}")
+
+    except ValueError as e:
+        logging.error(f"日期解析失败: {e}")
+        # 使用当前时间作为默认值
+        now = timezone.now()
+        start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_of_day = now.replace(hour=23, minute=59, second=59, microsecond=999999)
 
     if date != today_str:
-        content_query = Content.objects.filter(publish_at__date=parsed_date.date())
+        content_query = Content.objects.filter(
+            publish_at__gte=start_of_day,
+            publish_at__lte=end_of_day
+        )
     else:
         content_query = Content.objects.filter(
-            Q(publish_at__date=parsed_date.date()) | Q(publish_at__isnull=True)
+            Q(publish_at__gte=start_of_day, publish_at__lte=end_of_day) |
+            Q(publish_at__isnull=True)
         )
     other, college, club, lecture = [], [], [], []
     for content_item in content_query:
@@ -99,12 +112,17 @@ def typst(date):
         "other": other
     }
 
-    due_content = Content.objects.filter(
-        deadline__isnull=False,
-        deadline__gt=parsed_date,
-        publish_at__date__lte=parsed_date.date(),
-        publish_at__date__gte=date_class(2023, 1, 1)
-    ).order_by('deadline')
+    try:
+        target_date_obj = dt.strptime(date, '%Y-%m-%d').date()
+        due_content = Content.objects.filter(
+            deadline__isnull=False,
+            deadline__gt=start_of_day,
+            publish_at__date__lte=target_date_obj,
+            publish_at__date__gte=date_class(2023, 1, 1)
+        ).order_by('deadline')
+
+    except ValueError:
+        due_content = Content.objects.none()
 
     other_due, college_due, club_due, lecture_due = [], [], [], []
     for content_item in due_content:
