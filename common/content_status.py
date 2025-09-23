@@ -29,28 +29,28 @@ class ContentStatus:
         Args:
             status: 英文状态标识
         """
-        self.logger = logging.getLogger("Content_Status")
-        self.status = status
+        self._logger = logging.getLogger("Content_Status")
+        self._status = status
         if not self.is_valid():
-            self.status = 'pending'
+            self._status = 'pending'
 
-    def get_status_display_en(self) -> str:
+    def string_en(self) -> str:
         """
         获取英文状态标识
         
         Returns:
             str: 英文状态标识
         """
-        return self.status
+        return self._status
 
-    def get_status_display_cn(self) -> str:
+    def string_cn(self) -> str:
         """
         获取中文状态显示
         
         Returns:
             str: 中文状态显示
         """
-        return _status_map.get(self.status, '待审核')
+        return _status_map.get(self._status, '待审核')
 
     def is_valid(self) -> bool:
         """
@@ -59,7 +59,7 @@ class ContentStatus:
         Returns:
             bool: 状态是否有效
         """
-        return self.status in _status_map
+        return self._status in _status_map
 
     def _can_transit_to(self, target_status: str) -> bool:
         """
@@ -72,7 +72,7 @@ class ContentStatus:
             bool: 是否可以转换
         """
 
-        return target_status in _valid_transitions.get(self.status, [])
+        return target_status in _valid_transitions.get(self._status, [])
 
     def submit(self) -> bool:
         """
@@ -83,7 +83,7 @@ class ContentStatus:
             bool: 转换是否成功
         """
         if self._can_transit_to('pending'):
-            self.status = 'pending'
+            self._status = 'pending'
             return True
         return False
 
@@ -96,7 +96,7 @@ class ContentStatus:
             bool: 转换是否成功
         """
         if self._can_transit_to('terminated'):
-            self.status = 'terminated'
+            self._status = 'terminated'
             return True
         return False
 
@@ -109,7 +109,7 @@ class ContentStatus:
             bool: 转换是否成功
         """
         if self._can_transit_to('reviewed'):
-            self.status = 'reviewed'
+            self._status = 'reviewed'
             return True
         return False
 
@@ -122,7 +122,7 @@ class ContentStatus:
             bool: 转换是否成功
         """
         if self._can_transit_to('rejected'):
-            self.status = 'rejected'
+            self._status = 'rejected'
             return True
         return False
 
@@ -135,7 +135,7 @@ class ContentStatus:
             bool: 转换是否成功
         """
         if self._can_transit_to('published'):
-            self.status = 'published'
+            self._status = 'published'
             return True
         return False
 
@@ -148,7 +148,7 @@ class ContentStatus:
             bool: 转换是否成功
         """
         if self._can_transit_to('pending'):
-            self.status = 'pending'
+            self._status = 'pending'
             return True
         return False
 
@@ -161,7 +161,7 @@ class ContentStatus:
             bool: 转换是否成功
         """
         if self._can_transit_to('pending'):
-            self.status = 'pending'
+            self._status = 'pending'
             return True
         return False
 
@@ -174,6 +174,6 @@ class ContentStatus:
             bool: 转换是否成功
         """
         if self._can_transit_to('terminated'):
-            self.status = 'terminated'
+            self._status = 'terminated'
             return True
         return False

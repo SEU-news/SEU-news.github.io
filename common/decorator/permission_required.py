@@ -10,12 +10,15 @@ class PermissionDecorators:
 
     @staticmethod
     def login_required(f):
-        """装饰器：要求用户登录"""
+        """
+        装饰器：要求用户登录
+        如果用户未登录，则重定向到登录页面
+        """
 
         @wraps(f)
         def decorated_function(*args, **kwargs):
             username = session.get('username')
-            # 检查username是否存在且有效
+            # 检查用户是否已登录
             if not username:
                 return redirect(url_for('login'))
 
@@ -29,13 +32,16 @@ class PermissionDecorators:
 
     @staticmethod
     def admin_required(f):
-        """装饰器：要求管理员权限"""
+        """
+        装饰器：要求管理员权限
+        如果用户没有管理员权限，则返回403错误
+        """
 
         @wraps(f)
         def decorated_function(*args, **kwargs):
-
             username = session.get('username')
 
+            # 检查用户是否已登录
             if not username:
                 abort(401)
 
@@ -51,19 +57,22 @@ class PermissionDecorators:
 
     @staticmethod
     def editor_required(f):
-        """装饰器：要求编辑权限"""
+        """
+        装饰器：要求编辑权限
+        如果用户没有编辑权限，则返回403错误
+        """
 
         @wraps(f)
         def decorated_function(*args, **kwargs):
-
             username = session.get('username')
 
+            # 检查用户是否已登录
             if not username:
                 abort(401)
 
             user = User_info.objects.filter(username=username).first()
 
-            # 如果用户不存在或没有权限，都返回403
+            # 检查用户是否存在以及是否有编辑权限
             if not user or not user.has_editor_permission():
                 abort(403)
 

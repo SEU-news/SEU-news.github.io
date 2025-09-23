@@ -5,6 +5,7 @@ from flask import render_template, request, session, flash, redirect, url_for
 from flask.views import MethodView
 
 from common.decorator.permission_required import PermissionDecorators
+from common.database.content import ContentService
 from django_models.models import User_info, Content
 
 
@@ -12,16 +13,16 @@ class UploadView(MethodView):
     """
     上传内容视图类
 
-    处理内容上传的GET和POST请求。
+    处理内容上传的GET和POST请求，需要登录和编辑权限。
     """
 
-    decorators = [PermissionDecorators.login_required, PermissionDecorators.editor_required]  # 应用登录_required装饰器
+    decorators = [PermissionDecorators.login_required, PermissionDecorators.editor_required]
 
     def get(self):
         """
         处理GET请求，显示上传内容页面
 
-        返回:
+        Returns:
             render_template: 上传页面模板
         """
         return render_template('upload.html')
@@ -30,9 +31,9 @@ class UploadView(MethodView):
         """
         处理POST请求，执行内容上传逻辑
 
-        从表单获取内容信息，进行处理后创建新内容条目。
+        从表单获取内容信息，进行验证后创建新内容条目。
 
-        返回:
+        Returns:
             redirect: 上传成功重定向到主页面，失败时重定向回上传页面
         """
         # 从表单中提取内容信息
@@ -43,44 +44,26 @@ class UploadView(MethodView):
         tag = request.form.get('tag', '')
         short_title = request.form.get('short_title') or title
 
-        # 获取当前登录用户信息
         try:
-            user = User_info.objects.get(username=session['username'])
+            # 使用通用的内容创建方法
+            ContentService.create(
+                title=title,
+                content_text=description,
+                username=session['username'],
+                type=entry_type,
+                due_time=due_time,
+                tag=tag,
+                short_title=short_title
+            )
         except User_info.DoesNotExist:
             flash('User not found. Please log in again.')
             return redirect(url_for('login'))
+        except ValueError as e:
+            flash(str(e))
+            return render_template('upload.html')
+        except Exception as e:
+            logging.error(f"创建内容时发生错误: {str(e)}")
+            flash('创建内容时发生错误')
+            return render_template('upload.html')
 
-        # 处理截止时间，支持两种格式: YYYY-MM-DD 或 ISO标准格式
-        deadline_value = None
-        if due_time:
-            try:
-                if len(due_time) == 10:  # "YYYY-MM-DD"
-                    deadline_value = datetime.strptime(due_time, '%Y-%m-%d')
-                else:
-                    deadline_value = datetime.fromisoformat(due_time)
-            except ValueError:
-                flash('Invalid date format for deadline')
-                return render_template('upload.html')
-
-        # 如果没有设置截止时间，则设置为默认远期时间
-        if deadline_value is None:
-            deadline_value = datetime(2099, 12, 31)
-
-        # 创建新的内容记录
-        content = Content.objects.create(
-            creator_id=user.id,
-            describer_id=user.id,
-            title=title,
-            short_title=short_title,
-            content=description,
-            link='',
-            status='pending',
-            type=entry_type,
-            tag=tag,
-            deadline=deadline_value,
-            publish_at=datetime.now()
-        )
-
-        # 记录内容创建操作的日志
-        logging.info(f"用户 {user.username} 创建了新内容: {title}")
         return redirect(url_for('main'))
