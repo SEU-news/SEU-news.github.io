@@ -36,34 +36,23 @@ class UploadView(MethodView):
         Returns:
             redirect: 上传成功重定向到主页面，失败时重定向回上传页面
         """
-        # 从表单中提取内容信息
-        title = request.form['title']
-        description = request.form['description']
-        due_time = request.form.get('due_time', '').strip()
-        entry_type = request.form['entry_type']
-        tag = request.form.get('tag', '')
-        short_title = request.form.get('short_title') or title
 
         try:
-            # 使用通用的内容创建方法
+            # 从表单中提取内容信息
             ContentService.create(
-                title=title,
-                content_text=description,
+                title=request.form['title'],
+                content_text=request.form['description'],
                 username=session['username'],
-                type=entry_type,
-                due_time=due_time,
-                tag=tag,
-                short_title=short_title
+                type=request.form['entry_type'],
+                due_time=request.form.get('due_time', '').strip(),
+                tag=request.form.get('tag', ''),
+                short_title=request.form.get('short_title',None)
             )
+            return redirect(url_for('main'))
         except User_info.DoesNotExist:
             flash('User not found. Please log in again.')
             return redirect(url_for('login'))
-        except ValueError as e:
-            flash(str(e))
-            return render_template('upload.html')
-        except Exception as e:
+        except (ValueError, Exception) as e:
             logging.error(f"创建内容时发生错误: {str(e)}")
-            flash('创建内容时发生错误')
+            flash(str(e) if isinstance(e, ValueError) else '创建内容时发生错误')
             return render_template('upload.html')
-
-        return redirect(url_for('main'))
