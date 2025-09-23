@@ -14,8 +14,15 @@ class PermissionDecorators:
 
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if 'username' not in session:
+            username = session.get('username')
+            # 检查username是否存在且有效
+            if not username:
                 return redirect(url_for('login'))
+
+            user = User_info.objects.filter(username=username).first()
+            if not user:
+                return redirect(url_for('login'))
+
             return f(*args, **kwargs)
 
         return decorated_function
@@ -34,6 +41,7 @@ class PermissionDecorators:
 
             user = User_info.objects.filter(username=username).first()
 
+            # 检查用户是否存在以及是否有管理员权限
             if not user or not user.has_admin_permission():
                 abort(403)
 
