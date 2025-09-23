@@ -29,7 +29,7 @@ from apis.latex import LatexView
 from apis.login import LoginView
 from apis.logout import LogoutView
 from apis.main import MainView
-from apis.paste import PasteView
+from apis.upload_url import PasteView
 from apis.preview_edit import PreviewEditView
 from apis.publish import PublishView
 from apis.register import RegisterView

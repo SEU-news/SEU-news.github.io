@@ -33,8 +33,9 @@ class UploadView(MethodView):
         从表单获取内容信息，进行处理后创建新内容条目。
 
         返回:
-            redirect: 上传成功重定向到主页面
+            redirect: 上传成功重定向到主页面，失败时重定向回上传页面
         """
+        # 从表单中提取内容信息
         title = request.form['title']
         description = request.form['description']
         due_time = request.form.get('due_time', '').strip()
@@ -42,12 +43,14 @@ class UploadView(MethodView):
         tag = request.form.get('tag', '')
         short_title = request.form.get('short_title') or title
 
+        # 获取当前登录用户信息
         try:
             user = User_info.objects.get(username=session['username'])
         except User_info.DoesNotExist:
             flash('User not found. Please log in again.')
             return redirect(url_for('login'))
 
+        # 处理截止时间，支持两种格式: YYYY-MM-DD 或 ISO标准格式
         deadline_value = None
         if due_time:
             try:
@@ -59,9 +62,11 @@ class UploadView(MethodView):
                 flash('Invalid date format for deadline')
                 return render_template('upload.html')
 
+        # 如果没有设置截止时间，则设置为默认远期时间
         if deadline_value is None:
             deadline_value = datetime(2099, 12, 31)
 
+        # 创建新的内容记录
         content = Content.objects.create(
             creator_id=user.id,
             describer_id=user.id,
@@ -76,5 +81,6 @@ class UploadView(MethodView):
             publish_at=datetime.now()
         )
 
+        # 记录内容创建操作的日志
         logging.info(f"用户 {user.username} 创建了新内容: {title}")
         return redirect(url_for('main'))
