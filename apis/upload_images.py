@@ -47,59 +47,49 @@ class UploadImageView(MethodView):
         username = session['username']
         if file and allowed_image(file.filename):
             filename = file.filename
-            
+
             # 检查是否已存在相同文件名的内容
             user = User_info.objects.get(username)
-            
+
             # 使用文件名作为标题
             title = os.path.splitext(filename)[0]
-            
+
             # 生成基于文件名和文件内容的hash值，用于创建新的唯一文件名
             file_content = file.read()
             file_hash = hashlib.md5(filename.encode('utf-8') + file_content).hexdigest()
-            
+
             # 重置文件指针到开始位置，以便后续保存文件
             file.seek(0)
-            
+
             # 获取文件扩展名并创建新的文件名
             _, extension = os.path.splitext(filename)
             new_filename = f"{file_hash}{extension}"
-            
-            # 检查是否已存在相同hash的内容（即相同文件）
-            existing_content = Content.objects.filter(title=title)
-            for content in existing_content:
-                if content.link and os.path.splitext(content.link)[0] == file_hash:
-                    self.logger.info(f"用户 {user.username} 尝试上传重复的图片: {filename}")
-                    flash("该图片已经上传")
-                    return redirect(url_for('main'))
-            
+
             # 创建当月的文件夹
             now = datetime.now()
             month_folder = now.strftime("%Y-%m")
             upload_folder = os.path.join(current_app.root_path, UPLOAD_FILE_PATH, month_folder)
             os.makedirs(upload_folder, exist_ok=True)
-            
+
             # 保存文件到服务器
             file_path = os.path.join(upload_folder, new_filename)
             file.save(file_path)
-            
+
             try:
                 # 创建新的Content对象
                 content = Content(
                     creator_id=user.id,
                     describer_id=user.id,
                     title=title,  # 使用原始文件名（不含扩展名）作为标题
-                    deadline=datetime(2099, 12, 31),
-                    publish_at=datetime.now(),
-                    link=os.path.join(month_folder, new_filename),  # 保存相对路径
                     status='draft',
-                    type='活动预告'
+                    type='新建Images'
                 )
 
                 # 添加图片到image_list
                 if content.add_image(file_path):
                     content.save()
-                    self.logger.info(f"用户 {user.username} 上传了图片: {filename}，保存为: {os.path.join(month_folder, new_filename)}")
+                    self.logger.info(
+                        f"用户 {user.username} 上传了图片: {filename}，保存为: {os.path.join(month_folder, new_filename)}")
                     flash("图片上传成功，并已添加到数据库")
                 else:
                     self.logger.error(f"图片处理失败: {filename}")
