@@ -29,7 +29,7 @@ from apis.latex import LatexView
 from apis.login import LoginView
 from apis.logout import LogoutView
 from apis.main import MainView
-from apis.upload_url import PasteView
+from apis.upload_url import UploadUrlView
 from apis.preview_edit import PreviewEditView
 from apis.publish import PublishView
 from apis.register import RegisterView
@@ -63,7 +63,7 @@ def create_app():
     app.add_url_rule('/review/<int:entry_id>', view_func=ReviewView.as_view('review'), methods=['GET', 'POST'])
     app.add_url_rule('/cancel/<int:entry_id>', view_func=CancelView.as_view('cancel'))
     app.add_url_rule('/logout', view_func=LogoutView.as_view('logout'))
-    app.add_url_rule('/paste', view_func=PasteView.as_view('paste'), methods=['POST'])
+    app.add_url_rule('/paste', view_func=UploadUrlView.as_view('paste'), methods=['POST'])
     app.add_url_rule('/upload_image', view_func=UploadImageView.as_view('upload_image'), methods=['POST'])
     app.add_url_rule('/search', view_func=SearchView.as_view('search'), methods=['GET'])
     app.add_url_rule('/typst/<date>', view_func=TypstView.as_view('typst_pub'))

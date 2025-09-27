@@ -6,6 +6,7 @@ from datetime import datetime
 from flask import request, flash, redirect, url_for, session, current_app
 from flask.views import MethodView
 
+from common.content_status import STATUS_DRAFT
 from common.decorator.permission_required import PermissionDecorators
 from common.global_static import UPLOAD_FILE_PATH
 from common.methods.allowed_file import allowed_image
@@ -81,7 +82,9 @@ class UploadImageView(MethodView):
                     creator_id=user.id,
                     describer_id=user.id,
                     title=title,  # 使用原始文件名（不含扩展名）作为标题
-                    status='draft',
+                    short_title=title,
+                    content='',
+                    status=STATUS_DRAFT,
                     type='新建Images'
                 )
 
