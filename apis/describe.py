@@ -1,18 +1,26 @@
-from flask import render_template, request, session, redirect, url_for
+import logging
+from flask import render_template, request, session, redirect, url_for, flash
 from flask.views import MethodView
 
 from common.decorator.permission_required import PermissionDecorators
+from common.content_status import ContentStatus
 from django_models.models import Content, User_info
 
 
 class DescribeView(MethodView):
     """
-    描述内容视图类
+    描述内容视图类，专门处理image和url，将draft草稿状态转为pending待审核状态
 
     处理内容描述的GET和POST请求。
     """
 
     decorators = [PermissionDecorators.login_required, PermissionDecorators.editor_required]  # 应用登录_required装饰器
+
+    def __init__(self):
+        """
+        初始化日志记录器
+        """
+        self.logger = logging.getLogger(__name__)
 
     def get(self, entry_id):
         """
@@ -25,10 +33,12 @@ class DescribeView(MethodView):
             render_template: 描述页面模板
         """
         try:
-            entry = Content.objects.get(id=entry_id)
+            content = Content.objects.get(id=entry_id)
+            self.logger.info(f"用户 {session.get('username')} 正在编辑内容 ID: {entry_id}")
         except Content.DoesNotExist:
-            entry = None
-        return render_template('describe.html', entry=entry)
+            self.logger.warning(f"尝试访问不存在的内容 ID: {entry_id}")
+            return redirect(url_for('main'))
+        return render_template('describe.html', entry=content)
 
     def post(self, entry_id):
         """
@@ -40,41 +50,50 @@ class DescribeView(MethodView):
         返回:
             redirect: 处理完成后重定向到主页面
         """
+        # 从表单获取数据
         title = request.form['title']
         entry_type = request.form['entry_type']
         description = request.form['description']
         due_time_str = request.form['due_time']
         tag = request.form.get('tag', '')
         short_title = request.form.get('short_title') or title
-        link = request.form.get('link')
-        user = User_info.objects.get(username=session['username'])
+        # link不可能做更新，所以不需要重新获取
+
+        # 处理死线日期
         deadline_value = None
         if due_time_str and due_time_str.strip():
             deadline_value = due_time_str
-        content_data = {
-            'creator_id': user.id,
-            'describer_id': user.id,
-            'title': title,
-            'short_title': short_title,
-            'content': description,
-            'status': 'pending',
-            'type': entry_type,
-            'tag': tag,
-        }
-        if deadline_value is not None:
-            content_data['deadline'] = deadline_value
+
+        # 获取当前用户
+        user = User_info.objects.get(username=session['username'])
+
         try:
+            # 尝试获取现有内容
             content = Content.objects.get(id=entry_id)
+
+            # 更新内容字段
+            content.describer_id = user.id
+            content.title = title
+            content.short_title = short_title
+            content.content = description
+            content.type = entry_type
+            content.tag = tag
+            content.deadline = deadline_value
+
+            # 使用ContentStatus控制状态转移: draft->pending
+            status_manager = ContentStatus(content.status)
+            if status_manager.submit():
+                content.status = status_manager.string_en()
+                content.save()
+                self.logger.info(
+                    f"用户 {user.username} 更新了内容 ID {entry_id}: {title}，状态已更新为 {content.status}")
+            else:
+                self.logger.warning(
+                    f"用户 {user.username} 尝试更新内容 ID {entry_id} 时状态转换失败，当前状态: {content.status}")
+
         except Content.DoesNotExist:
-            content = Content.objects.create(**content_data)
-            return redirect(url_for('main'))
-        content.describer_id = content_data.get('describer_id', content.describer_id)
-        content.title = content_data.get('title', content.title)
-        content.short_title = content_data.get('short_title', content.short_title)
-        content.content = content_data.get('content', content.content)
-        content.status = content_data.get('status', content.status)
-        content.type = content_data.get('type', content.type)
-        content.tag = content_data.get('tag', content.tag)
-        content.deadline = content_data.get('deadline', content.deadline)
-        content.save()  # 保存更改
+            # 不应该创建新内容，这种情况应该由upload.py处理
+            self.logger.error(f"用户 {user.username} 尝试更新不存在的内容 ID: {entry_id}")
+            flash("内容不存在，请先上传内容")
+
         return redirect(url_for('main'))
