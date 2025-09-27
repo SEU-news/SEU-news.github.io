@@ -1,21 +1,29 @@
 import logging
 
+# 全局状态常量定义
+STATUS_DRAFT = 'draft'
+STATUS_PENDING = 'pending'
+STATUS_REVIEWED = 'reviewed'
+STATUS_REJECTED = 'rejected'
+STATUS_PUBLISHED = 'published'
+STATUS_TERMINATED = 'terminated'
+
 _status_map: dict[str, str] = {
-    'pending': '待审核',
-    'published': '已发布',
-    'reviewed': '已审核',
-    'rejected': '已拒绝',
-    'draft': '草稿',
-    'terminated': '已终止'
+    STATUS_PENDING: '待审核',
+    STATUS_PUBLISHED: '已发布',
+    STATUS_REVIEWED: '已审核',
+    STATUS_REJECTED: '已拒绝',
+    STATUS_DRAFT: '草稿',
+    STATUS_TERMINATED: '已终止'
 }
 
 _valid_transitions = {
-    'draft': ['pending', 'terminated'],
-    'pending': ['reviewed', 'rejected'],
-    'reviewed': ['published', 'pending'],
-    'rejected': ['pending'],
-    'published': ['terminated'],
-    'terminated': []
+    STATUS_DRAFT: [STATUS_PENDING, STATUS_TERMINATED],
+    STATUS_PENDING: [STATUS_REVIEWED, STATUS_REJECTED],
+    STATUS_REVIEWED: [STATUS_PUBLISHED, STATUS_PENDING],
+    STATUS_REJECTED: [STATUS_PENDING],
+    STATUS_PUBLISHED: [STATUS_TERMINATED],
+    STATUS_TERMINATED: []
 }
 
 
@@ -32,7 +40,7 @@ class ContentStatus:
         self._logger = logging.getLogger("Content_Status")
         self._status = status
         if not self.is_valid():
-            self._status = 'pending'
+            self._status = STATUS_PENDING
 
     def string_en(self) -> str:
         """
@@ -82,8 +90,8 @@ class ContentStatus:
         Returns:
             bool: 转换是否成功
         """
-        if self._can_transit_to('pending'):
-            self._status = 'pending'
+        if self._can_transit_to(STATUS_PENDING):
+            self._status = STATUS_PENDING
             return True
         return False
 
@@ -95,8 +103,8 @@ class ContentStatus:
         Returns:
             bool: 转换是否成功
         """
-        if self._can_transit_to('terminated'):
-            self._status = 'terminated'
+        if self._can_transit_to(STATUS_TERMINATED):
+            self._status = STATUS_TERMINATED
             return True
         return False
 
@@ -108,8 +116,8 @@ class ContentStatus:
         Returns:
             bool: 转换是否成功
         """
-        if self._can_transit_to('reviewed'):
-            self._status = 'reviewed'
+        if self._can_transit_to(STATUS_REVIEWED):
+            self._status = STATUS_REVIEWED
             return True
         return False
 
@@ -121,8 +129,8 @@ class ContentStatus:
         Returns:
             bool: 转换是否成功
         """
-        if self._can_transit_to('rejected'):
-            self._status = 'rejected'
+        if self._can_transit_to(STATUS_REJECTED):
+            self._status = STATUS_REJECTED
             return True
         return False
 
@@ -134,8 +142,8 @@ class ContentStatus:
         Returns:
             bool: 转换是否成功
         """
-        if self._can_transit_to('published'):
-            self._status = 'published'
+        if self._can_transit_to(STATUS_PUBLISHED):
+            self._status = STATUS_PUBLISHED
             return True
         return False
 
@@ -147,8 +155,8 @@ class ContentStatus:
         Returns:
             bool: 转换是否成功
         """
-        if self._can_transit_to('pending'):
-            self._status = 'pending'
+        if self._can_transit_to(STATUS_PENDING):
+            self._status = STATUS_PENDING
             return True
         return False
 
@@ -160,8 +168,8 @@ class ContentStatus:
         Returns:
             bool: 转换是否成功
         """
-        if self._can_transit_to('pending'):
-            self._status = 'pending'
+        if self._can_transit_to(STATUS_PENDING):
+            self._status = STATUS_PENDING
             return True
         return False
 
@@ -173,7 +181,7 @@ class ContentStatus:
         Returns:
             bool: 转换是否成功
         """
-        if self._can_transit_to('terminated'):
-            self._status = 'terminated'
+        if self._can_transit_to(STATUS_TERMINATED):
+            self._status = STATUS_TERMINATED
             return True
         return False
