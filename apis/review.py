@@ -8,6 +8,7 @@ from flask.views import MethodView
 
 from common.decorator.permission_required import PermissionDecorators
 from common.content_status import STATUS_REVIEWED, STATUS_PUBLISHED, STATUS_DRAFT, STATUS_PENDING
+from common.global_static import GLOBAL_TIMEZONE
 from django_models.models import Content, User_info
 
 
@@ -146,6 +147,9 @@ class ReviewView(MethodView):
         elif action == 'publish':
             content.status = STATUS_PUBLISHED
             update_fields.append('status')
+            # 当内容发布时，设置publish_at为当前时间（使用上海时区）
+            content.publish_at = GLOBAL_TIMEZONE.localize(datetime.now())
+            update_fields.append('publish_at')
             content.save(update_fields=update_fields)
             return "内容已发布"
 

@@ -6,6 +6,7 @@ from flask.views import MethodView
 
 from common.content_status import STATUS_PENDING
 from common.decorator.permission_required import PermissionDecorators
+from common.global_static import GLOBAL_TIMEZONE
 from django_models.models import User_info, Content
 
 
@@ -60,13 +61,17 @@ class UploadView(MethodView):
             return redirect(url_for('login'))
 
         # 处理截止时间，支持两种格式: YYYY-MM-DD 或 ISO标准格式
-        deadline = datetime(2099, 12, 31)  # 默认截止时间
+        deadline = GLOBAL_TIMEZONE.localize(datetime(2099, 12, 31))  # 默认截止时间
         if due_time:
             try:
                 if len(due_time) == 10:  # "YYYY-MM-DD"格式
                     deadline = datetime.strptime(due_time, '%Y-%m-%d')
+                    deadline = GLOBAL_TIMEZONE.localize(deadline)
                 else:  # ISO标准格式
                     deadline = datetime.fromisoformat(due_time)
+                    # 注意：fromisoformat可能已经包含时区信息，如果没有则添加上海时区
+                    if deadline.tzinfo is None:
+                        deadline = GLOBAL_TIMEZONE.localize(deadline)
             except ValueError:
                 self.logger.warning(f"用户 {user.username} 提供了无效的截止时间格式: {due_time}")
                 flash('Invalid date format for deadline')
@@ -85,7 +90,7 @@ class UploadView(MethodView):
                 type=content_type,
                 tag=tag,
                 deadline=deadline,
-                publish_at=datetime.now()
+                publish_at=GLOBAL_TIMEZONE.localize(datetime.now())
             )
 
             # 记录内容创建操作的日志
