@@ -122,7 +122,7 @@ class TypstView(MethodView):
                 deadline__isnull=False,
                 deadline__gte=target_date_obj,  # deadline大于等于目标日期
                 publish_at__date__lte=target_date_obj,  # 发布日期小于等于目标日期
-                publish_at__date__gte=date(2023, 1, 1)  # 发布日期大于等于2023年1月1日
+                publish_at__date__gte=datetime.date(2023, 1, 1)  # 发布日期大于等于2023年1月1日
             ).order_by('deadline')
 
         except ValueError:
