@@ -114,8 +114,8 @@
 
                     <div class="mt-3">
                         <button type="submit" id="approve-button" name="action" value="approve" class="btn btn-success">Approve (审核通过)</button>
-                        <button type="submit" id="modify-button" name="action" value="modify" class="btn btn-warning">Modify (修改并审核)</button>
-                        <button type="submit" id="publish-button" name="action" value="publish" class="btn btn-primary">Publish (直接发布)</button>
+<!--                        <button type="submit" id="modify-button" name="action" value="modify" class="btn btn-warning">Modify (修改并审核)</button>-->
+                        <button type="submit" id="publish-button" name="action" value="publish" class="btn btn-primary">Publish (发布已审核内容)</button>
                         <button type="submit" id="reject-button" name="action" value="reject" class="btn btn-danger">Reject (拒绝)</button>
                         <input type="reset" value="Reset" class="btn btn-secondary" />
                         <a href="{{ url_for('cancel', entry_id=entry.id) }}" class="btn btn-secondary">Cancel</a>
