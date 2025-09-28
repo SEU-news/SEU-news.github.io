@@ -203,24 +203,44 @@ class ReviewView(MethodView):
                 if due_time_str:
                     try:
                         due_time = datetime.strptime(due_time_str, '%Y-%m-%d').date()
-                        self.logger.debug(f"截止日期解析成功: {due_time}")
                     except ValueError:
                         self.logger.warning(f"无效的日期格式: {due_time_str}")
                         flash("日期格式错误")
                         return render_template('review.html', entry=content)
 
-                # 检查内容是否被修改
+                # 修复is_modified判断逻辑
                 original_deadline = content.deadline.strftime('%Y-%m-%d') if content.deadline else ''
                 new_deadline = due_time.strftime('%Y-%m-%d') if due_time else ''
 
-                is_modified = any([
-                    content.title != title,
-                    content.content != description,
-                    original_deadline != new_deadline,
-                    content.type != entry_type,
-                    (content.tag or '') != tag,
-                    (content.short_title or '') != short_title
-                ])
+                # 正确比较内容是否被修改
+                is_modified = (
+                        content.title != title or
+                        content.content != description or
+                        original_deadline != new_deadline or
+                        content.type != entry_type or
+                        (content.tag or '') != (tag or '') or
+                        (content.short_title or '') != (short_title or '')
+                )
+
+                # 如果内容被修改，记录修改前后的详细信息
+                if is_modified:
+                    modified_fields = []
+                    if content.title != title:
+                        modified_fields.append(f"title: '{content.title}' -> '{title}'")
+                    if content.content != description:
+                        modified_fields.append(f"content: '{content.content}' -> '{description}'")
+                    if original_deadline != new_deadline:
+                        modified_fields.append(f"deadline: '{original_deadline}' -> '{new_deadline}'")
+                    if content.type != entry_type:
+                        modified_fields.append(f"type: '{content.type}' -> '{entry_type}'")
+                    if (content.tag or '') != (tag or ''):
+                        modified_fields.append(f"tag: '{content.tag}' -> '{tag}'")
+                    if (content.short_title or '') != (short_title or ''):
+                        modified_fields.append(f"short_title: '{content.short_title}' -> '{short_title}'")
+
+                    self.logger.info(f"内容被修改，ID: {content.id}，修改字段: {', '.join(modified_fields)}")
+                else:
+                    self.logger.info(f"内容未被修改，ID: {content.id}")
 
                 self.logger.info(f"内容是否被修改: {is_modified}")
 

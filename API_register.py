@@ -23,7 +23,7 @@ from flask import Flask
 # 本地视图导入
 from apis.add_deadline import AddDeadlineView
 from apis.cancel import CancelView
-from apis.delete_entry import DeleteEntryView
+from apis.content_delete import DeleteEntryView
 from apis.describe import DescribeView
 from apis.latex import LatexView
 from apis.login import LoginView
