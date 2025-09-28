@@ -26,10 +26,22 @@ class MainView(MethodView):
             render_template: 主页面模板，包含内容条目列表
         """
 
-        # 每页大小
-        page_size = 4
         # 当前页
         page = int(request.args.get('page', 1))
+
+        # 默认每页条数
+        page_size = 10
+        try:
+            # 尝试从请求获取用户输入
+            page_size = int(request.args.get('page_size', page_size))
+            page_size = int(page_size)  # 转成数字
+            if page_size not in [5, 10, 20, 50]:
+                raise ValueError(f"非法 page_size: {page_size}")
+            logging.info(f"用户选择了主页展示的page_size: {page_size}")
+        except (ValueError, TypeError) as e:
+            logging.warning(f"用户请求了非法 page_size，使用默认值20。错误信息: {e}")
+            page_size = 10
+
         # 计算偏移
         offset = (page - 1) * page_size
 
@@ -81,5 +93,6 @@ class MainView(MethodView):
             'main.html',
             entries=contents,
             page=page,
+            page_size=page_size,
             total_pages=total_pages
         )

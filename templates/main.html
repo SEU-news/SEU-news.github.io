@@ -150,23 +150,35 @@
       <ul class="pagination justify-content-center">
         {% if page > 1 %}
         <li class="page-item">
-          <a class="page-link" href="{{ url_for('main', page=page-1) }}">上一页</a>
+          <a class="page-link" href="{{ url_for('main', page=page-1, page_size=page_size) }}">上一页</a>
         </li>
         {% endif %}
 
         {% for p in range(1, total_pages+1) %}
         <li class="page-item {% if p == page %}active{% endif %}">
-          <a class="page-link" href="{{ url_for('main', page=p) }}">{{ p }}</a>
+          <a class="page-link" href="{{ url_for('main', page=p, page_size=page_size) }}">{{ p }}</a>
         </li>
         {% endfor %}
 
         {% if page < total_pages %}
         <li class="page-item">
-          <a class="page-link" href="{{ url_for('main', page=page+1) }}">下一页</a>
+          <a class="page-link" href="{{ url_for('main', page=page+1, page_size=page_size) }}">下一页</a>
         </li>
         {% endif %}
       </ul>
     </nav>
+
+    <!-- 每页显示条数选择框 -->
+    <form method="GET" class="mb-3" action="{{ url_for('main') }}">
+        <label for="page_size">每页显示：</label>
+        <select name="page_size" id="page_size" onchange="this.form.submit()">
+            <option value="5" {% if page_size == 5 %}selected{% endif %}>5</option>
+            <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
+            <option value="20" {% if page_size == 20 %}selected{% endif %}>20</option>
+            <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+        </select>
+        <input type="hidden" name="page" value="{{ page }}">
+    </form>
 </div>
 
 <div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel"
