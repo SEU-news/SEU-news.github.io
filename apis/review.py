@@ -203,24 +203,24 @@ class ReviewView(MethodView):
                 if due_time_str:
                     try:
                         due_time = datetime.strptime(due_time_str, '%Y-%m-%d').date()
-                        self.logger.debug(f"截止日期解析成功: {due_time}")
                     except ValueError:
                         self.logger.warning(f"无效的日期格式: {due_time_str}")
                         flash("日期格式错误")
                         return render_template('review.html', entry=content)
 
-                # 检查内容是否被修改
+                # 修复is_modified判断逻辑
                 original_deadline = content.deadline.strftime('%Y-%m-%d') if content.deadline else ''
                 new_deadline = due_time.strftime('%Y-%m-%d') if due_time else ''
 
-                is_modified = any([
-                    content.title != title,
-                    content.content != description,
-                    original_deadline != new_deadline,
-                    content.type != entry_type,
-                    (content.tag or '') != tag,
-                    (content.short_title or '') != short_title
-                ])
+                # 正确比较内容是否被修改
+                is_modified = (
+                        content.title != title or
+                        content.content != description or
+                        original_deadline != new_deadline or
+                        content.type != entry_type or
+                        (content.tag or '') != (tag or '') or
+                        (content.short_title or '') != (short_title or '')
+                )
 
                 self.logger.info(f"内容是否被修改: {is_modified}")
 
