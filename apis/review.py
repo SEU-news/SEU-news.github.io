@@ -146,6 +146,8 @@ class ReviewView(MethodView):
         elif action == 'publish':
             content.status = STATUS_PUBLISHED
             update_fields.append('status')
+            content.publish_at = datetime.now()
+            update_fields.append('publish_at')
             content.save(update_fields=update_fields)
             return "内容已发布"
 
