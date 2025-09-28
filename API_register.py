@@ -65,7 +65,6 @@ def create_app():
     app.add_url_rule('/logout', view_func=LogoutView.as_view('logout'))
     app.add_url_rule('/paste', view_func=UploadUrlView.as_view('paste'), methods=['POST'])
     app.add_url_rule('/upload_image', view_func=UploadImageView.as_view('upload_image'), methods=['POST'])
-    app.add_url_rule('/search', view_func=SearchView.as_view('search'), methods=['GET'])
     app.add_url_rule('/typst/<date>', view_func=TypstView.as_view('typst_pub'))
     app.add_url_rule('/preview_edit', view_func=PreviewEditView.as_view('preview_edit'))
     app.add_url_rule('/latex/<date>', view_func=LatexView.as_view('latex_entries'))
