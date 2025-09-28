@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.utils import timezone
 from flask.views import MethodView
 
-from common.global_static import LINK_REGEX
+from common.global_static import LINK_REGEX, GLOBAL_TIMEZONE
 from common.methods.is_valid_url import is_valid_url
 from django_models.models import Content
 
@@ -42,23 +42,27 @@ class TypstView(MethodView):
 
     def _generate_typst_data(self, date_str):
         """生成指定日期的typst数据"""
-        today_str = datetime.now().strftime("%Y-%m-%d")
+        today_str = GLOBAL_TIMEZONE.localize(datetime.now()).strftime("%Y-%m-%d")
         self.logger.info(f"生成typst数据，日期: {date_str}, 今日: {today_str}")
 
         try:
             target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             # 创建当天的开始和结束时间（使用时区感知的datetime）
-            start_of_day = timezone.make_aware(datetime.combine(target_date, time.min))
-            end_of_day = timezone.make_aware(datetime.combine(target_date, time.max))
+            start_of_day = GLOBAL_TIMEZONE.localize(datetime.combine(target_date, time.min))
+            end_of_day = GLOBAL_TIMEZONE.localize(datetime.combine(target_date, time.max))
             self.logger.info(f"查询时间范围: {start_of_day} 到 {end_of_day}")
 
         except ValueError as e:
             self.logger.error(f"日期解析失败: {e}")
             # 使用当前时间作为默认值
-            now = timezone.now()
+            now = GLOBAL_TIMEZONE.localize(datetime.now())
             start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
             end_of_day = now.replace(hour=23, minute=59, second=59, microsecond=999999)
 
+        # 根据查询日期是否为今天来决定查询逻辑：
+        # 1. 如果查询的不是今天，则只查询publish_at在指定日期范围内的内容
+        # 2. 如果查询的是今天，则查询publish_at在指定日期范围内的内容，
+        #    或者publish_at为null的内容（即尚未发布的今天创建的内容）
         if date_str != today_str:
             content_query = Content.objects.filter(
                 publish_at__gte=start_of_day,
@@ -120,10 +124,10 @@ class TypstView(MethodView):
             target_date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
             # 创建日期范围用于查询
             start_date = datetime.combine(date(2023, 1, 1), time.min)
-            start_date = timezone.make_aware(start_date)
+            start_date = GLOBAL_TIMEZONE.localize(start_date)
             target_end_date = datetime.combine(target_date_obj, time.max)
-            target_end_date = timezone.make_aware(target_end_date)
-            
+            target_end_date = GLOBAL_TIMEZONE.localize(target_end_date)
+
             # 修复查询逻辑，确保正确获取deadline条目
             due_content = Content.objects.filter(
                 deadline__isnull=False,
