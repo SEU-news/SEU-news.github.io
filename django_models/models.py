@@ -90,9 +90,27 @@ class Content(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def add_image(self, image_path):
+        """
+        将一个图片路径添加到image_list字段中
+        
+        Args:
+            image_path (str): 单个图片文件的完整路径
+            
+        Returns:
+            bool: 成功添加返回True
+            
+        Raises:
+            ValueError: 当image_path为空或无效时抛出
+            json.JSONDecodeError: 当image_list不是有效的JSON格式时抛出
+            Exception: 其他处理异常
+        """
+        # 检查输入参数
+        if not image_path:
+            raise ValueError("图片路径不能为空")
+            
         try:
             # 解析现有的JSON字符串
-            if self.image_list:
+            if self.image_list and self.image_list != '[]':
                 image_list_data = json.loads(self.image_list)
             else:
                 image_list_data = []
@@ -107,9 +125,10 @@ class Content(models.Model):
             self.image_list = json.dumps(image_list_data)
             return True
 
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(f"解析图片列表JSON失败: {str(e)}", e.doc, e.pos)
         except Exception as e:
-            print(f"添加图片失败: {str(e)}")
-            return False
+            raise Exception(f"添加图片失败: {str(e)}")
 
     @property
     def reviewer_username(self):

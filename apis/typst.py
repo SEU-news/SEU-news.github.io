@@ -1,15 +1,14 @@
 import json
 import logging
 import re
+from datetime import time
 
 from django.db.models import Q
 from flask.views import MethodView
-from datetime import datetime as dt, time
 
-from common.methods.allowed_file import allowed_file
+from common.global_static import LINK_REGEX
 from common.methods.is_valid_url import is_valid_url
 from django_models.models import Content
-from common.global_static import LINK_REGEX
 
 
 class TypstView(MethodView):
@@ -88,8 +87,7 @@ def typst(date):
             else:
                 splitted.append({"type": "text", "content": e})
         description = splitted
-        if allowed_file(link):
-            link = None
+
         if (tag == "讲座" or type == "讲座"):
             lecture.append({"title": title, "description": description, "link": link, "id": id})
         elif (tag == "院级活动"):
@@ -136,8 +134,6 @@ def typst(date):
         id = content_item.id
         if short_title:
             title = short_title
-        if allowed_file(link):
-            link = None
 
         deadline_str = deadline.strftime('%Y-%m-%d %H:%M:%S') if deadline else None
         publish_time_str = publish_time.strftime('%Y-%m-%d %H:%M:%S') if publish_time else None

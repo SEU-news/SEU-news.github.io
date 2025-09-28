@@ -1,3 +1,5 @@
+# 不知道干嘛的，什么用呢？
+
 import logging
 
 from flask.views import MethodView

@@ -54,7 +54,7 @@
                         <select name="entry_type" id="typeSelect" onchange='CheckType(this);' class="form-control">
                             <option value="活动预告" {% if entry.type=='活动预告' %}selected{% endif %}>活动预告</option>
                             <option value="参考消息" {% if entry.type=='参考消息' %}selected{% endif %}>参考消息</option>
-                            <option value="others" {% if entry.type not in ['活动预告','讲座','参考消息'] %}selected{% endif %}>自定义</option>
+                            <option value="自定义" {% if entry.type not in ['活动预告','讲座','参考消息'] %}selected{% endif %}>自定义</option>
                         </select>
                         <input type="text" name="customType" id="customType" class="form-control" style='display:none;'
                         placeholder="请输入自定义的版块名称"
@@ -114,8 +114,8 @@
 
                     <div class="mt-3">
                         <button type="submit" id="approve-button" name="action" value="approve" class="btn btn-success">Approve (审核通过)</button>
-                        <button type="submit" id="modify-button" name="action" value="modify" class="btn btn-warning">Modify (修改并审核)</button>
-                        <button type="submit" id="publish-button" name="action" value="publish" class="btn btn-primary">Publish (直接发布)</button>
+<!--                        <button type="submit" id="modify-button" name="action" value="modify" class="btn btn-warning">Modify (修改并审核)</button>-->
+                        <button type="submit" id="publish-button" name="action" value="publish" class="btn btn-primary">Publish (发布已审核内容)</button>
                         <button type="submit" id="reject-button" name="action" value="reject" class="btn btn-danger">Reject (拒绝)</button>
                         <input type="reset" value="Reset" class="btn btn-secondary" />
                         <a href="{{ url_for('cancel', entry_id=entry.id) }}" class="btn btn-secondary">Cancel</a>
