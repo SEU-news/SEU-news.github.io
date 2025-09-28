@@ -26,14 +26,14 @@ class MainView(MethodView):
             render_template: 主页面模板，包含内容条目列表
         """
 
-        # 获取排序参数，默认按 updated_at 降序
-        sort_field = request.args.get('sort_field', 'updated_at')
+        # 获取排序参数，默认按 created_at 降序
+        sort_field = request.args.get('sort_field', 'created_at')
         sort_order = request.args.get('sort_order', 'desc')
 
         # 只允许我们定义好的字段，避免注入
         allowed_fields = ['created_at', 'updated_at']
         if sort_field not in allowed_fields:
-            sort_field = 'updated_at'
+            sort_field = 'created_at'
 
         order_by = f"-{sort_field}" if sort_order == 'desc' else sort_field
 
