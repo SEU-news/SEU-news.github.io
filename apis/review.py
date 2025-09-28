@@ -242,8 +242,6 @@ class ReviewView(MethodView):
                 else:
                     self.logger.info(f"内容未被修改，ID: {content.id}")
 
-                self.logger.info(f"内容是否被修改: {is_modified}")
-
                 # 验证操作和状态
                 is_valid, error_msg = self._validate_action_and_state(action, content.status, is_modified, current_user,
                                                                       content)
