@@ -41,9 +41,9 @@
         <h2>车大消息 消息刊载</h2>
         <div>
             <a href="{{ url_for('preview_edit') }}" class="btn btn-outline-primary">预览</a>
-<!--            <a href="{{ url_for('add_deadline') }}" class="btn btn-secondary">上传仅有DDL的消息</a>-->
+            <a href="{{ url_for('add_deadline') }}" class="btn btn-secondary">上传仅有DDL的消息</a>
             <a href="{{ url_for('upload') }}" class="btn btn-primary">上传纯文本消息</a>
-            <a href="{{ url_for('publish') }}" class="btn btn-success">报刊发行</a>
+            <a href="{{ url_for('publish') }}" class="btn btn-success">发布</a>
         </div>
     </div>
 
@@ -80,8 +80,8 @@
         {% if entry.type != "DDLOnly" %}
         <tr>
             <td>
-                {% if not entry.content %}
-                <a href="{{ url_for('describe', entry_id=entry.id) }}" class="btn btn-sm btn-danger">上工</a>
+                {% if entry.status == 'draft' %}
+                <a href="{{ url_for('describe', entry_id=entry.id) }}" class="btn btn-sm btn-danger">编辑</a>
                 {% else %}
                 <a href="{{ url_for('review', entry_id=entry.id) }}"
                    class="{% if entry.status == 'reviewed' or entry.status == 'published' %}btn btn-sm btn-success{% else %}btn btn-sm btn-warning{% endif %}">
