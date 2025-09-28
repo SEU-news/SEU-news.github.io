@@ -59,20 +59,10 @@ class TypstView(MethodView):
             start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
             end_of_day = now.replace(hour=23, minute=59, second=59, microsecond=999999)
 
-        # 根据查询日期是否为今天来决定查询逻辑：
-        # 1. 如果查询的不是今天，则只查询publish_at在指定日期范围内的内容
-        # 2. 如果查询的是今天，则查询publish_at在指定日期范围内的内容，
-        #    或者publish_at为null的内容（即尚未发布的今天创建的内容）
-        if date_str != today_str:
-            content_query = Content.objects.filter(
-                publish_at__gte=start_of_day,
-                publish_at__lte=end_of_day
-            )
-        else:
-            content_query = Content.objects.filter(
-                Q(publish_at__gte=start_of_day, publish_at__lte=end_of_day) |
-                Q(publish_at__isnull=True)
-            )
+        content_query = Content.objects.filter(
+            publish_at__gte=start_of_day,
+            publish_at__lte=end_of_day
+        )
 
         other, college, club, lecture = [], [], [], []
         for content_item in content_query:
