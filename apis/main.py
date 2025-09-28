@@ -26,18 +26,26 @@ class MainView(MethodView):
             render_template: 主页面模板，包含内容条目列表
         """
 
+        # 懒加载
+        qs = Content.objects.select_related().all().order_by('-updated_at')
+        total = qs.count()  # 总条数
+
         # 当前页
         page = int(request.args.get('page', 1))
 
         # 默认每页条数
         page_size = 10
+        legal_provisions = [5, 10, 20, 50]
         try:
             # 尝试从请求获取用户输入
             page_size = int(request.args.get('page_size', page_size))
             page_size = int(page_size)  # 转成数字
-            if page_size not in [5, 10, 20, 50]:
+            if page_size not in legal_provisions:
                 raise ValueError(f"非法 page_size: {page_size}")
-            logging.info(f"用户选择了主页展示的page_size: {page_size}")
+            if total < page_size:
+                page_size = max([x for x in legal_provisions if x <= total], default=None)
+                logging.warning(f"用户选择了主页展示的 page_size 小于 总条目, 调整为: {page_size}")
+            else: logging.info(f"用户选择了主页展示的 page_size: {page_size}")
         except (ValueError, TypeError) as e:
             logging.warning(f"用户请求了非法 page_size，使用默认值20。错误信息: {e}")
             page_size = 10
@@ -48,11 +56,13 @@ class MainView(MethodView):
         # 一次查出所有行
         # contents = Content.objects.select_related().all().order_by('-updated_at')
 
-        # 懒加载，分页
-        qs = Content.objects.select_related().all().order_by('-updated_at')
-        total = qs.count()  # 总条数
+        # 分页
         contents = qs[offset:offset + page_size]  # 当前页数据
         total_pages = (total + page_size - 1) // page_size
+
+        # 当前页附近页码
+        nearby_start = max(1, page - 2)
+        nearby_end = min(total_pages, page + 2)
 
         status_map = {
             'pending': '待审核',
@@ -94,5 +104,7 @@ class MainView(MethodView):
             entries=contents,
             page=page,
             page_size=page_size,
-            total_pages=total_pages
+            total_pages=total_pages,
+            nearby_start=nearby_start,
+            nearby_end=nearby_end,
         )
