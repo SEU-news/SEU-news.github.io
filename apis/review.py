@@ -222,6 +222,26 @@ class ReviewView(MethodView):
                         (content.short_title or '') != (short_title or '')
                 )
 
+                # 如果内容被修改，记录修改前后的详细信息
+                if is_modified:
+                    modified_fields = []
+                    if content.title != title:
+                        modified_fields.append(f"title: '{content.title}' -> '{title}'")
+                    if content.content != description:
+                        modified_fields.append(f"content: '{content.content}' -> '{description}'")
+                    if original_deadline != new_deadline:
+                        modified_fields.append(f"deadline: '{original_deadline}' -> '{new_deadline}'")
+                    if content.type != entry_type:
+                        modified_fields.append(f"type: '{content.type}' -> '{entry_type}'")
+                    if (content.tag or '') != (tag or ''):
+                        modified_fields.append(f"tag: '{content.tag}' -> '{tag}'")
+                    if (content.short_title or '') != (short_title or ''):
+                        modified_fields.append(f"short_title: '{content.short_title}' -> '{short_title}'")
+
+                    self.logger.info(f"内容被修改，ID: {content.id}，修改字段: {', '.join(modified_fields)}")
+                else:
+                    self.logger.info(f"内容未被修改，ID: {content.id}")
+
                 self.logger.info(f"内容是否被修改: {is_modified}")
 
                 # 验证操作和状态
