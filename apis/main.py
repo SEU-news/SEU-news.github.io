@@ -1,6 +1,6 @@
 import logging
 
-from flask import session, render_template
+from flask import session, render_template, request
 from flask.views import MethodView
 
 from common.decorator.permission_required import PermissionDecorators
@@ -25,7 +25,49 @@ class MainView(MethodView):
         返回:
             render_template: 主页面模板，包含内容条目列表
         """
-        contents = Content.objects.select_related().all().order_by('-updated_at')
+        # 搜索关键字
+        query = request.args.get('q', '').strip()
+
+        # 懒加载
+        qs = Content.objects.select_related().all().order_by('-updated_at')
+        if query:
+            qs = qs.filter(title__icontains=query)
+        total = qs.count()  # 总条数
+
+        # 当前页
+        page = int(request.args.get('page', default=1, type=int))
+
+        legal_provisions = [10, 20, 50, 100]
+        try:
+            # 尝试从请求获取用户输入
+            page_size = request.args.get('page_size', default=10)
+            page_size = int(page_size)  # 转成数字
+            if page_size not in legal_provisions:
+                raise ValueError(f"非法 page_size: {page_size}")
+            if total == 0:
+                page_size = legal_provisions[0]  # 总条目为0时默认取最小值
+            elif total < page_size:
+                page_size = min([x for x in legal_provisions if x >= total], default=legal_provisions[-1])
+                logging.warning(f"用户选择了主页展示的 page_size 小于 总条目, 调整为: {page_size}")
+            else:
+                logging.info(f"用户选择了主页展示的 page_size: {page_size}")
+        except (ValueError, TypeError) as e:
+            page_size = 10  # 默认每页条数
+            logging.warning(f"用户请求了非法 page_size，使用默认值 {page_size}。错误信息: {e}")
+
+        # 计算偏移
+        offset = (page - 1) * page_size
+
+        # 一次查出所有行
+        # contents = Content.objects.select_related().all().order_by('-updated_at')
+
+        # 分页
+        contents = qs[offset:offset + page_size]  # 当前页数据
+        total_pages = (total + page_size - 1) // page_size
+
+        # 当前页附近页码
+        nearby_start = max(1, page - 2)
+        nearby_end = min(total_pages, page + 2)
 
         status_map = {
             'pending': '待审核',
@@ -62,4 +104,13 @@ class MainView(MethodView):
 
             logging.debug(f"Content ID: {content.id}, Status: {content.status}, Display: {content.status_display}")
 
-        return render_template('main.html', entries=contents)
+        return render_template(
+            'main.html',
+            entries=contents,
+            page=page,
+            page_size=page_size,
+            total_pages=total_pages,
+            nearby_start=nearby_start,
+            nearby_end=nearby_end,
+            query=query,
+        )
