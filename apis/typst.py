@@ -40,13 +40,13 @@ class TypstView(MethodView):
         return json.dumps(typst_data, ensure_ascii=False, indent=2), 200, {
             'Content-Type': 'application/json; charset=utf-8'}
 
-    def _generate_typst_data(self, date):
+    def _generate_typst_data(self, date_str):
         """生成指定日期的typst数据"""
         today_str = datetime.now().strftime("%Y-%m-%d")
-        self.logger.info(f"生成typst数据，日期: {date}, 今日: {today_str}")
+        self.logger.info(f"生成typst数据，日期: {date_str}, 今日: {today_str}")
 
         try:
-            target_date = datetime.strptime(date, '%Y-%m-%d').date()
+            target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             # 创建当天的开始和结束时间（使用时区感知的datetime）
             start_of_day = timezone.make_aware(datetime.combine(target_date, time.min))
             end_of_day = timezone.make_aware(datetime.combine(target_date, time.max))
@@ -59,7 +59,7 @@ class TypstView(MethodView):
             start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
             end_of_day = now.replace(hour=23, minute=59, second=59, microsecond=999999)
 
-        if date != today_str:
+        if date_str != today_str:
             content_query = Content.objects.filter(
                 publish_at__gte=start_of_day,
                 publish_at__lte=end_of_day
@@ -102,7 +102,7 @@ class TypstView(MethodView):
                 other.append({"title": title, "description": description, "link": link, "id": id})
 
         data = {
-            "date": date,
+            "date": date_str,
             "no": 1,
             "first-v": 3,
             "lecture-v": 3,
@@ -117,7 +117,7 @@ class TypstView(MethodView):
 
         # 修复deadline条目获取问题
         try:
-            target_date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+            target_date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
             # 修复查询逻辑，确保正确获取deadline条目
             due_content = Content.objects.filter(
                 deadline__isnull=False,
