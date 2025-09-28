@@ -1,6 +1,6 @@
 import logging
 
-from flask import session, render_template
+from flask import session, render_template, request
 from flask.views import MethodView
 
 from common.decorator.permission_required import PermissionDecorators
@@ -25,7 +25,22 @@ class MainView(MethodView):
         返回:
             render_template: 主页面模板，包含内容条目列表
         """
-        contents = Content.objects.select_related().all().order_by('-updated_at')
+
+        # 每页大小
+        page_size = 4
+        # 当前页
+        page = int(request.args.get('page', 1))
+        # 计算偏移
+        offset = (page - 1) * page_size
+
+        # 一次查出所有行
+        # contents = Content.objects.select_related().all().order_by('-updated_at')
+
+        # 懒加载，分页
+        qs = Content.objects.select_related().all().order_by('-updated_at')
+        total = qs.count()  # 总条数
+        contents = qs[offset:offset + page_size]  # 当前页数据
+        total_pages = (total + page_size - 1) // page_size
 
         status_map = {
             'pending': '待审核',
@@ -62,4 +77,9 @@ class MainView(MethodView):
 
             logging.debug(f"Content ID: {content.id}, Status: {content.status}, Display: {content.status_display}")
 
-        return render_template('main.html', entries=contents)
+        return render_template(
+            'main.html',
+            entries=contents,
+            page=page,
+            total_pages=total_pages
+        )
