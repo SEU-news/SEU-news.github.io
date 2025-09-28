@@ -4,6 +4,7 @@ import re
 from datetime import time, datetime, date
 
 from django.db.models import Q
+from django.utils import timezone
 from flask.views import MethodView
 
 from common.global_static import LINK_REGEX
@@ -46,15 +47,15 @@ class TypstView(MethodView):
 
         try:
             target_date = datetime.strptime(date, '%Y-%m-%d').date()
-            # 创建当天的开始和结束时间
-            start_of_day = datetime.combine(target_date, time.min)
-            end_of_day = datetime.combine(target_date, time.max)
+            # 创建当天的开始和结束时间（使用时区感知的datetime）
+            start_of_day = timezone.make_aware(datetime.combine(target_date, time.min))
+            end_of_day = timezone.make_aware(datetime.combine(target_date, time.max))
             self.logger.info(f"查询时间范围: {start_of_day} 到 {end_of_day}")
 
         except ValueError as e:
             self.logger.error(f"日期解析失败: {e}")
             # 使用当前时间作为默认值
-            now = datetime.now()
+            now = timezone.now()
             start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
             end_of_day = now.replace(hour=23, minute=59, second=59, microsecond=999999)
 
@@ -120,9 +121,9 @@ class TypstView(MethodView):
             # 修复查询逻辑，确保正确获取deadline条目
             due_content = Content.objects.filter(
                 deadline__isnull=False,
-                deadline__gte=target_date_obj,  # deadline大于等于目标日期
+                deadline__date__gte=target_date_obj,  # deadline日期大于等于目标日期
                 publish_at__date__lte=target_date_obj,  # 发布日期小于等于目标日期
-                publish_at__date__gte=datetime.date(2023, 1, 1)  # 发布日期大于等于2023年1月1日
+                publish_at__date__gte=date(2023, 1, 1)  # 发布日期大于等于2023年1月1日
             ).order_by('deadline')
 
         except ValueError:
