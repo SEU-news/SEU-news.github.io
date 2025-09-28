@@ -118,12 +118,18 @@ class TypstView(MethodView):
         # 修复deadline条目获取问题
         try:
             target_date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+            # 创建日期范围用于查询
+            start_date = datetime.combine(date(2023, 1, 1), time.min)
+            start_date = timezone.make_aware(start_date)
+            target_end_date = datetime.combine(target_date_obj, time.max)
+            target_end_date = timezone.make_aware(target_end_date)
+            
             # 修复查询逻辑，确保正确获取deadline条目
             due_content = Content.objects.filter(
                 deadline__isnull=False,
-                deadline__date__gte=target_date_obj,  # deadline日期大于等于目标日期
-                publish_at__date__lte=target_date_obj,  # 发布日期小于等于目标日期
-                publish_at__date__gte=date(2023, 1, 1)  # 发布日期大于等于2023年1月1日
+                deadline__gte=target_date_obj,  # deadline日期大于等于目标日期
+                publish_at__lte=target_end_date,  # 发布日期小于等于目标日期
+                publish_at__gte=start_date  # 发布日期大于等于2023年1月1日
             ).order_by('deadline')
 
         except ValueError:
