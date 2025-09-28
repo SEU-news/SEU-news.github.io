@@ -4,24 +4,21 @@ import logging
 STATUS_DRAFT = 'draft'
 STATUS_PENDING = 'pending'
 STATUS_REVIEWED = 'reviewed'
-STATUS_REJECTED = 'rejected'
 STATUS_PUBLISHED = 'published'
 STATUS_TERMINATED = 'terminated'
 
 _status_map: dict[str, str] = {
-    STATUS_PENDING: '待审核',
-    STATUS_PUBLISHED: '已发布',
-    STATUS_REVIEWED: '已审核',
-    STATUS_REJECTED: '已拒绝',
     STATUS_DRAFT: '草稿',
+    STATUS_PENDING: '待审核',
+    STATUS_REVIEWED: '已审核',
+    STATUS_PUBLISHED: '已发布',
     STATUS_TERMINATED: '已终止'
 }
 
 _valid_transitions = {
     STATUS_DRAFT: [STATUS_PENDING, STATUS_TERMINATED],
-    STATUS_PENDING: [STATUS_REVIEWED, STATUS_REJECTED],
-    STATUS_REVIEWED: [STATUS_PUBLISHED, STATUS_PENDING],
-    STATUS_REJECTED: [STATUS_PENDING],
+    STATUS_PENDING: [STATUS_REVIEWED, STATUS_DRAFT],
+    STATUS_REVIEWED: [STATUS_PUBLISHED, STATUS_DRAFT],
     STATUS_PUBLISHED: [STATUS_TERMINATED],
     STATUS_TERMINATED: []
 }
@@ -40,7 +37,7 @@ class ContentStatus:
         self._logger = logging.getLogger("Content_Status")
         self._status = status
         if not self.is_valid():
-            self._status = STATUS_PENDING
+            self._status = STATUS_DRAFT
 
     def string_en(self) -> str:
         """
@@ -58,7 +55,7 @@ class ContentStatus:
         Returns:
             str: 中文状态显示
         """
-        return _status_map.get(self._status, '待审核')
+        return _status_map.get(self._status, '草稿')
 
     def is_valid(self) -> bool:
         """
@@ -123,14 +120,14 @@ class ContentStatus:
 
     def reject(self) -> bool:
         """
-        pending -> rejected
-        审核不通过
+        pending -> draft
+        审核驳回，从待审核状态返回草稿状态
         
         Returns:
             bool: 转换是否成功
         """
-        if self._can_transit_to(STATUS_REJECTED):
-            self._status = STATUS_REJECTED
+        if self._can_transit_to(STATUS_DRAFT):
+            self._status = STATUS_DRAFT
             return True
         return False
 
@@ -149,27 +146,14 @@ class ContentStatus:
 
     def return_for_revision(self) -> bool:
         """
-        reviewed -> pending
-        返回修改
+        reviewed -> draft
+        返回修改（已审核状态下返回修改）
         
         Returns:
             bool: 转换是否成功
         """
-        if self._can_transit_to(STATUS_PENDING):
-            self._status = STATUS_PENDING
-            return True
-        return False
-
-    def resubmit(self) -> bool:
-        """
-        rejected -> pending
-        重新提交
-        
-        Returns:
-            bool: 转换是否成功
-        """
-        if self._can_transit_to(STATUS_PENDING):
-            self._status = STATUS_PENDING
+        if self._can_transit_to(STATUS_DRAFT):
+            self._status = STATUS_DRAFT
             return True
         return False
 
