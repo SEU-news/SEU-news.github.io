@@ -25,30 +25,35 @@ class MainView(MethodView):
         返回:
             render_template: 主页面模板，包含内容条目列表
         """
+        # 搜索关键字
+        query = request.args.get('q', '').strip()
 
         # 懒加载
         qs = Content.objects.select_related().all().order_by('-updated_at')
+        if query:
+            qs = qs.filter(title__icontains=query)
         total = qs.count()  # 总条数
 
         # 当前页
-        page = int(request.args.get('page', 1))
+        page = int(request.args.get('page', default=1, type=int))
 
-        # 默认每页条数
-        page_size = 10
-        legal_provisions = [5, 10, 20, 50]
+        legal_provisions = [10, 20, 50, 100]
         try:
             # 尝试从请求获取用户输入
-            page_size = int(request.args.get('page_size', page_size))
+            page_size = request.args.get('page_size', default=10)
             page_size = int(page_size)  # 转成数字
             if page_size not in legal_provisions:
                 raise ValueError(f"非法 page_size: {page_size}")
-            if total < page_size:
-                page_size = max([x for x in legal_provisions if x <= total], default=None)
+            if total == 0:
+                page_size = legal_provisions[0]  # 总条目为0时默认取最小值
+            elif total < page_size:
+                page_size = min([x for x in legal_provisions if x >= total], default=legal_provisions[-1])
                 logging.warning(f"用户选择了主页展示的 page_size 小于 总条目, 调整为: {page_size}")
-            else: logging.info(f"用户选择了主页展示的 page_size: {page_size}")
+            else:
+                logging.info(f"用户选择了主页展示的 page_size: {page_size}")
         except (ValueError, TypeError) as e:
-            logging.warning(f"用户请求了非法 page_size，使用默认值20。错误信息: {e}")
-            page_size = 10
+            page_size = 10  # 默认每页条数
+            logging.warning(f"用户请求了非法 page_size，使用默认值 {page_size}。错误信息: {e}")
 
         # 计算偏移
         offset = (page - 1) * page_size
@@ -107,4 +112,5 @@ class MainView(MethodView):
             total_pages=total_pages,
             nearby_start=nearby_start,
             nearby_end=nearby_end,
+            query=query,
         )
