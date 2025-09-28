@@ -25,11 +25,23 @@ class MainView(MethodView):
         返回:
             render_template: 主页面模板，包含内容条目列表
         """
+
+        # 获取排序参数，默认按 updated_at 降序
+        sort_field = request.args.get('sort_field', 'updated_at')
+        sort_order = request.args.get('sort_order', 'desc')
+
+        # 只允许我们定义好的字段，避免注入
+        allowed_fields = ['created_at', 'updated_at']
+        if sort_field not in allowed_fields:
+            sort_field = 'updated_at'
+
+        order_by = f"-{sort_field}" if sort_order == 'desc' else sort_field
+
         # 搜索关键字
         query = request.args.get('q', '').strip()
 
-        # 懒加载
-        qs = Content.objects.select_related().all().order_by('-updated_at')
+        # 懒加载 + 排序
+        qs = Content.objects.select_related().all().order_by(order_by)
         if query:
             qs = qs.filter(title__icontains=query)
         total = qs.count()  # 总条数

@@ -18,7 +18,8 @@
                 <input type="hidden" name="page" value="{{ page }}">
                 <input type="hidden" name="page_size" value="{{ page_size }}">
                 <div class="input-group">
-                    <input type="text" class="form-control" name="q" placeholder="Search entries..." value="{{ query }}">
+                    <input type="text" class="form-control" name="q" placeholder="Search entries..."
+                           value="{{ query }}">
                     <button class="btn btn-outline-secondary" type="submit">Search</button>
                 </div>
             </form>
@@ -30,13 +31,13 @@
     </div>
 
     {% with messages = get_flashed_messages() %}
-    {% if messages %}
-    <div class="alert alert-info" role="alert">
-        {% for message in messages %}
-        <div>{{ message|safe }}</div>
-        {% endfor %}
-    </div>
-    {% endif %}
+        {% if messages %}
+            <div class="alert alert-info" role="alert">
+                {% for message in messages %}
+                    <div>{{ message|safe }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
     {% endwith %}
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -63,6 +64,32 @@
         </div>
     </form>
 
+    <div class="d-flex flex-wrap mb-3">
+        <!-- 上传时间 -->
+        <a href="{{ url_for('main', sort_field='created_at', sort_order='asc',
+         q=query, page_size=page_size) }}"
+           class="btn btn-outline-primary me-2 mb-2">
+            按上传时间 ↑
+        </a>
+        <a href="{{ url_for('main', sort_field='created_at', sort_order='desc',
+         q=query, page_size=page_size) }}"
+           class="btn btn-outline-primary me-2 mb-2">
+            按上传时间 ↓
+        </a>
+
+        <!-- 更新时间 -->
+        <a href="{{ url_for('main', sort_field='updated_at', sort_order='asc',
+         q=query, page_size=page_size) }}"
+           class="btn btn-outline-secondary me-2 mb-2">
+            按更新时间 ↑
+        </a>
+        <a href="{{ url_for('main', sort_field='updated_at', sort_order='desc',
+         q=query, page_size=page_size) }}"
+           class="btn btn-outline-secondary mb-2">
+            按更新时间 ↓
+        </a>
+    </div>
+
     <table class="table table-hover">
         <thead>
         <tr>
@@ -79,111 +106,119 @@
         </thead>
         <tbody>
         {% for entry in entries %}
-        {% if entry.type != "DDLOnly" %}
-        <tr>
-            <td>
-                {% if entry.status == 'draft' %}
-                <a href="{{ url_for('describe', entry_id=entry.id) }}" class="btn btn-sm btn-danger">编辑</a>
-                {% else %}
-                <a href="{{ url_for('review', entry_id=entry.id) }}"
-                   class="{% if entry.status == 'reviewed' or entry.status == 'published' %}btn btn-sm btn-success{% else %}btn btn-sm btn-warning{% endif %}">
-                    {% if entry.status == 'reviewed' or entry.status == 'published' %} 修改 {% else %} 审核 {% endif %}
-                </a>
-                {% endif %}
+            {% if entry.type != "DDLOnly" %}
+                <tr>
+                    <td>
+                        {% if entry.status == 'draft' %}
+                            <a href="{{ url_for('describe', entry_id=entry.id) }}"
+                               class="btn btn-sm btn-danger">编辑</a>
+                        {% else %}
+                            <a href="{{ url_for('review', entry_id=entry.id) }}"
+                               class="{% if entry.status == 'reviewed' or entry.status == 'published' %}btn btn-sm btn-success{% else %}btn btn-sm btn-warning{% endif %}">
+                                {% if entry.status == 'reviewed' or entry.status == 'published' %} 修改 {% else %}
+                                    审核 {% endif %}
+                            </a>
+                        {% endif %}
 
-                <!-- Check if current user is the creator for delete permission -->
-                {% set current_user_id = None %}
-                {% for user in [session.get('username')] %}
-                    {% if user %}
-                        {% set current_user_id = user %}
-                    {% endif %}
-                {% endfor %}
+                        <!-- Check if current user is the creator for delete permission -->
+                        {% set current_user_id = None %}
+                        {% for user in [session.get('username')] %}
+                            {% if user %}
+                                {% set current_user_id = user %}
+                            {% endif %}
+                        {% endfor %}
 
-                {% if entry.creator_username == session['username'] %}
-                <form action="{{ url_for('delete_entry', entry_id=entry.id) }}" method="POST"
-                      style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
-                    <button type="submit" class="btn btn-sm btn-danger">删除</button>
-                </form>
-                {% endif %}
-            </td>
-            <td>
-                {% if entry.link %}
-                <a target="_blank" rel="noopener noreferrer"
-                   href="{% if 'http' in entry.link %}{{ entry.link }}{% else %}{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}{% endif %}">
-                    {% if entry.title|length > 15 %}
-                    {{ entry.title[:15] }}...
-                    {% else %}
-                    {{ entry.title }}
-                    {% endif %}
-                </a>
-                {% else %}
-                {% if entry.title|length > 15 %}
-                {{ entry.title[:15] }}...
-                {% else %}
-                {{ entry.title }}
-                {% endif %}
-                {% endif %}
-            </td>
-            <td class="{% if entry.status == 'pending' %}table-secondary{% elif entry.status == 'draft' %}table-info{% elif entry.status == 'reviewed' %}table-success{% elif entry.status == 'rejected' %}table-danger{% elif entry.status == 'published' %}table-primary{% else %}table-light{% endif %}">
-                {{ entry.status_display }}
-            </td>
-            <td>
-                {% if entry.content and entry.content|length > 15 %}
-                {{ entry.content[:15] }}...
-                {% else %}
-                {{ entry.content or '' }}
-                {% endif %}
-            </td>
-            <td>{{ entry.type or '' }}</td>
-            <td>{{ entry.reviewer_username or '' }}</td>
-            <td>{{ entry.formatted_created_at }}</td>
-            <td {% if entry.describer_username==session['username'] %} class="table-success" {% endif %}>
-                {{ entry.describer_username or '' }}
-            </td>
-            <td></td>
-        </tr>
-        {% endif %}
+                        {% if entry.creator_username == session['username'] %}
+                            <form action="{{ url_for('delete_entry', entry_id=entry.id) }}" method="POST"
+                                  style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
+                                <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if entry.link %}
+                            <a target="_blank" rel="noopener noreferrer"
+                               href="
+                                       {% if 'http' in entry.link %}{{ entry.link }}{% else %}{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}{% endif %}">
+                                {% if entry.title|length > 15 %}
+                                    {{ entry.title[:15] }}...
+                                {% else %}
+                                    {{ entry.title }}
+                                {% endif %}
+                            </a>
+                        {% else %}
+                            {% if entry.title|length > 15 %}
+                                {{ entry.title[:15] }}...
+                            {% else %}
+                                {{ entry.title }}
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="{% if entry.status == 'pending' %}table-secondary{% elif entry.status == 'draft' %}table-info{% elif entry.status == 'reviewed' %}table-success{% elif entry.status == 'rejected' %}table-danger{% elif entry.status == 'published' %}table-primary{% else %}table-light{% endif %}">
+                        {{ entry.status_display }}
+                    </td>
+                    <td>
+                        {% if entry.content and entry.content|length > 15 %}
+                            {{ entry.content[:15] }}...
+                        {% else %}
+                            {{ entry.content or '' }}
+                        {% endif %}
+                    </td>
+                    <td>{{ entry.type or '' }}</td>
+                    <td>{{ entry.reviewer_username or '' }}</td>
+                    <td>{{ entry.formatted_created_at }}</td>
+                    <td {% if entry.describer_username==session['username'] %} class="table-success" {% endif %}>
+                        {{ entry.describer_username or '' }}
+                    </td>
+                    <td></td>
+                </tr>
+            {% endif %}
         {% endfor %}
         </tbody>
     </table>
 
     <!-- 分页控件 -->
     <nav aria-label="Page navigation">
-      <ul class="pagination justify-content-center">
+        <ul class="pagination justify-content-center">
 
-        <!-- 上一页 -->
-        {% if page > 1 %}
-        <li class="page-item">
-            <a class="page-link" href="{{ url_for('main', page=page-1, page_size=page_size, q=query) }}">上一页</a>
-        </li>
-        {% endif %}
+            <!-- 上一页 -->
+            {% if page > 1 %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="{{ url_for('main', page=page-1, page_size=page_size, q=query) }}">上一页</a>
+                </li>
+            {% endif %}
 
-        <!-- 如果当前页 > 3，显示第一页和省略号 -->
-        {% if page > 3 %}
-        <li class="page-item"><a class="page-link" href="{{ url_for('main', page=1, page_size=page_size, q=query) }}">1</a></li>
-        <li class="page-item disabled"><span class="page-link">...</span></li>
-        {% endif %}
+            <!-- 如果当前页 > 3，显示第一页和省略号 -->
+            {% if page > 3 %}
+                <li class="page-item"><a class="page-link"
+                                         href="{{ url_for('main', page=1, page_size=page_size, q=query) }}">1</a></li>
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
 
-        <!-- 显示当前页附近页码 -->
-        {% for p in range(nearby_start, nearby_end+1) %}
-        <li class="page-item {% if p == page %}active{% endif %}">
-            <a class="page-link" href="{{ url_for('main', page=p, page_size=page_size, q=query) }}">{{ p }}</a>
-        </li>
-        {% endfor %}
+            <!-- 显示当前页附近页码 -->
+            {% for p in range(nearby_start, nearby_end+1) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('main', page=p, page_size=page_size, q=query) }}">{{ p }}</a>
+                </li>
+            {% endfor %}
 
-        <!-- 如果当前页 < total_pages - 2，显示省略号和最后一页 -->
-        {% if page < total_pages - 2 %}
-        <li class="page-item disabled"><span class="page-link">...</span></li>
-        <li class="page-item"><a class="page-link" href="{{ url_for('main', page=total_pages, page_size=page_size, q=query) }}">{{ total_pages }}</a></li>
-        {% endif %}
+            <!-- 如果当前页 < total_pages - 2，显示省略号和最后一页 -->
+            {% if page < total_pages - 2 %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                <li class="page-item"><a class="page-link"
+                                         href="{{ url_for('main', page=total_pages, page_size=page_size, q=query) }}">{{ total_pages }}</a>
+                </li>
+            {% endif %}
 
-        <!-- 下一页 -->
-        {% if page < total_pages %}
-        <li class="page-item">
-            <a class="page-link" href="{{ url_for('main', page=page+1, page_size=page_size, q=query) }}">下一页</a>
-        </li>
-        {% endif %}
-      </ul>
+            <!-- 下一页 -->
+            {% if page < total_pages %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="{{ url_for('main', page=page+1, page_size=page_size, q=query) }}">下一页</a>
+                </li>
+            {% endif %}
+        </ul>
     </nav>
 
     <!-- 每页显示条数选择框 -->
