@@ -54,7 +54,7 @@
                         <select name="entry_type" id="typeSelect" onchange='CheckType(this);' class="form-control">
                             <option value="活动预告" {% if entry.type=='活动预告' %}selected{% endif %}>活动预告</option>
                             <option value="参考消息" {% if entry.type=='参考消息' %}selected{% endif %}>参考消息</option>
-                            <option value="others" {% if entry.type not in ['活动预告','讲座','参考消息'] %}selected{% endif %}>自定义</option>
+                            <option value="自定义" {% if entry.type not in ['活动预告','讲座','参考消息'] %}selected{% endif %}>自定义</option>
                         </select>
                         <input type="text" name="customType" id="customType" class="form-control" style='display:none;'
                         placeholder="请输入自定义的版块名称"
