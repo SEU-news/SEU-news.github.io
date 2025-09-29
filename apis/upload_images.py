@@ -2,7 +2,7 @@ import hashlib
 import logging
 import os
 
-from django.utils import timezone
+
 from flask import request, flash, redirect, url_for, session, current_app
 from flask.views import MethodView
 
@@ -67,7 +67,7 @@ class UploadImageView(MethodView):
             new_filename = f"{file_hash}{extension}"
 
             # 创建当月的文件夹
-            now = timezone.now()
+            now = datetime.now()
             month_folder = now.strftime("%Y-%m")
             upload_folder = os.path.join(current_app.root_path, UPLOAD_FILE_PATH, month_folder)
             os.makedirs(upload_folder, exist_ok=True)

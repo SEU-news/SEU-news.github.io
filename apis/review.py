@@ -3,7 +3,7 @@ import traceback
 from datetime import datetime
 
 from django.db import transaction
-from django.utils import timezone
+
 from flask import render_template, flash, redirect, url_for, request, session
 from flask.views import MethodView
 
@@ -148,7 +148,7 @@ class ReviewView(MethodView):
             content.status = STATUS_PUBLISHED
             update_fields.append('status')
             # 当内容发布时，设置publish_at为当前时间（使用上海时区）
-            content.publish_at = timezone.now()
+            content.publish_at = datetime.now()
             update_fields.append('publish_at')
             content.save(update_fields=update_fields)
             return "内容已发布"
