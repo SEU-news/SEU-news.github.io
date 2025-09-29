@@ -169,24 +169,12 @@ class TypstView(MethodView):
             "other": categorized_content["other"]
         }
 
-        # 获取截止日期内容，按照索引顺序优化查询条件
-        try:
-            target_date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
-            # 创建日期范围用于查询
-            start_date = datetime.combine(date(2023, 1, 1), time.min)
-            start_date = GLOBAL_TIMEZONE.localize(start_date)
-            target_end_date = datetime.combine(target_date_obj, time.max)
-            target_end_date = GLOBAL_TIMEZONE.localize(target_end_date)
-
-            due_content = Content.objects.filter(
-                deadline__isnull=False,
-                deadline__gte=target_date_obj,
-                publish_at__gte=start_date,
-                publish_at__lte=target_end_date
-            ).order_by('deadline')
-
-        except ValueError:
-            due_content = Content.objects.none()
+        # 获取截止日期内容，筛选deadline在目标日期当天或之前，且publish_at在目标日期当天或之前的内容
+        due_content = Content.objects.filter(
+            deadline__isnull=False,
+            deadline__gte=start_of_day,
+            publish_at__lte=end_of_day
+        ).order_by('deadline')
 
         # 对截止日期内容进行分类
         categorized_due_content = self._sort_content_by_category(due_content, is_deadline_content=True)
