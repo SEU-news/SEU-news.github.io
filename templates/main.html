@@ -219,6 +219,16 @@
                 </li>
             {% endif %}
         </ul>
+     <!-- 页码跳转 -->
+        <form class="d-flex justify-content-center mt-2" method="get" action="{{ url_for('main') }}">
+            <!-- 查询参数 -->
+            <input type="hidden" name="page_size" value="{{ page_size }}">
+            <input type="hidden" name="q" value="{{ query }}">
+            <input type="number" class="form-control"
+                   name="page" min="1" max="{{ total_pages }}"
+                   placeholder="页码" style="width: 80px;">
+            <button type="submit" class="btn btn-primary">Go</button>
+        </form>
     </nav>
 
     <!-- 每页显示条数选择框 -->
