@@ -1,7 +1,7 @@
 from flask import redirect, url_for
 from flask.views import MethodView
 
-from common.decorator.permission_required import login_required
+from common.decorator.permission_required import PermissionDecorators
 
 
 class CancelView(MethodView):
@@ -11,7 +11,7 @@ class CancelView(MethodView):
     处理取消操作请求。
     """
 
-    decorators = [login_required]  # 应用登录_required装饰器
+    decorators = [PermissionDecorators.login_required]  # 应用登录_required装饰器
 
     def get(self, entry_id):
         """

@@ -34,12 +34,15 @@ class User_info(models.Model):
         db_table = 'user_info'  # 数据库表名
         verbose_name = '用户'  # 单数名称
         verbose_name_plural = '用户管理'  # 复数名称
-        ordering = [
-            models.Index(fields=['created_at'], name='idx_created_at'),
-            models.Index(fields=['updated_at'], name='idx_updated_at'),
-            models.Index(fields=['student_id'], name='idx_student_id'),
-            models.Index(fields=['realname'], name='idx_realname'),
-        ]  # 默认按创建时间降序排列
+        # 按创建时间降序排列
+        ordering = ['-created_at']
+        # 创建数据库索引
+        indexes = [
+            models.Index(fields=['created_at'], name='idx_user_created_at'),
+            models.Index(fields=['updated_at'], name='idx_user_updated_at'),
+            models.Index(fields=['student_id'], name='idx_user_student_id'),
+            models.Index(fields=['realname'], name='idx_user_realname'),
+        ]
 
     def __str__(self):
         return self.username  # 对象显示为用户名
@@ -87,9 +90,27 @@ class Content(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def add_image(self, image_path):
+        """
+        将一个图片路径添加到image_list字段中
+        
+        Args:
+            image_path (str): 单个图片文件的完整路径
+            
+        Returns:
+            bool: 成功添加返回True
+            
+        Raises:
+            ValueError: 当image_path为空或无效时抛出
+            json.JSONDecodeError: 当image_list不是有效的JSON格式时抛出
+            Exception: 其他处理异常
+        """
+        # 检查输入参数
+        if not image_path:
+            raise ValueError("图片路径不能为空")
+            
         try:
             # 解析现有的JSON字符串
-            if self.image_list:
+            if self.image_list and self.image_list != '[]':
                 image_list_data = json.loads(self.image_list)
             else:
                 image_list_data = []
@@ -104,10 +125,11 @@ class Content(models.Model):
             self.image_list = json.dumps(image_list_data)
             return True
 
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(f"解析图片列表JSON失败: {str(e)}", e.doc, e.pos)
         except Exception as e:
-            print(f"添加图片失败: {str(e)}")
-            return False
-          
+            raise Exception(f"添加图片失败: {str(e)}")
+
     @property
     def reviewer_username(self):
         try:
@@ -132,42 +154,47 @@ class Content(models.Model):
         except User_info.DoesNotExist:
             return ''
 
-
     class Meta:
         db_table = 'content_management'
         verbose_name = '文章'
         verbose_name_plural = '文章管理'
+        # 按更新时间和创建时间降序排列
+        ordering = ['-updated_at', '-created_at']
+        # 创建数据库索引
         indexes = [
-            models.Index(fields=['creator_id'], name='idx_creator_id'),
-            models.Index(fields=['describer_id'], name='idx_describer_id'),
-            models.Index(fields=['reviewer_id'], name='idx_reviewer_id'),
-            models.Index(fields=['status'], name='idx_status'),
-            models.Index(fields=['type'], name='idx_type'),
-            models.Index(fields=['deadline'], name='idx_deadline'),
-            models.Index(fields=['publish_at'], name='idx_publish_at'),
-            models.Index(fields=['created_at'], name='idx_created_at'),
-            models.Index(fields=['updated_at'], name='idx_updated_at'),
+            models.Index(fields=['creator_id'], name='idx_content_creator_id'),
+            models.Index(fields=['describer_id'], name='idx_content_describer_id'),
+            models.Index(fields=['reviewer_id'], name='idx_content_reviewer_id'),
+            models.Index(fields=['status'], name='idx_content_status'),
+            models.Index(fields=['type'], name='idx_content_type'),
+            models.Index(fields=['deadline'], name='idx_content_deadline'),
+            models.Index(fields=['publish_at'], name='idx_content_publish_at'),
+            models.Index(fields=['created_at'], name='idx_content_created_at'),
+            models.Index(fields=['updated_at'], name='idx_content_updated_at'),
         ]
 
 
 # 3. 评论表
 class Comment(models.Model):
-    news_id = models.ForeignKey(Content, on_delete=models.CASCADE, related_name='comments')
-    creator = models.ForeignKey(User_info, on_delete=models.CASCADE, related_name='comments')
-    content = models.TextField(max_length=500)
-    parent_comment_id = models.ForeignKey('self', on_delete=models.CASCADE, related_name='replies',
-                                          verbose_name="父级评论")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    id = models.AutoField(primary_key=True, verbose_name='唯一主键')
+    comment = models.TextField(verbose_name='评论内容')
+    creator_id = models.IntegerField(verbose_name='评论创建者ID')
+    news_id = models.IntegerField(verbose_name='关联新闻ID')
+    parent_comment_id = models.IntegerField(null=True, blank=True, default=None, verbose_name='回复的上级评论ID（NULL表示顶层评论）')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='最后更新时间')
 
     class Meta:
-        db_table = 'comment'
+        db_table = 'comment_management'
         verbose_name = '评论'
         verbose_name_plural = '评论管理'
-        ordering = [
-            models.Index(fields=['creator'], name='idx_creator_id'),
+        # 按创建时间降序排列
+        ordering = ['-created_at']
+        # 创建数据库索引
+        indexes = [
+            models.Index(fields=['creator_id'], name='idx_creator_id'),
             models.Index(fields=['news_id'], name='idx_news_id'),
-            models.Index(fields=['created_at'], name='idx_created'),
             models.Index(fields=['parent_comment_id'], name='idx_parent_comment_id'),
+            models.Index(fields=['created_at'], name='idx_created_at'),
             models.Index(fields=['updated_at'], name='idx_updated_at'),
         ]

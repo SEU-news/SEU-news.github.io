@@ -9,7 +9,18 @@ def register_error_handlers(app):
         app (Flask): Flask应用实例
     """
 
+    @app.errorhandler(400)
+    def bad_request(e):
+        """
+        处理400错误请求
 
+        参数:
+            e (Exception): 错误异常对象
+
+        返回:
+            tuple: 渲染的模板和HTTP状态码
+        """
+        return render_template('400.html'), 400
 
     @app.errorhandler(401)
     def unauthorized(e):

@@ -1,7 +1,7 @@
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 
 
-def allowed_file(filename: str) -> bool:
+def allowed_image(filename: str) -> bool:
     """
     检查文件名是否具有允许的后缀名。
 
@@ -18,4 +18,4 @@ def allowed_file(filename: str) -> bool:
     file_extension = filename.rsplit('.', 1)[-1].lower()
 
     # 检查后缀名是否在允许的集合中
-    return file_extension in ALLOWED_EXTENSIONS
+    return file_extension in ALLOWED_IMAGE_EXTENSIONS

@@ -1,0 +1,21 @@
+<!-- templates/400.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>400 Bad Request</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container mt-5 text-center">
+        <h1 class="display-4">400</h1>
+        <h2>Bad Request</h2>
+        <p class="lead">Bad Request: The server could not understand the request due to invalid syntax or malformed request. Please check your request and try again.</p>
+        <a href="{{ url_for('main') }}" class="btn btn-primary">Return to Home</a>
+    </div>
+</body>
+
+</html>
