@@ -3,9 +3,9 @@ import logging
 from flask import session, render_template, request
 from flask.views import MethodView
 
+from common.content_status import STATUS_TERMINATED
 from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
-from common.content_status import STATUS_TERMINATED
 
 
 class MainView(MethodView):

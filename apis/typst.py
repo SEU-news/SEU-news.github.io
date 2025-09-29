@@ -1,12 +1,12 @@
 import json
 import logging
 import re
-from datetime import time, datetime, date
+from datetime import time, datetime
 
 from django.utils import timezone
 from flask.views import MethodView
 
-from common.global_static import LINK_REGEX, GLOBAL_TIMEZONE
+from common.global_static import LINK_REGEX
 from common.methods.is_valid_url import is_valid_url
 from django_models.models import Content
 
@@ -129,20 +129,20 @@ class TypstView(MethodView):
 
     def _generate_typst_data(self, date_str):
         """生成指定日期的typst数据"""
-        today_str = GLOBAL_TIMEZONE.localize(datetime.now()).strftime("%Y-%m-%d")
+        today_str = timezone.now().strftime("%Y-%m-%d")
         self.logger.info(f"生成typst数据，日期: {date_str}, 今日: {today_str}")
 
         try:
             target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             # 创建当天的开始和结束时间（使用时区感知的datetime）
-            start_of_day = GLOBAL_TIMEZONE.localize(datetime.combine(target_date, time.min))
-            end_of_day = GLOBAL_TIMEZONE.localize(datetime.combine(target_date, time.max))
+            start_of_day = timezone.make_aware(datetime.combine(target_date, time.min))
+            end_of_day = timezone.make_aware(datetime.combine(target_date, time.max))
             self.logger.info(f"查询时间范围: {start_of_day} 到 {end_of_day}")
 
         except ValueError as e:
             self.logger.error(f"日期解析失败: {e}")
             # 使用当前时间作为默认值
-            now = GLOBAL_TIMEZONE.localize(datetime.now())
+            now = timezone.now()
             start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
             end_of_day = now.replace(hour=23, minute=59, second=59, microsecond=999999)
 

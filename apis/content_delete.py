@@ -3,8 +3,8 @@ import logging
 from flask import session, flash, redirect, url_for
 from flask.views import MethodView
 
-from common.decorator.permission_required import PermissionDecorators
 from common.content_status import ContentStatus
+from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
 
 

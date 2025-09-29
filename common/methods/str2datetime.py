@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from common.global_static import GLOBAL_TIMEZONE
+from django.utils import timezone
 
 
 def str2datetime(date_str: str):
@@ -19,4 +20,4 @@ def str2datetime(date_str: str):
     # 将字符串解析为naive datetime对象
     naive_dt = datetime.strptime(date_str, '%Y-%m-%d')
     # 使用上海时区对象为datetime添加时区信息
-    return GLOBAL_TIMEZONE.localize(naive_dt)
+    return timezone.make_aware(naive_dt)

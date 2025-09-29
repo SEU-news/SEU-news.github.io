@@ -1,11 +1,11 @@
 import logging
 from datetime import datetime
 
+from django.utils import timezone
 from flask import render_template, request, session, flash, redirect, url_for
 from flask.views import MethodView
 
 from common.decorator.permission_required import PermissionDecorators
-from common.global_static import GLOBAL_TIMEZONE
 from django_models.models import User_info, Content
 
 
@@ -25,7 +25,7 @@ class AddDeadlineView(MethodView):
         返回:
             render_template: 添加截止日期页面模板
         """
-        today = GLOBAL_TIMEZONE.localize(datetime.now()).strftime("%Y-%m-%d")
+        today = timezone.now().strftime("%Y-%m-%d")
         return render_template('add_deadline.html', today=today)
 
     def post(self):
@@ -39,7 +39,7 @@ class AddDeadlineView(MethodView):
         link_value = link if link else None
         short_title = request.form.get('short_title', '').strip()
         tag = request.form.get('tag', '').strip()
-        today = GLOBAL_TIMEZONE.localize(datetime.now()).strftime("%Y-%m-%d")
+        today = timezone.now().strftime("%Y-%m-%d")
         publish_time = request.form.get('publish_time', today)
         due_time = request.form.get('due_time', today)
 
@@ -50,9 +50,9 @@ class AddDeadlineView(MethodView):
 
         # 为publish_datetime和deadline_datetime添加时区信息
         if publish_datetime:
-            publish_datetime = GLOBAL_TIMEZONE.localize(publish_datetime)
+            publish_datetime = timezone.make_aware(publish_datetime)
         if deadline_datetime:
-            deadline_datetime = GLOBAL_TIMEZONE.localize(deadline_datetime)
+            deadline_datetime = timezone.make_aware(deadline_datetime)
 
         news = Content.objects.create(
             creator_id=user.id,
