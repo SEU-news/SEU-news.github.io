@@ -40,8 +40,7 @@ def configure_django():
                 INSTALLED_APPS=[
                     'django_models',  # 你的模型应用
                 ],
-                USE_TZ=True,
-                TIME_ZONE='Asia/Shanghai',
+                USE_TZ=False,
                 SECRET_KEY="django-insecure-8!563mqn=(m8$hryw5_1!j!eb*^i^lidx^v2xh6+@+i@$r@4o5",  # 建议改为从环境变量读取
                 DEFAULT_AUTO_FIELD='django.db.models.BigAutoField',
             )

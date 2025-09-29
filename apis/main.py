@@ -3,6 +3,7 @@ import logging
 from flask import session, render_template, request
 from flask.views import MethodView
 
+from common.content_status import STATUS_TERMINATED
 from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
 
@@ -41,7 +42,7 @@ class MainView(MethodView):
         query = request.args.get('q', '').strip()
 
         # 懒加载 + 排序
-        qs = Content.objects.select_related().all().order_by(order_by)
+        qs = Content.objects.select_related().exclude(status=STATUS_TERMINATED).order_by(order_by)
         if query:
             qs = qs.filter(title__icontains=query)
         total = qs.count()  # 总条数

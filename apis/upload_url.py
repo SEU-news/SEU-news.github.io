@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from urllib.parse import urlparse
 
 from flask import request, flash, redirect, url_for, session
