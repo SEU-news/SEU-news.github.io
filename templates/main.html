@@ -88,6 +88,11 @@
            class="btn btn-outline-secondary mb-2">
             按更新时间 ↓
         </a>
+
+        <!-- 统计信息靠右 -->
+        <small class="text-muted ms-auto mb-2">
+            共 {{ total }} 条{{ "（包含过滤结果）" if query else "" }}
+        </small>
     </div>
 
     <table class="table table-hover">
