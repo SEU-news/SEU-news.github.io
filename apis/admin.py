@@ -3,19 +3,13 @@ import logging
 from flask import session, render_template, request
 from flask.views import MethodView
 
-from common.content_status import STATUS_TERMINATED
 from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
 
 
-class MainView(MethodView):
-    """
-    主页面视图类
+class AdminView(MethodView):
 
-    处理主页面的GET请求，显示所有内容条目。
-    """
-
-    decorators = [PermissionDecorators.login_required]  # 应用装饰器到整个视图类
+    decorators = [PermissionDecorators.admin_required]# 应用装饰器到整个视图类
 
     def get(self):
         """
@@ -41,7 +35,7 @@ class MainView(MethodView):
         query = request.args.get('q', '').strip()
 
         # 懒加载 + 排序
-        qs = Content.objects.select_related().exclude(status=STATUS_TERMINATED).order_by(order_by)
+        qs = Content.objects.select_related().all().order_by(order_by)
         if query:
             qs = qs.filter(title__icontains=query)
         total = qs.count()  # 总条数
@@ -92,10 +86,8 @@ class MainView(MethodView):
         try:
             current_user = User_info.objects.get(username=session['username'])
             current_user_id = current_user.id
-            admin_flag = current_user.has_admin_permission()
         except User_info.DoesNotExist:
             current_user_id = None
-            admin_flag = 0
         #获取权限
 
         for content in contents:
@@ -120,7 +112,7 @@ class MainView(MethodView):
             logging.debug(f"Content ID: {content.id}, Status: {content.status}, Display: {content.status_display}")
 
         return render_template(
-            'main.html',
+            'admin.html',
             entries=contents,
             page=page,
             page_size=page_size,
@@ -128,5 +120,4 @@ class MainView(MethodView):
             nearby_start=nearby_start,
             nearby_end=nearby_end,
             query=query,
-            admin_flag=admin_flag,
         )

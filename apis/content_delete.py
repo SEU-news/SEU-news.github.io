@@ -1,6 +1,6 @@
 import logging
 
-from flask import session, flash, redirect, url_for
+from flask import session, flash, redirect, url_for, request
 from flask.views import MethodView
 
 from common.content_status import ContentStatus
@@ -34,6 +34,7 @@ class DeleteEntryView(MethodView):
         返回:
             redirect: 重定向到主页面
         """
+        referrer = request.args.get('from', 'admin')
         # 手动检查用户权限（编辑或管理员权限）
         if 'username' not in session:
             return redirect(url_for('login'))
@@ -44,7 +45,7 @@ class DeleteEntryView(MethodView):
             if not (current_user.has_editor_permission() or current_user.has_admin_permission()):
                 self.logger.warning(f"用户 {current_user.username} 尝试删除内容但没有足够权限")
                 flash("你没有权限执行此操作")
-                return redirect(url_for('main'))
+                return self._redirect_to_referrer(referrer)
         except User_info.DoesNotExist:
             self.logger.error(f"删除操作时用户不存在: {session.get('username')}")
             flash("用户信息错误，请重新登录")
@@ -60,7 +61,7 @@ class DeleteEntryView(MethodView):
             if not (content_status.abandon() or content_status.archive()):
                 self.logger.warning(f"内容 ID: {entry_id} 状态 {content.status} 无法转换为terminated状态")
                 flash("当前状态下无法删除此项目")
-                return redirect(url_for('main'))
+                return self._redirect_to_referrer(referrer)
 
             # 应用状态转换结果
             content.status = content_status.string_en()
@@ -69,13 +70,29 @@ class DeleteEntryView(MethodView):
             self.logger.info(
                 f"用户 {current_user.username} 将内容 '{content.title}' (ID: {entry_id}) 状态设置为terminated")
             flash("条目已删除")
-            return redirect(url_for('main'))
+            return self._redirect_to_referrer(referrer)
 
         except Content.DoesNotExist:
             self.logger.warning(f"尝试删除不存在的内容ID: {entry_id}")
             flash("条目不存在")
-            return redirect(url_for('main'))
+            return self._redirect_to_referrer(referrer)
         except User_info.DoesNotExist:
             self.logger.error(f"删除操作时用户不存在: {session.get('username')}")
             flash("用户信息错误，请重新登录")
             return redirect(url_for('login'))
+
+    def _redirect_to_referrer(self, referrer):
+        """
+        根据来源参数重定向到相应页面
+
+        参数:
+            referrer (str): 来源页面标识
+
+        返回:
+            redirect: 重定向到相应页面
+        """
+        if referrer == 'main':
+            return redirect(url_for('main'))
+        else:
+            # 默认为admin页面
+            return redirect(url_for('admin'))

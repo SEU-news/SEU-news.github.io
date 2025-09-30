@@ -25,6 +25,9 @@
             </form>
         </div>
         <div class="col-md-6 text-end">
+            {% if admin_flag %}
+                <a href="{{ url_for('admin') }}" class="btn btn-primary admin-btn">管理员界面</a>
+            {% endif %}
             <strong>您好, {{ session['username'] }}</strong>
             <a href="{{ url_for('logout') }}" class="btn btn-danger">登出</a>
         </div>
@@ -129,7 +132,7 @@
                         {% endfor %}
 
                         {% if entry.creator_username == session['username'] %}
-                            <form action="{{ url_for('delete_entry', entry_id=entry.id) }}" method="POST"
+                            <form action="{{ url_for('delete_entry', entry_id=entry.id) }}?from=main" method="POST"
                                   style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
                                 <button type="submit" class="btn btn-sm btn-danger">删除</button>
                             </form>
