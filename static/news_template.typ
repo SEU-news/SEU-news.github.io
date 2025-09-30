@@ -116,7 +116,7 @@ column-gutter: 2em
       } else {
         e.at("title")
       }
-      , [#e.at("due_time").slice(5, 10)], [#link("https://nik-nul.github.io/news/"+e.at("publish_date").slice(0, 10), e.at("publish_date").slice(5, 10))])
+      , [#e.at("due_time").slice(5, 10)], [#e.at("publish_date").slice(0, 10)])
     }
   }
 )
@@ -161,7 +161,7 @@ eqcolumns(2,)[
       } else {
         e.at("title")
       }
-      , [#e.at("due_time").slice(5, 10)],[#link("https://nik-nul.github.io/news/"+e.at("publish_date").slice(0, 10), e.at("publish_date").slice(5, 10))])
+      , [#e.at("due_time").slice(5, 10)],[#e.at("publish_date").slice(0, 10)])
 
     }
   }
@@ -201,7 +201,7 @@ line(length: 100%)
       } else {
         e.at("title")
       },
-      [#e.at("due_time").slice(5, 10)], [#link("https://nik-nul.github.io/news/"+e.at("publish_date").slice(0, 10), e.at("publish_date").slice(5, 10))])
+      [#e.at("due_time").slice(5, 10)], [#e.at("publish_date").slice(0, 10)])
 
     }
   }
@@ -244,7 +244,7 @@ eqcolumns(2,)[
       } else {
         e.at("title")
       }
-      , [#e.at("due_time").slice(5, 10)], [#link("https://nik-nul.github.io/news/"+e.at("publish_date").slice(0, 10), e.at("publish_date").slice(5, 10))])
+      , [#e.at("due_time").slice(5, 10)], [#e.at("publish_date").slice(0, 10)])
     }
   }
 )
