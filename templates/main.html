@@ -163,11 +163,18 @@
                         {{ entry.status_display }}
                     </td>
                     <td>
-                        {% if entry.content and entry.content|length > 15 %}
-                            {{ entry.content[:15] }}...
-                        {% else %}
-                            {{ entry.content or '' }}
-                        {% endif %}
+                        {% if entry.content %}
+                            <span
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                title="{{ entry.content }}">
+                                {% if entry.content|length > 15 %}
+                                    {{ entry.content[:15] }}...
+                                {% else %}
+                                    {{ entry.content }}
+                                {% endif %}
+                            </span>
+                    {% endif %}
                     </td>
                     <td>{{ entry.type or '' }}</td>
                     <td>{{ entry.reviewer_username or '' }}</td>
@@ -287,6 +294,13 @@
         }
         return true;
     }
+</script>
+<script>
+    // 启用 Bootstrap tooltip
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
 </script>
 </body>
 
