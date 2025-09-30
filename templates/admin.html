@@ -5,11 +5,18 @@
 <head>
     <title>Admin 管理页面</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>所有条目管理</h2>
+        <div>
+            <strong>您好, 尊敬的管理员{{ session['username'] }}</strong>
+            <a href="{{ url_for('main') }}" class="btn btn-secondary">返回主页</a>
+            <a href="{{ url_for('user_admin') }}" class="btn btn-info">用户管理</a>
+        </div>
+    </div>
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         <div class="alert alert-info" role="alert">
@@ -185,10 +192,6 @@
         <input type="hidden" name="q" value="{{ query }}">
     </form>
 </div>
-        </div>
-        <a href="{{ url_for('main') }}" class="btn btn-secondary">返回主页</a>
-        <a href="{{ url_for('user_admin') }}" class="btn btn-info">用户管理</a>
-    </div>
 </body>
 
 </html>

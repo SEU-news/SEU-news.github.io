@@ -3,10 +3,9 @@ import logging
 from flask import session, flash, redirect, url_for, request
 from flask.views import MethodView
 
-from common.content_status import ContentStatus
+from common.content_status import ContentStatus,STATUS_TERMINATED
 from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
-
 
 class DeleteEntryView(MethodView):
     """
@@ -54,18 +53,20 @@ class DeleteEntryView(MethodView):
         try:
             content = Content.objects.get(id=entry_id)
             current_user = User_info.objects.get(username=session['username'])
-
             # 使用ContentStatus类处理状态转换
-            content_status = ContentStatus(content.status)
-            # 尝试使用abandon方法(从draft到terminated)或archive方法(从published到terminated)
-            if not (content_status.abandon() or content_status.archive()):
-                self.logger.warning(f"内容 ID: {entry_id} 状态 {content.status} 无法转换为terminated状态")
-                flash("当前状态下无法删除此项目")
-                return self._redirect_to_referrer(referrer)
-
+            if current_user.has_admin_permission():
+                content.status = STATUS_TERMINATED
+                content.save(update_fields=['status', 'updated_at'])
+            else:
+                content_status = ContentStatus(content.status)
+                # 尝试使用abandon方法(从draft到terminated)或archive方法(从published到terminated)
+                if not (content_status.abandon() or content_status.archive()):
+                    self.logger.warning(f"内容 ID: {entry_id} 状态 {content.status} 无法转换为terminated状态")
+                    flash("当前状态下无法删除此项目")
+                    return self._redirect_to_referrer(referrer)
             # 应用状态转换结果
-            content.status = content_status.string_en()
-            content.save(update_fields=['status', 'updated_at'])
+                content.status = content_status.string_en()
+                content.save(update_fields=['status', 'updated_at'])
 
             self.logger.info(
                 f"用户 {current_user.username} 将内容 '{content.title}' (ID: {entry_id}) 状态设置为terminated")
