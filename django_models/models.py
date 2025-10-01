@@ -44,6 +44,14 @@ class User_info(models.Model):
             models.Index(fields=['realname'], name='idx_user_realname'),
         ]
 
+    @property
+    def has_editor_perm(self):
+        return self.has_editor_permission()
+
+    @property
+    def has_admin_perm(self):
+        return self.has_admin_permission()
+
     def __str__(self):
         return self.username  # 对象显示为用户名
 

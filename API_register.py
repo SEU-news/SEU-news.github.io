@@ -41,6 +41,8 @@ from apis.upload_images import UploadImageView
 from apis.admin import AdminView
 from apis.user_admin import UserAdminView
 from apis.content_recall import RecallEntryView
+from apis.role_edit import EditRoleView
+
 
 def create_app():
     app = Flask(__name__)
@@ -76,6 +78,7 @@ def create_app():
     app.add_url_rule('/admin', view_func=AdminView.as_view('admin'), methods=['GET'])
     app.add_url_rule('/user_admin', view_func=UserAdminView.as_view('user_admin'), methods=['GET'])
     app.add_url_rule('/recall/<int:entry_id>', view_func=RecallEntryView.as_view('recall_entry'), methods=['POST'])
+    app.add_url_rule('/role_edit/<int:user_id>/<action>/<permission>', view_func=EditRoleView.as_view('role_edit'), methods=['POST'])
     return app
 
 

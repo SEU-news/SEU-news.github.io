@@ -28,24 +28,24 @@
         {% endwith %}
        <div class="d-flex flex-wrap mb-3">
         <!-- 上传时间 -->
-        <a href="{{ url_for('main', sort_field='created_at', sort_order='asc',
+        <a href="{{ url_for('admin', sort_field='created_at', sort_order='asc',
          q=query, page_size=page_size) }}"
            class="btn btn-outline-primary me-2 mb-2">
             按上传时间 ↑
         </a>
-        <a href="{{ url_for('main', sort_field='created_at', sort_order='desc',
+        <a href="{{ url_for('admin', sort_field='created_at', sort_order='desc',
          q=query, page_size=page_size) }}"
            class="btn btn-outline-primary me-2 mb-2">
             按上传时间 ↓
         </a>
 
         <!-- 更新时间 -->
-        <a href="{{ url_for('main', sort_field='updated_at', sort_order='asc',
+        <a href="{{ url_for('admin', sort_field='updated_at', sort_order='asc',
          q=query, page_size=page_size) }}"
            class="btn btn-outline-secondary me-2 mb-2">
             按更新时间 ↑
         </a>
-        <a href="{{ url_for('main', sort_field='updated_at', sort_order='desc',
+        <a href="{{ url_for('admin', sort_field='updated_at', sort_order='desc',
          q=query, page_size=page_size) }}"
            class="btn btn-outline-secondary mb-2">
             按更新时间 ↓
@@ -71,7 +71,7 @@
             <tr>
                 <td>
                     <form action="{{ url_for('recall_entry', entry_id=entry.id)}}" method="POST"
-                          style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
+                          style="display:inline-block;" onsubmit="return doubleConfirmRecall();">
                         <button type="submit" class="btn btn-sm btn-warning">召回</button>
                     </form>
                     <form action="{{ url_for('delete_entry', entry_id=entry.id)}}?from=admin" method="POST"
@@ -82,8 +82,7 @@
                 <td>
                     {% if entry.link %}
                         <a target="_blank" rel="noopener noreferrer"
-                           href="
-                                   {% if 'http' in entry.link %}{{ entry.link }}{% else %}{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}{% endif %}">
+                           href="{% if 'http' in entry.link %}{{ entry.link }}{% else %}{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}{% endif %}">
                             {% if entry.title|length > 15 %}
                                 {{ entry.title[:15] }}...
                             {% else %}
@@ -128,21 +127,21 @@
             {% if page > 1 %}
                 <li class="page-item">
                     <a class="page-link"
-                       href="{{ url_for('main', page=page-1, page_size=page_size, q=query) }}">上一页</a>
+                       href="{{ url_for('admin', page=page-1, page_size=page_size, q=query) }}">上一页</a>
                 </li>
             {% endif %}
 
             <!-- 如果当前页 > 3，显示第一页和省略号 -->
             {% if page > 3 %}
                 <li class="page-item"><a class="page-link"
-                                         href="{{ url_for('main', page=1, page_size=page_size, q=query) }}">1</a></li>
+                                         href="{{ url_for('admin', page=1, page_size=page_size, q=query) }}">1</a></li>
                 <li class="page-item disabled"><span class="page-link">...</span></li>
             {% endif %}
 
             <!-- 显示当前页附近页码 -->
             {% for p in range(nearby_start, nearby_end+1) %}
                 <li class="page-item {% if p == page %}active{% endif %}">
-                    <a class="page-link" href="{{ url_for('main', page=p, page_size=page_size, q=query) }}">{{ p }}</a>
+                    <a class="page-link" href="{{ url_for('admin', page=p, page_size=page_size, q=query) }}">{{ p }}</a>
                 </li>
             {% endfor %}
 
@@ -150,7 +149,7 @@
             {% if page < total_pages - 2 %}
                 <li class="page-item disabled"><span class="page-link">...</span></li>
                 <li class="page-item"><a class="page-link"
-                                         href="{{ url_for('main', page=total_pages, page_size=page_size, q=query) }}">{{ total_pages }}</a>
+                                         href="{{ url_for('admin', page=total_pages, page_size=page_size, q=query) }}">{{ total_pages }}</a>
                 </li>
             {% endif %}
 
@@ -158,12 +157,12 @@
             {% if page < total_pages %}
                 <li class="page-item">
                     <a class="page-link"
-                       href="{{ url_for('main', page=page+1, page_size=page_size, q=query) }}">下一页</a>
+                       href="{{ url_for('admin', page=page+1, page_size=page_size, q=query) }}">下一页</a>
                 </li>
             {% endif %}
         </ul>
      <!-- 页码跳转 -->
-        <form class="d-flex justify-content-center mt-2" method="get" action="{{ url_for('main') }}">
+        <form class="d-flex justify-content-center mt-2" method="get" action="{{ url_for('admin') }}">
             <!-- 查询参数 -->
             <input type="hidden" name="page_size" value="{{ page_size }}">
             <input type="hidden" name="q" value="{{ query }}">
@@ -175,7 +174,7 @@
     </nav>
 
     <!-- 每页显示条数选择框 -->
-    <form method="GET" class="mb-3" action="{{ url_for('main') }}">
+    <form method="GET" class="mb-3" action="{{ url_for('admin') }}">
         <label for="page_size">每页显示：</label>
         <select name="page_size" id="page_size" onchange="this.form.submit()">
             <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
@@ -196,7 +195,7 @@
         var modalBody = descriptionModal.querySelector('#description-content')
         modalBody.textContent = description
     })
-</script>
+    </script>
 <script type="text/javascript">
     function doubleConfirmDelete() {
         if (!confirm("确定删除此条目？")) {
