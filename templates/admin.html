@@ -68,59 +68,54 @@
         </thead>
         <tbody>
         {% for entry in entries %}
-            {% if entry.type != "DDLOnly" %}
-                <tr>
-                    <td>
-                        <!-- Check if current user is the creator for delete permission -->
-                        {% set current_user_id = None %}
-                        {% for user in [session.get('username')] %}
-                            {% if user %}
-                                {% set current_user_id = user %}
-                            {% endif %}
-                        {% endfor %}
-                            <form action="{{ url_for('delete_entry', entry_id=entry.id)}}?from=admin" method="POST"
-                                  style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
-                                <button type="submit" class="btn btn-sm btn-danger">删除</button>
-                            </form>
-                    </td>
-                    <td>
-                        {% if entry.link %}
-                            <a target="_blank" rel="noopener noreferrer"
-                               href="
-                                       {% if 'http' in entry.link %}{{ entry.link }}{% else %}{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}{% endif %}">
-                                {% if entry.title|length > 15 %}
-                                    {{ entry.title[:15] }}...
-                                {% else %}
-                                    {{ entry.title }}
-                                {% endif %}
-                            </a>
-                        {% else %}
+            <tr>
+                <td>
+                    <form action="{{ url_for('recall_entry', entry_id=entry.id)}}" method="POST"
+                          style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
+                        <button type="submit" class="btn btn-sm btn-warning">召回</button>
+                    </form>
+                    <form action="{{ url_for('delete_entry', entry_id=entry.id)}}?from=admin" method="POST"
+                          style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
+                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                    </form>
+                </td>
+                <td>
+                    {% if entry.link %}
+                        <a target="_blank" rel="noopener noreferrer"
+                           href="
+                                   {% if 'http' in entry.link %}{{ entry.link }}{% else %}{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}{% endif %}">
                             {% if entry.title|length > 15 %}
                                 {{ entry.title[:15] }}...
                             {% else %}
                                 {{ entry.title }}
                             {% endif %}
-                        {% endif %}
-                    </td>
-                    <td class="{% if entry.status == 'pending' %}table-secondary{% elif entry.status == 'draft' %}table-info{% elif entry.status == 'reviewed' %}table-success{% elif entry.status == 'rejected' %}table-danger{% elif entry.status == 'published' %}table-primary{% else %}table-light{% endif %}">
-                        {{ entry.status_display }}
-                    </td>
-                    <td>
-                        {% if entry.content and entry.content|length > 15 %}
-                            {{ entry.content[:15] }}...
+                        </a>
+                    {% else %}
+                        {% if entry.title|length > 15 %}
+                            {{ entry.title[:15] }}...
                         {% else %}
-                            {{ entry.content or '' }}
+                            {{ entry.title }}
                         {% endif %}
-                    </td>
-                    <td>{{ entry.type or '' }}</td>
-                    <td>{{ entry.reviewer_username or '' }}</td>
-                    <td>{{ entry.formatted_created_at }}</td>
-                    <td {% if entry.describer_username==session['username'] %} class="table-success" {% endif %}>
-                        {{ entry.describer_username or '' }}
-                    </td>
-                    <td></td>
-                </tr>
-            {% endif %}
+                    {% endif %}
+                </td>
+                <td class="{% if entry.status == 'pending' %}table-secondary{% elif entry.status == 'draft' %}table-info{% elif entry.status == 'reviewed' %}table-success{% elif entry.status == 'rejected' %}table-danger{% elif entry.status == 'published' %}table-primary{% else %}table-light{% endif %}">
+                    {{ entry.status_display }}
+                </td>
+                <td>
+                    {% if entry.content and entry.content|length > 15 %}
+                        {{ entry.content[:15] }}...
+                    {% else %}
+                        {{ entry.content or '' }}
+                    {% endif %}
+                </td>
+                <td>{{ entry.type or '' }}</td>
+                <td>{{ entry.reviewer_username or '' }}</td>
+                <td>{{ entry.formatted_created_at }}</td>
+                <td {% if entry.describer_username==session['username'] %} class="table-success" {% endif %}>
+                    {{ entry.describer_username or '' }}
+                </td>
+                <td></td>
+            </tr>
         {% endfor %}
         </tbody>
     </table>
@@ -192,6 +187,39 @@
         <input type="hidden" name="q" value="{{ query }}">
     </form>
 </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"></script>
+    <script>
+    var descriptionModal = document.getElementById('descriptionModal')
+    descriptionModal.addEventListener('show.bs.modal', function (event) {
+        var trigger = event.relatedTarget
+        var description = trigger.getAttribute('data-description')
+        var modalBody = descriptionModal.querySelector('#description-content')
+        modalBody.textContent = description
+    })
+</script>
+<script type="text/javascript">
+    function doubleConfirmDelete() {
+        if (!confirm("确定删除此条目？")) {
+            return false;
+        }
+        if (!confirm("你确定要删除吗？此操作不可撤销！")) {
+            return false;
+        }
+        return true;
+    }
+</script>
+<script type="text/javascript">
+    function doubleConfirmRecall() {
+        if (!confirm("确定召回此条目？")) {
+            return false;
+        }
+        if (!confirm("你确定要召回吗？此操作不可撤销！")) {
+            return false;
+        }
+        return true;
+    }
+</script>
 </body>
+
 
 </html>
