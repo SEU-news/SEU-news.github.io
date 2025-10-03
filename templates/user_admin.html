@@ -66,10 +66,15 @@
                         {% endif %}
                     </td>
                     <td>
+
                         {% if user.has_admin_perm %}
+                            {% if user.username==session['username']%}
+                                <button type="submit" class="btn btn-sm btn-secondary">不可移除自己的管理员权限</button>
+                            {% else %}
                             <form action="{{ url_for('role_edit', user_id=user.id, action='remove', permission='admin') }}" method="POST" style="display:inline-block;" onsubmit="return confirm('确定要移除管理员权限吗？');">
                                <button type="submit" class="btn btn-sm btn-warning">移除管理员权限</button>
-                           </form>
+                            </form>
+                            {% endif %}
                         {% else %}
                             <form action="{{ url_for('role_edit', user_id=user.id, action='grant', permission='admin') }}" method="POST" style="display:inline-block;" onsubmit="return confirm('确定要给予管理员权限吗？');">
                                <button type="submit" class="btn btn-sm btn-primary">升级为管理员</button>
