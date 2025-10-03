@@ -33,6 +33,7 @@
                     <th>操作</th>
                     <th>管理员权限</th>
                     <th>操作</th>
+                    <th>修改密码</th>
                 </tr>
             </thead>
             <tbody>
@@ -80,6 +81,13 @@
                                <button type="submit" class="btn btn-sm btn-primary">升级为管理员</button>
                             </form>
                         {% endif %}
+                    </td>
+                    <td>
+                        <!-- 修改密码按钮 -->
+                        <button type="button" class="btn btn-sm btn-outline-info"
+                                onclick="changePasswordModal('{{ user.id }}', '{{ user.username }}')">
+                            修改密码
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -152,7 +160,62 @@
         <input type="hidden" name="q" value="{{ query }}">
     </form>
 
+    <div class="modal fade" id="changePasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ url_for('change_password') }}" method="POST" id="passwordForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">修改密码 - <span id="modalUsername"></span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="user_id" id="targetUserId">
+                        <div class="mb-3">
+                            <p class="text-muted">正在为用户 <strong id="displayUsername" class="text-primary"></strong> 修改密码</p>
+                            <label for="newPassword" class="form-label">新密码</label>
+                            <input type="password" class="form-control" id="newPassword" name="new_password"
+                                   placeholder="请输入新密码" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="submit" class="btn btn-primary">确认修改</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
+
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function changePasswordModal(userId, username) {
+        // 设置用户信息
+        document.getElementById('targetUserId').value = userId;
+        document.getElementById('modalUsername').textContent = username;
+        document.getElementById('displayUsername').textContent = username;
+        document.getElementById('newPassword').value = '';
+
+        // 显示模态框
+        const modal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+        modal.show();
+
+        // 聚焦到输入框
+        setTimeout(() => document.getElementById('newPassword').focus(), 500);
+    }
+
+    // 表单提交处理（如果需要二次确认）
+    document.getElementById('passwordForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const password = document.getElementById('newPassword').value;
+        const username = document.getElementById('displayUsername').textContent;
+
+        if (confirm(`确定要为用户 ${username} 修改密码吗？`)) {
+            this.submit();
+        }
+    });
+    </script>
 </body>
 
 </html>
