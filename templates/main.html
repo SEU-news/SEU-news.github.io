@@ -112,6 +112,7 @@
             {% if entry.type != "DDLOnly" %}
                 <tr>
                     <td>
+                        {% if editor_flag %}
                         {% if entry.status == 'draft' %}
                             <a href="{{ url_for('describe', entry_id=entry.id) }}"
                                class="btn btn-sm btn-danger">编辑</a>
@@ -122,7 +123,7 @@
                                     审核 {% endif %}
                             </a>
                         {% endif %}
-
+                        {% endif %}
                         <!-- Check if current user is the creator for delete permission -->
                         {% set current_user_id = None %}
                         {% for user in [session.get('username')] %}

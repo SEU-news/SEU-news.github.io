@@ -93,9 +93,11 @@ class MainView(MethodView):
             current_user = User_info.objects.get(username=session['username'])
             current_user_id = current_user.id
             admin_flag = current_user.has_admin_permission()
+            editor_flag = current_user.has_editor_permission()
         except User_info.DoesNotExist:
             current_user_id = None
             admin_flag = 0
+            editor_flag = 0
         #获取权限
 
         for content in contents:
@@ -129,4 +131,5 @@ class MainView(MethodView):
             nearby_end=nearby_end,
             query=query,
             admin_flag=admin_flag,
+            editor_flag=editor_flag,
         )
