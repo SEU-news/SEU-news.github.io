@@ -44,7 +44,7 @@ class MainView(MethodView):
         qs = Content.objects.select_related().exclude(status=STATUS_TERMINATED).order_by(order_by)
         if query:
             qs = qs.filter(title__icontains=query)
-        total = qs.count()  # 总条数
+        total = qs.count()  # 过滤后的总条数
 
         # 当前页
         page = int(request.args.get('page', default=1, type=int))
@@ -126,6 +126,7 @@ class MainView(MethodView):
             entries=contents,
             page=page,
             page_size=page_size,
+            total=total,
             total_pages=total_pages,
             nearby_start=nearby_start,
             nearby_end=nearby_end,
