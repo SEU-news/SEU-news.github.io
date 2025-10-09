@@ -5,12 +5,18 @@
 <head>
     <title>Admin 管理页面</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
 </head>
-
 <body>
     <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>所有条目管理</h2>
+        <div>
+            <strong>您好, 尊敬的管理员{{ session['username'] }}</strong>
+            <a href="{{ url_for('main') }}" class="btn btn-secondary">返回主页</a>
+            <a href="{{ url_for('user_admin') }}" class="btn btn-info">用户管理</a>
+        </div>
+    </div>
         {% with messages = get_flashed_messages() %}
         {% if messages %}
         <div class="alert alert-info" role="alert">
@@ -20,197 +26,199 @@
         </div>
         {% endif %}
         {% endwith %}
-        <form id="publishForm" action="{{ url_for('admin_publish') }}" method="POST">
-            <div class="mb-3">
-                <label for="publish_time" class="form-label">发布时间</label>
-                <input type="date" id="publish_time" name="publish_time" class="form-control"
-                    value="{{ default_publish_date }}">
-            </div>
-            <button type="submit" class="btn btn-success mb-3">发布选定条目</button>
-            <button type="button" id="selectAllBtn" class="btn btn-secondary mb-3 ms-2">全选</button>
-            <button type="button" id="selectUnpublishedBtn" class="btn btn-info mb-3 ms-2">选择未发布条目</button>
-            <button type="button" class="btn btn-warning mb-3" onclick="unpublishSelected()">取消发布选定条目</button>
-            <button type="button" class="btn btn-danger mb-3" onclick="makeInvalidSelected()">标记为无效</button>
-        </form>
+       <div class="d-flex flex-wrap mb-3">
+        <!-- 上传时间 -->
+        <a href="{{ url_for('admin', sort_field='created_at', sort_order='asc',
+         q=query, page_size=page_size) }}"
+           class="btn btn-outline-primary me-2 mb-2">
+            按上传时间 ↑
+        </a>
+        <a href="{{ url_for('admin', sort_field='created_at', sort_order='desc',
+         q=query, page_size=page_size) }}"
+           class="btn btn-outline-primary me-2 mb-2">
+            按上传时间 ↓
+        </a>
 
-        <form id="publishTodayForm" action="{{ url_for('admin_publish_today') }}" method="POST">
-            <button type="submit" class="btn btn-success mb-3">发布今天上传的条目</button>
-        </form>
-
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>选择</th>
-                    <th>Title</th>
-                    <th>Publish Time</th>
-                    <th>Upload Time</th>
-                    <th>Status</th>
-                    <th>Type</th>
-                    <th>ID</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for entry in entries %}
-                <tr>
-                    <td>
-                        <input type="checkbox" name="entry_ids" value="{{ entry[0] }}" form="publishForm">
-                    </td>
-                    <td>{{ entry[3] }}</td>
-                    <td>{{ entry[14][5:10] if entry[14] else '' }}</td>
-                    <td>{{ entry[2][5:16] if entry[2] else '' }}</td>
-                    <td>{{ entry[9] }}</td>
-                    <td>{{ entry[10] }}</td>
-                    <td>{{ entry[0] }}</td>
-                    <td>
-                        <a href="{{ url_for('admin_edit', entry_id=entry[0]) }}" class="btn btn-sm btn-primary">编辑</a>
-                        <form action="{{ url_for('admin_delete', entry_id=entry[0]) }}" method="POST"
-                            style="display:inline-block;">
-                            <button type="submit" class="btn btn-sm btn-danger"
-                                onclick="return confirm('确定删除？');">删除</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <div class="pagination-container">
-            <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-center">
-                    {% if page > 1 %}
-                    <li class="page-item">
-                        <a class="page-link" href="{{ url_for('admin', page=page-1) }}">Previous</a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">Previous</span>
-                    </li>
-                    {% endif %}
-
-                    {% if total_pages <= 5 %} {% for p in range(1, total_pages+1) %} {% if p==page %} <li
-                        class="page-item active"><span class="page-link">{{ p }}</span></li>
-                        {% else %}
-                        <li class="page-item"><a class="page-link" href="{{ url_for('admin', page=p) }}">{{ p }}</a>
-                        </li>
-                        {% endif %}
-                        {% endfor %}
-                        {% else %}
-                        {% set start_page = page - 3 if page - 3 > 1 else 1 %}
-                        {% set end_page = page + 3 if page + 3 < total_pages else total_pages %} {% if start_page> 1 %}
-                            <li class="page-item"><a class="page-link" href="{{ url_for('admin', page=1) }}">1</a></li>
-                            {% if start_page > 2 %}
-                            <li class="page-item disabled"><span class="page-link">...</span></li>
-                            {% endif %}
-                            {% endif %}
-
-                            {% for p in range(start_page, end_page+1) %}
-                            {% if p == page %}
-                            <li class="page-item active"><span class="page-link">{{ p }}</span></li>
-                            {% else %}
-                            <li class="page-item"><a class="page-link" href="{{ url_for('admin', page=p) }}">{{ p }}</a>
-                            </li>
-                            {% endif %}
-                            {% endfor %}
-
-                            {% if end_page < total_pages %} {% if end_page < total_pages - 1 %} <li
-                                class="page-item disabled"><span class="page-link">...</span></li>
-                                {% endif %}
-                                <li class="page-item"><a class="page-link"
-                                        href="{{ url_for('admin', page=total_pages) }}">{{ total_pages }}</a></li>
-                                {% endif %}
-                                {% endif %}
-
-                                {% if page < total_pages %} <li class="page-item">
-                                    <a class="page-link" href="{{ url_for('admin', page=page+1) }}">Next</a>
-                                    </li>
-                                    {% else %}
-                                    <li class="page-item disabled">
-                                        <span class="page-link">Next</span>
-                                    </li>
-                                    {% endif %}
-                </ul>
-            </nav>
-        </div>
-        <a href="{{ url_for('main') }}" class="btn btn-secondary">返回主页</a>
-        <a href="{{ url_for('user_admin') }}" class="btn btn-info">User Admin</a>
+        <!-- 更新时间 -->
+        <a href="{{ url_for('admin', sort_field='updated_at', sort_order='asc',
+         q=query, page_size=page_size) }}"
+           class="btn btn-outline-secondary me-2 mb-2">
+            按更新时间 ↑
+        </a>
+        <a href="{{ url_for('admin', sort_field='updated_at', sort_order='desc',
+         q=query, page_size=page_size) }}"
+           class="btn btn-outline-secondary mb-2">
+            按更新时间 ↓
+        </a>
     </div>
 
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>操作</th>
+            <th>标题</th>
+            <th>状态</th>
+            <th>描述</th>
+            <th>刊载版块</th>
+            <th>审阅人</th>
+            <th>上传时间</th>
+            <th>上工者</th>
+            <th>锁定者</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entry in entries %}
+            <tr>
+                <td>
+                    <form action="{{ url_for('recall_entry', entry_id=entry.id)}}" method="POST"
+                          style="display:inline-block;" onsubmit="return doubleConfirmRecall();">
+                        <button type="submit" class="btn btn-sm btn-warning">召回</button>
+                    </form>
+                    <form action="{{ url_for('delete_entry', entry_id=entry.id)}}?from=admin" method="POST"
+                          style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
+                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                    </form>
+                </td>
+                <td>
+                    {% if entry.link %}
+                        <a target="_blank" rel="noopener noreferrer"
+                           href="{% if 'http' in entry.link %}{{ entry.link }}{% else %}{{ url_for('static', filename='uploads/' ~ entry.link, _external=True) }}{% endif %}">
+                            {% if entry.title|length > 15 %}
+                                {{ entry.title[:15] }}...
+                            {% else %}
+                                {{ entry.title }}
+                            {% endif %}
+                        </a>
+                    {% else %}
+                        {% if entry.title|length > 15 %}
+                            {{ entry.title[:15] }}...
+                        {% else %}
+                            {{ entry.title }}
+                        {% endif %}
+                    {% endif %}
+                </td>
+                <td class="{% if entry.status == 'pending' %}table-secondary{% elif entry.status == 'draft' %}table-info{% elif entry.status == 'reviewed' %}table-success{% elif entry.status == 'rejected' %}table-danger{% elif entry.status == 'published' %}table-primary{% else %}table-light{% endif %}">
+                    {{ entry.status_display }}
+                </td>
+                <td>
+                    {% if entry.content and entry.content|length > 15 %}
+                        {{ entry.content[:15] }}...
+                    {% else %}
+                        {{ entry.content or '' }}
+                    {% endif %}
+                </td>
+                <td>{{ entry.type or '' }}</td>
+                <td>{{ entry.reviewer_username or '' }}</td>
+                <td>{{ entry.formatted_created_at }}</td>
+                <td {% if entry.describer_username==session['username'] %} class="table-success" {% endif %}>
+                    {{ entry.describer_username or '' }}
+                </td>
+                <td></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 分页控件 -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+
+            <!-- 上一页 -->
+            {% if page > 1 %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="{{ url_for('admin', page=page-1, page_size=page_size, q=query) }}">上一页</a>
+                </li>
+            {% endif %}
+
+            <!-- 如果当前页 > 3，显示第一页和省略号 -->
+            {% if page > 3 %}
+                <li class="page-item"><a class="page-link"
+                                         href="{{ url_for('admin', page=1, page_size=page_size, q=query) }}">1</a></li>
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+
+            <!-- 显示当前页附近页码 -->
+            {% for p in range(nearby_start, nearby_end+1) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('admin', page=p, page_size=page_size, q=query) }}">{{ p }}</a>
+                </li>
+            {% endfor %}
+
+            <!-- 如果当前页 < total_pages - 2，显示省略号和最后一页 -->
+            {% if page < total_pages - 2 %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+                <li class="page-item"><a class="page-link"
+                                         href="{{ url_for('admin', page=total_pages, page_size=page_size, q=query) }}">{{ total_pages }}</a>
+                </li>
+            {% endif %}
+
+            <!-- 下一页 -->
+            {% if page < total_pages %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="{{ url_for('admin', page=page+1, page_size=page_size, q=query) }}">下一页</a>
+                </li>
+            {% endif %}
+        </ul>
+     <!-- 页码跳转 -->
+        <form class="d-flex justify-content-center mt-2" method="get" action="{{ url_for('admin') }}">
+            <!-- 查询参数 -->
+            <input type="hidden" name="page_size" value="{{ page_size }}">
+            <input type="hidden" name="q" value="{{ query }}">
+            <input type="number" class="form-control"
+                   name="page" min="1" max="{{ total_pages }}"
+                   placeholder="页码" style="width: 80px;">
+            <button type="submit" class="btn btn-primary">Go</button>
+        </form>
+    </nav>
+
+    <!-- 每页显示条数选择框 -->
+    <form method="GET" class="mb-3" action="{{ url_for('admin') }}">
+        <label for="page_size">每页显示：</label>
+        <select name="page_size" id="page_size" onchange="this.form.submit()">
+            <option value="10" {% if page_size == 10 %}selected{% endif %}>10</option>
+            <option value="20" {% if page_size == 20 %}selected{% endif %}>20</option>
+            <option value="50" {% if page_size == 50 %}selected{% endif %}>50</option>
+            <option value="100" {% if page_size == 100 %}selected{% endif %}>100</option>
+        </select>
+        <input type="hidden" name="page" value="{{ page }}">
+        <input type="hidden" name="q" value="{{ query }}">
+    </form>
+</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css"></script>
     <script>
-        document.getElementById('selectAllBtn').addEventListener('click', function() {
-            const checkboxes = document.querySelectorAll('input[name="entry_ids"]');
-            const button = document.getElementById('selectAllBtn');
-            const isSelectAll = button.textContent === '全选';
-            
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = isSelectAll;
-            });
-            
-            button.textContent = isSelectAll ? '取消全选' : '全选';
-        });
-        
-        document.getElementById('selectUnpublishedBtn').addEventListener('click', function() {
-            const rows = document.querySelectorAll('table tbody tr');
-            
-            rows.forEach(row => {
-                const publishTimeCell = row.cells[2]; // Publish Time is the 3rd column (index 2)
-                const checkbox = row.cells[0].querySelector('input[type="checkbox"]');
-                
-                if (publishTimeCell && publishTimeCell.textContent.trim() === '') {
-                    checkbox.checked = true;
-                }
-            });
-        });
-
-        function unpublishSelected() {
-            const checkboxes = document.querySelectorAll('input[name="entry_ids"]:checked');
-            if (checkboxes.length === 0) {
-                alert('请至少选择一个条目');
-                return;
-            }
-            
-            if (confirm('确定要取消发布选定的条目吗？')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '{{ url_for("admin_unpublish") }}';
-                
-                checkboxes.forEach(checkbox => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'entry_ids';
-                    input.value = checkbox.value;
-                    form.appendChild(input);
-                });
-                
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-
-        function makeInvalidSelected() {
-            const checkboxes = document.querySelectorAll('input[name="entry_ids"]:checked');
-            if (checkboxes.length === 0) {
-                alert('请至少选择一个条目');
-                return;
-            }
-            
-            if (confirm('确定要将选定的条目标记为无效吗？这将设置发布时间为1970-01-01。')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '{{ url_for("admin_make_invalid") }}';
-                
-                checkboxes.forEach(checkbox => {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'entry_ids';
-                    input.value = checkbox.value;
-                    form.appendChild(input);
-                });
-                
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
+    var descriptionModal = document.getElementById('descriptionModal')
+    descriptionModal.addEventListener('show.bs.modal', function (event) {
+        var trigger = event.relatedTarget
+        var description = trigger.getAttribute('data-description')
+        var modalBody = descriptionModal.querySelector('#description-content')
+        modalBody.textContent = description
+    })
     </script>
+<script type="text/javascript">
+    function doubleConfirmDelete() {
+        if (!confirm("确定删除此条目？")) {
+            return false;
+        }
+        if (!confirm("你确定要删除吗？此操作不可撤销！")) {
+            return false;
+        }
+        return true;
+    }
+</script>
+<script type="text/javascript">
+    function doubleConfirmRecall() {
+        if (!confirm("确定召回此条目？")) {
+            return false;
+        }
+        if (!confirm("你确定要召回吗？此操作不可撤销！")) {
+            return false;
+        }
+        return true;
+    }
+</script>
 </body>
+
 
 </html>

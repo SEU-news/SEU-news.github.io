@@ -1,22 +1,14 @@
 import logging
 
-from flask import session, render_template, request
+from flask import  render_template, request
 from flask.views import MethodView
 
-from common.content_status import STATUS_TERMINATED
 from common.decorator.permission_required import PermissionDecorators
-from django_models.models import Content, User_info
+from django_models.models import User_info
 
+class UserAdminView(MethodView):
 
-class MainView(MethodView):
-    """
-    主页面视图类
-
-    处理主页面的GET请求，显示所有内容条目。
-    """
-
-    decorators = [PermissionDecorators.login_required]  # 应用装饰器到整个视图类
-
+    decorators = [PermissionDecorators.admin_required]# 应用装饰器到整个视图类
     def get(self):
         """
         处理GET请求，显示主页面
@@ -27,7 +19,7 @@ class MainView(MethodView):
             render_template: 主页面模板，包含内容条目列表
         """
         # 获取排序参数，默认按 created_at 降序
-        sort_field = request.args.get('sort_field', 'created_at')
+        sort_field = request.args.get('sort_field', 'user_id')
         sort_order = request.args.get('sort_order', 'desc')
 
         # 只允许我们定义好的字段，避免注入
@@ -41,7 +33,7 @@ class MainView(MethodView):
         query = request.args.get('q', '').strip()
 
         # 懒加载 + 排序
-        qs = Content.objects.select_related().exclude(status=STATUS_TERMINATED).order_by(order_by)
+        qs = User_info.objects.select_related().all().order_by(order_by)
         if query:
             qs = qs.filter(title__icontains=query)
         total = qs.count()  # 总条数
@@ -74,62 +66,33 @@ class MainView(MethodView):
         # contents = Content.objects.select_related().all().order_by('-updated_at')
 
         # 分页
-        contents = qs[offset:offset + page_size]  # 当前页数据
+        user_infos = qs[offset:offset + page_size]  # 当前页数据
         total_pages = (total + page_size - 1) // page_size
 
         # 当前页附近页码
         nearby_start = max(1, page - 2)
         nearby_end = min(total_pages, page + 2)
 
-        status_map = {
-            'pending': '待审核',
-            'published': '已发布',
-            'reviewed': '已审核',
-            'rejected': '已拒绝',
-            'draft': '草稿'
-        }
-
-        try:
-            current_user = User_info.objects.get(username=session['username'])
-            current_user_id = current_user.id
-            admin_flag = current_user.has_admin_permission()
-            editor_flag = current_user.has_editor_permission()
-        except User_info.DoesNotExist:
-            current_user_id = None
-            admin_flag = 0
-            editor_flag = 0
-        #获取权限
-
-        for content in contents:
-            if content.created_at:
-                content.formatted_created_at = content.created_at.strftime('%m-%d %H:%M')
+        for user_info in user_infos:
+            if user_info.created_at:
+                user_info.formatted_created_at = user_info.created_at.strftime('%m-%d %H:%M')
             else:
-                content.formatted_created_at = ''
+                user_info.formatted_created_at = ''
 
-            if content.updated_at:
-                content.formatted_updated_at = content.updated_at.strftime('%m-%d %H:%M')
+            if user_info.updated_at:
+                user_info.formatted_updated_at = user_info.updated_at.strftime('%m-%d %H:%M')
             else:
-                content.formatted_updated_at = ''
+                user_info.formatted_updated_at = ''
 
-            content.status_display = status_map.get(content.status, content.status)
-
-            content.creator_id = content.creator_id
-            content.describer_id = content.describer_id
-            content.reviewer_id = content.reviewer_id
-
-            content.can_delete = (current_user_id == content.creator_id)
-
-            logging.debug(f"Content ID: {content.id}, Status: {content.status}, Display: {content.status_display}")
+            logging.debug(f"user ID: {user_info.id}, username: {user_info.username}")
 
         return render_template(
-            'main.html',
-            entries=contents,
+            'user_admin.html',
+            users=user_infos,
             page=page,
             page_size=page_size,
             total_pages=total_pages,
             nearby_start=nearby_start,
             nearby_end=nearby_end,
             query=query,
-            admin_flag=admin_flag,
-            editor_flag=editor_flag,
         )

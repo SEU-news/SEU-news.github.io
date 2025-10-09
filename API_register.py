@@ -38,7 +38,11 @@ from apis.search import SearchView
 from apis.typst import TypstView
 from apis.upload import UploadView
 from apis.upload_images import UploadImageView
-
+from apis.admin import AdminView
+from apis.user_admin import UserAdminView
+from apis.content_recall import RecallEntryView
+from apis.role_edit import EditRoleView
+from apis.change_password import PasswordChangeView
 
 def create_app():
     app = Flask(__name__)
@@ -71,7 +75,11 @@ def create_app():
     app.add_url_rule('/delete/<int:entry_id>', view_func=DeleteEntryView.as_view('delete_entry'), methods=['POST'])
     app.add_url_rule('/add_deadline', view_func=AddDeadlineView.as_view('add_deadline'), methods=['GET', 'POST'])
     app.add_url_rule('/publish', view_func=PublishView.as_view('publish'), methods=['GET', 'POST'])
-
+    app.add_url_rule('/admin', view_func=AdminView.as_view('admin'), methods=['GET'])
+    app.add_url_rule('/user_admin', view_func=UserAdminView.as_view('user_admin'), methods=['GET'])
+    app.add_url_rule('/recall/<int:entry_id>', view_func=RecallEntryView.as_view('recall_entry'), methods=['POST'])
+    app.add_url_rule('/role_edit/<int:user_id>/<action>/<permission>', view_func=EditRoleView.as_view('role_edit'), methods=['POST'])
+    app.add_url_rule('/change_password', view_func=PasswordChangeView.as_view('change_password'), methods=['POST'])
     return app
 
 
