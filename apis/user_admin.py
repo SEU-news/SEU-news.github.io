@@ -35,7 +35,7 @@ class UserAdminView(MethodView):
         # 懒加载 + 排序
         qs = User_info.objects.select_related().all().order_by(order_by)
         if query:
-            qs = qs.filter(title__icontains=query)
+            qs = qs.filter(username__icontains=query)
         total = qs.count()  # 总条数
 
         # 当前页
