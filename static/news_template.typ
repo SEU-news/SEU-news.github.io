@@ -74,7 +74,7 @@ column-gutter: 2em
   
 // ]
 #align(center)[
-  #text(size: 2.3em, weight: "bold", font: ("Noto Serif CJK SC", "Noto Serif SC"))[你车消息试行特刊]
+  #text(size: 2.3em, weight: "bold", font: ("Noto Serif CJK SC", "Noto Serif SC"))[至善新声]
 ]
 
 #v(-4mm)
