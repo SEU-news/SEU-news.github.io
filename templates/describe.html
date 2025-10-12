@@ -59,12 +59,12 @@
                         </div>
                         <div id="shortTitleField"{% if entry.short_title %}style="display:block;" {% else %}style="display:none;" {% endif%}>
                             <label>短标题（将显示在ddl表格）</label>
-                            <input type="text" name="short_title" class="form-control">
+                            <input type="text" name="short_title" class="form-control" value="{{ entry.short_title or '' }}>
                         </div>
                     </div>
                     <div class="form-group">
                         <label>描述</label>
-                        <textarea name="description" class="form-control" required rows="10">{{ entry.description }}</textarea>
+                        <textarea name="description" class="form-control" required rows="10">{{ entry.content or '' }}</textarea>
                         <button type="button" class="btn btn-outline-secondary mt-2" onclick="kernLineBreaks()">合并连续换行</button>
                     </div>
                     
