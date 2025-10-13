@@ -12,7 +12,7 @@ class PasswordChangeView(MethodView):
     处理取消操作请求。
     """
 
-    decorators = [PermissionDecorators.admin_required]  # 应用登录_required装饰器
+    decorators = [PermissionDecorators.admin_required, PermissionDecorators.login_required]  # 应用登录_required装饰器
 
     def post(self):
 
