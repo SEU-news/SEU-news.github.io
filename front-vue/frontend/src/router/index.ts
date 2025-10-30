@@ -1,15 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
-import LogIn from '../views/Login.vue'
-import Register from  '../views/Register.vue'
-import Contact from '../views/Contact.vue'
+
+import HomeView  from '../views/Home.vue'
+import LogInView from '../views/Login.vue'
+import RegisterView from  '../views/Register.vue'
+import ContactView from '../views/Contact.vue'
+import AdminView from '../views/Admin.vue'
 
 // 路由配置
 const routes = [
-  { path: '/', component: Home },
-  { path: '/login', component: LogIn },
-  { path: '/register', component: Register},
-  { path: '/contact', component: Contact }
+  { path: '/', component: HomeView  },
+  { path: '/login', component: LogInView },
+  { path: '/register', component: RegisterView},
+  { path: '/contact', component: ContactView },
+  { path: '/admin', component: AdminView }
+
 ]
 
 
