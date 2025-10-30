@@ -17,6 +17,22 @@
       </div>
     </div>
   </div>
+  <div class="home">
+    <div class="features">
+      <div class="feature-card">
+        <h3>访客登录</h3>
+        <p></p>
+      </div>
+      <div class="feature-card">
+        <h3>管理登录</h3>
+        <p>掌握学术前沿信息</p>
+      </div>
+      <div class="feature-card">
+        <h3>联系我们</h3>
+        <p>关注校园文化活动</p>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
