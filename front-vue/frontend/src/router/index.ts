@@ -5,6 +5,8 @@ import LogInView from '../views/Login.vue'
 import RegisterView from  '../views/Register.vue'
 import ContactView from '../views/Contact.vue'
 import AdminView from '../views/Admin.vue'
+import MainView from '../views/Main.vue'
+
 
 // 路由配置
 const routes = [
@@ -12,7 +14,8 @@ const routes = [
   { path: '/login', component: LogInView },
   { path: '/register', component: RegisterView},
   { path: '/contact', component: ContactView },
-  { path: '/admin', component: AdminView }
+  { path: '/admin', component: AdminView },
+  { path: '/main', component: MainView }
 
 ]
 
