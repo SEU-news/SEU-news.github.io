@@ -2,7 +2,7 @@
   <div id="app">
     <nav v-if="$route.path !== '/'" class="navbar">
       <router-link to="/">首页</router-link>
-      <router-link to="/news">新闻</router-link>
+      <router-link to="/news">至善新生</router-link>
       <router-link to="/about">关于</router-link>
     </nav>
     <router-view />

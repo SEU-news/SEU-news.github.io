@@ -17,27 +17,26 @@
       </div>
     </div>
   </div>
+
   <div class="home">
     <div class="features">
-      <div class="feature-card">
+      <router-link to="/login" class="feature-card link-card">
         <h3>访客登录</h3>
-        <p></p>
-      </div>
-      <div class="feature-card">
+        <p>进入访客系统</p>
+      </router-link>
+
+      <router-link to="/admin-login" class="feature-card link-card">
         <h3>管理登录</h3>
-        <p>掌握学术前沿信息</p>
-      </div>
-      <div class="feature-card">
+        <p>后台管理入口</p>
+      </router-link>
+
+      <router-link to="/contact" class="feature-card link-card">
         <h3>联系我们</h3>
-        <p>关注校园文化活动</p>
-      </div>
+        <p>欢迎留言</p>
+      </router-link>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-// 首页逻辑
-</script>
 
 <style scoped>
 .home {
@@ -58,5 +57,18 @@
   padding: 1.5rem;
   width: 200px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: 0.2s;
+}
+
+/* 鼠标悬停时美化 */
+.feature-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-3px);
+}
+
+/* 让 router-link 看起来像卡片 */
+.link-card {
+  text-decoration: none;
+  color: inherit;
 }
 </style>
