@@ -1,73 +1,66 @@
-# .
+# Vue 3 + Vite + Django 项目
 
-This template should help get you started developing with Vue 3 in Vite.
+### 推荐 IDE 设置
+- VS Code + Vue (Official) (并禁用 Vetur)。
+- PyCharm
 
-## Recommended IDE Setup
+### 推荐浏览器设置
+- 基于 Chromium 的浏览器 (Chrome, Edge, Brave 等):
+  - Vue.js devtools
+  - 在 Chrome DevTools 中启用自定义对象格式化程序
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Recommended Browser Setup
-
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd) 
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
 - Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+  - Vue.js devtools
+  - 在 Firefox DevTools 中启用自定义对象格式化程序
 
-## Type Support for `.vue` Imports in TS
+### TypeScript 对 .vue 导入的类型支持
+默认情况下，TypeScript 无法处理 .vue 导入的类型信息，因此我们使用 vue-tsc 替换 tsc CLI 进行类型检查。在编辑器中，我们需要 Volar 来让 TypeScript 语言服务识别 .vue 类型。
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## 项目指令
 
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
+### 进入前端目录
+```
+cd frontend
 ```
 
-### Compile and Hot-Reload for Development
+### 安装依赖（必要）
+```
+npm install
+```
+### 启动（必要）
+```
+npm run dev
+```
+### 类型检查、编译和生产环境压缩
+```
+npm run build
+```
+### 使用 Vitest 运行单元测试
+```
+npm run test:unit
+```
+### 若遇到配置问题，清理并重新初始化
+```
+# 删除 node_modules 和 锁定文件
+rm node_modules 
+rm package-lock.json
 
-```sh
+# 重新安装依赖
+npm install
+
+# 验证基础配置
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+### 若需要运行旧框架
+```
+# 进入项目根目录
+cd SEU-news.github.io
 
-```sh
-npm run build
+# 进入虚拟环境
+cd .venv/Scripts/activate
+
+# 运行启动脚本
+python cmd.py
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-npm run test:unit
-```
-
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
-
-```sh
-# Install browsers for the first run
-npx playwright install
-
-# When testing on CI, must build the project first
-npm run build
-
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e -- --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e -- tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
