@@ -2,6 +2,7 @@
   <div class="home">
     <h1>至善新声门户</h1>
     <p>欢迎访问 News</p>
+    <a href="http://localhost:42610"> 旧的系统 </a>
 
     <div class="home-container">
 
