@@ -1,0 +1,77 @@
+/* 间距工具类 */
+.mt-5 {
+  margin-top: 3rem !important;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem !important;
+}
+
+.mb-3 {
+  margin-bottom: 1rem !important;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem !important;
+}
+
+.me-2 {
+  margin-right: 0.5rem !important;
+}
+
+.ms-2 {
+  margin-left: 0.5rem !important;
+}
+
+.ms-auto {
+  margin-left: auto !important;
+}
+
+/* Flexbox 工具类 */
+.d-flex {
+  display: flex !important;
+}
+
+.d-inline-block {
+  display: inline-block !important;
+}
+
+.d-none {
+  display: none !important;
+}
+
+.flex-wrap {
+  flex-wrap: wrap !important;
+}
+
+.justify-content-between {
+  justify-content: space-between !important;
+}
+
+.justify-content-center {
+  justify-content: center !important;
+}
+
+.align-items-center {
+  align-items: center !important;
+}
+
+/* 文本工具类 */
+.text-end {
+  text-align: right !important;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+/* 文本元素 */
+small {
+  font-size: 80%;
+  font-weight: 400;
+}
+
+/* 宽度工具类 */
+.w-auto {
+  width: auto !important;
+}

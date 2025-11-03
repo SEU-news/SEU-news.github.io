@@ -1,10 +1,4 @@
 <template>
-  <head>
-    <title>Login</title>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
-  </head>
-
   <div class="container mt-5" style="max-width: 500px">
     <h2>登录</h2>
 
@@ -60,8 +54,36 @@ async function handleSubmit() {
 }
 </script>
 
-<style>
-body {
-  background-color: #f8f9fa;
+<style scoped>
+/* 引入基础样式 */
+@import '../styles/layout.css';
+@import '../styles/utilities.css';
+@import '../styles/buttons.css';
+@import '../styles/forms.css';
+@import '../styles/alerts.css';
+
+/* 组件特有样式 */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #555;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+form {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 </style>

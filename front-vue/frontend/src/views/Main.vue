@@ -207,7 +207,26 @@ const nearbyPages = computed(() => {
 </script>
 
 <style scoped>
+/* 引入基础样式 */
+@import '../styles/layout.css';
+@import '../styles/utilities.css';
+@import '../styles/buttons.css';
+@import '../styles/forms.css';
+@import '../styles/tables.css';
+@import '../styles/alerts.css';
+@import '../styles/navigation.css';
+
+/* 组件特有样式 */
+.container {
+  max-width: 1200px;
+}
+
 .table-hover th, .table-hover td {
   vertical-align: middle;
+}
+
+/* 特有工具类 */
+.w-auto {
+  width: auto !important;
 }
 </style>

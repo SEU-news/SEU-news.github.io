@@ -76,6 +76,12 @@ async function handleSubmit() {
 </script>
 
 <style scoped>
+/* 引入基础样式 */
+@import '../styles/layout.css';
+@import '../styles/buttons.css';
+@import '../styles/forms.css';
+
+/* 组件特有样式 */
 .contact {
   max-width: 600px;
   margin: 3rem auto;

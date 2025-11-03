@@ -9,6 +9,10 @@
 </script>
 
 <style scoped>
+/* 引入基础样式 */
+@import '../styles/layout.css';
+
+/* 组件特有样式 */
 .news {
   padding: 2rem;
 }

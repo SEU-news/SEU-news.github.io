@@ -1,10 +1,4 @@
 <template>
-  <head>
-    <title>Admin 管理页面</title>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
-  </head>
-
   <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>所有条目管理</h2>
@@ -153,6 +147,20 @@ watch(page, fetchEntries)
 </script>
 
 <style scoped>
+/* 引入基础样式 */
+@import '../styles/layout.css';
+@import '../styles/utilities.css';
+@import '../styles/buttons.css';
+@import '../styles/forms.css';
+@import '../styles/tables.css';
+@import '../styles/alerts.css';
+@import '../styles/navigation.css';
+
+/* 组件特有样式 */
+.container {
+  max-width: 1200px;
+}
+
 .table-hover th, .table-hover td {
   vertical-align: middle;
 }
