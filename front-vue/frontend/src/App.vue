@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <nav v-if="$route.path !== '/'" class="navbar">
+    <nav v-if="showNavbar" class="navbar">
       <router-link to="/">首页</router-link>
       <router-link to="/news">至善新生</router-link>
       <router-link to="/about">关于</router-link>
@@ -11,8 +11,15 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
+import { computed } from 'vue'
+import { errorRouteNames } from './router/errorRoutes'
 
 const $route = useRoute()
+
+// 只在非错误页面显示导航栏
+const showNavbar = computed(() => {
+  return !errorRouteNames.includes($route.name as string)
+})
 </script>
 
 <style>
