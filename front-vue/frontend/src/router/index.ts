@@ -6,11 +6,15 @@ import RegisterView from  '../views/Register.vue'
 import ContactView from '../views/Contact.vue'
 import AdminView from '../views/Admin.vue'
 import MainView from '../views/Main.vue'
+import NewsView from '../views/News.vue'
+import AboutView from '../views/About.vue'
 import { errorRoutes } from './errorRoutes'
 
 // 路由配置
 const routes = [
   { path: '/', component: HomeView  },
+  { path: '/news', name: 'News', component: NewsView },
+  { path: '/about', name: 'About', component: AboutView },
   { path: '/login', component: LogInView },
   { path: '/register', component: RegisterView},
   { path: '/contact', component: ContactView },

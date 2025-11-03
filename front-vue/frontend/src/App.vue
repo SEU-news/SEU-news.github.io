@@ -1,10 +1,6 @@
 <template>
   <div id="app">
-    <nav v-if="showNavbar" class="navbar">
-      <router-link to="/">首页</router-link>
-      <router-link to="/news">至善新生</router-link>
-      <router-link to="/about">关于</router-link>
-    </nav>
+    <Navbar v-if="showNavbar" />
     <router-view />
   </div>
 </template>
@@ -13,6 +9,7 @@
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 import { errorRouteNames } from './router/errorRoutes'
+import Navbar from './components/Navbar.vue'
 
 const $route = useRoute()
 
@@ -28,22 +25,5 @@ const showNavbar = computed(() => {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
-}
-
-.navbar {
-  padding: 1rem;
-  background: #f5f5f5;
-  margin-bottom: 2rem;
-}
-
-.navbar a {
-  margin: 0 1rem;
-  text-decoration: none;
-  color: #2c3e50;
-}
-
-.navbar a.router-link-active {
-  color: #42b983;
-  font-weight: bold;
 }
 </style>
