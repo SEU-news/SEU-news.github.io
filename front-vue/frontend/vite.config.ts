@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
 // 不需要dev-tools的话将以下注释掉
-import vueDevTools from 'vite-plugin-vue-devtools'
+// import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,7 +12,7 @@ export default defineConfig({
     vue(),
     vueJsx(),
     // 不需要dev-tools的话将以下注释掉
-    vueDevTools(),
+    // vueDevTools(),
   ],
   resolve: {
     alias: {

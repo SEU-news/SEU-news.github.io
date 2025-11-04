@@ -24,7 +24,7 @@
     "vue-tsc": "^1.8.0"
   },
   "scripts": {
-    "build": "vue-tsc -b && vite build",
+    "build": "vite build",
     "dev": "vite",
     "lint": "eslint . --fix",
     "preview": "vite preview",

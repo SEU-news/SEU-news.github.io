@@ -24,9 +24,6 @@ const routes = [
   
   // 错误页面路由
   ...errorRoutes,
-  
-  // 404页面必须放在最后
-  { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('../views/errors/404.vue') },
 ]
 
 const router = createRouter({
