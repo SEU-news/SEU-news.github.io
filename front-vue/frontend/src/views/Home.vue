@@ -2,14 +2,14 @@
   <div class="home">
     <h1>至善新声门户</h1>
     <p>欢迎访问 News</p>
-    <a href="http://localhost:42610"> 旧的系统 </a>
+    <a href="http://49.235.51.123:42610"> 旧的系统 </a>
 
     <div class="home-container">
 
       <!-- 左侧 PDF -->
       <div class="pdf-card">
         <h3>最新公告 PDF</h3>
-        <iframe src="/latest.pdf" width="100%" height="600px" style="border:none;"></iframe>
+        <iframe src="http://49.235.51.123:42610/static/latest.pdf" width="100%" height="600px" style="border:none;"></iframe>
       </div>
 
       <!-- 右侧功能卡片 -->
