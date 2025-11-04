@@ -11,6 +11,7 @@ export default defineConfig({
   plugins: [
     vue(),
     vueJsx(),
+    // 不需要dev-tools的话将以下注释掉
     vueDevTools(),
   ],
   resolve: {
@@ -18,4 +19,8 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    host: '0.0.0.0', // 指定0.0.0.0，允许公网访问
+    port: 24610
+  }
 })
