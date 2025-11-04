@@ -1,26 +1,46 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
-import HomeView  from '../views/Home.vue'
-import LogInView from '../views/Login.vue'
-import RegisterView from  '../views/Register.vue'
-import ContactView from '../views/Contact.vue'
-import AdminView from '../views/Admin.vue'
-import MainView from '../views/Main.vue'
-import NewsView from '../views/News.vue'
-import AboutView from '../views/About.vue'
 import { errorRoutes } from './errorRoutes'
 
 // 路由配置
 const routes = [
-  { path: '/', component: HomeView  },
-  { path: '/news', name: 'News', component: NewsView },
-  { path: '/about', name: 'About', component: AboutView },
-  { path: '/login', component: LogInView },
-  { path: '/register', component: RegisterView},
-  { path: '/contact', component: ContactView },
-  { path: '/admin', component: AdminView },
-  { path: '/main', component: MainView },
-  { path: '/admin-login', component: AdminView },
+  { 
+    path: '/', 
+    component: () => import('../views/Home.vue')
+  },
+  { 
+    path: '/news', 
+    name: 'News', 
+    component: () => import('../views/News.vue') 
+  },
+  { 
+    path: '/about', 
+    name: 'About', 
+    component: () => import('../views/About.vue') 
+  },
+  { 
+    path: '/login', 
+    component: () => import('../views/Login.vue') 
+  },
+  { 
+    path: '/register', 
+    component: () => import('../views/Register.vue')
+  },
+  { 
+    path: '/contact', 
+    component: () => import('../views/Contact.vue') 
+  },
+  { 
+    path: '/admin', 
+    component: () => import('../views/Admin.vue') 
+  },
+  { 
+    path: '/main', 
+    component: () => import('../views/Main.vue') 
+  },
+  { 
+    path: '/admin-login', 
+    component: () => import('../views/Admin.vue') 
+  },
   
   // 错误页面路由
   ...errorRoutes,
