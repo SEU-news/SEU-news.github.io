@@ -40,16 +40,37 @@ async function handleSubmit() {
   try {
     const res = await login(username.value, password.value)
     if (res.success) {
-      message.value = '登录成功！'
-      // 例如保存 token
+      // 使用 Notification API 显示成功消息
+      showNotification('登录成功！')
+      // 保存 token
       localStorage.setItem('token', res.token)
-      // 跳转主页
+      // 立即跳转主页
       router.push('/')
     } else {
       message.value = '用户名或密码错误'
     }
   } catch (err) {
     message.value = '服务器连接失败'
+  }
+}
+
+// 显示通知消息的函数
+function showNotification(text) {
+  // 检查浏览器是否支持 Notification API
+  if ('Notification' in window) {
+    // 请求通知权限
+    if (Notification.permission === 'granted') {
+      new Notification(text)
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          new Notification(text)
+        }
+      })
+    }
+  } else {
+    // 如果浏览器不支持 Notification API，回退到 alert
+    alert(text)
   }
 }
 </script>
