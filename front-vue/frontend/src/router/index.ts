@@ -44,6 +44,12 @@ const routes = [
   
   // 错误页面路由
   ...errorRoutes,
+  
+  // 通配符路由，用于捕获所有未匹配的路由并重定向到404页面
+  { 
+    path: '/:pathMatch(.*)*', 
+    redirect: '/404' 
+  },
 ]
 
 const router = createRouter({
