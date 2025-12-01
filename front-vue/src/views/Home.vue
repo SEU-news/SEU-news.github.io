@@ -2,7 +2,7 @@
   <div class="home">
     <h1>至善新声门户</h1>
     <p>欢迎访问 News</p>
-    <a href="http://49.235.51.123:42610"> 旧的系统 </a>
+    <a href="javascript:void(0)" @click="redirectToOldSystem">旧的系统</a>
 
     <div class="home-container">
 
@@ -119,4 +119,8 @@
 
 </style>
 <script setup lang="ts">
+const redirectToOldSystem = () => {
+  const oldSystemUrl = 'http://' + window.location.hostname + ':42610';
+  window.open(oldSystemUrl, '_blank');
+};
 </script>
