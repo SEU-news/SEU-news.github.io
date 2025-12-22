@@ -46,21 +46,21 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>车大消息 消息刊载</h2>
         <div>
-            <a href="{{ url_for('preview_edit') }}" class="btn btn-outline-primary">预览</a>
+            <a href="{{ url_for('preview_edit') }}?context_id={{ context_id }}" class="btn btn-outline-primary">预览</a>
 <!--            <a href="{{ url_for('add_deadline') }}" class="btn btn-secondary">上传仅有DDL的消息</a>-->
-            <a href="{{ url_for('upload') }}" class="btn btn-primary">上传纯文本消息</a>
-            <a href="{{ url_for('publish') }}" class="btn btn-success">发布</a>
+            <a href="{{ url_for('upload') }}?context_id={{ context_id }}" class="btn btn-primary">上传纯文本消息</a>
+            <a href="{{ url_for('publish') }}?context_id={{ context_id }}" class="btn btn-success">发布</a>
         </div>
     </div>
 
-    <form method="POST" action="{{ url_for('paste') }}" class="mb-4">
+    <form method="POST" action="{{ url_for('paste') }}?context_id={{ context_id }}" class="mb-4">
         <div class="input-group">
             <input type="text" class="form-control" name="link" placeholder="Paste url here..." required>
             <button class="btn btn-outline-secondary" type="submit">添加地址</button>
         </div>
     </form>
 
-    <form method="POST" action="{{ url_for('upload_image') }}" enctype="multipart/form-data" class="mb-4">
+    <form method="POST" action="{{ url_for('upload_image') }}?context_id={{ context_id }}" enctype="multipart/form-data" class="mb-4">
         <div class="input-group">
             <input type="file" class="form-control" name="image" accept="image/*" required>
             <button class="btn btn-outline-secondary" type="submit">上传图片</button>
@@ -119,10 +119,10 @@
                     <td>
                         {% if editor_flag %}
                         {% if entry.status == 'draft' %}
-                            <a href="{{ url_for('describe', entry_id=entry.id) }}"
+                            <a href="{{ url_for('describe', entry_id=entry.id) }}?context_id={{ context_id }}"
                                class="btn btn-sm btn-danger">编辑</a>
                         {% else %}
-                            <a href="{{ url_for('review', entry_id=entry.id) }}"
+                            <a href="{{ url_for('review', entry_id=entry.id) }}?context_id={{ context_id }}"
                                class="{% if entry.status == 'reviewed' or entry.status == 'published' %}btn btn-sm btn-success{% else %}btn btn-sm btn-warning{% endif %}">
                                 {% if entry.status == 'reviewed' or entry.status == 'published' %} 修改 {% else %}
                                     审核 {% endif %}
@@ -138,7 +138,7 @@
                         {% endfor %}
 
                         {% if entry.creator_username == session['username'] %}
-                            <form action="{{ url_for('delete_entry', entry_id=entry.id) }}?from=main" method="POST"
+                            <form action="{{ url_for('delete_entry', entry_id=entry.id) }}?from=main&context_id={{ context_id }}" method="POST"
                                   style="display:inline-block;" onsubmit="return doubleConfirmDelete();">
                                 <button type="submit" class="btn btn-sm btn-danger">删除</button>
                             </form>

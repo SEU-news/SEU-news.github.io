@@ -3,6 +3,7 @@ from flask import redirect, url_for, flash, request, session
 from flask.views import MethodView
 from django.db import transaction
 
+from common.methods.save_context import get_main_page_context
 from common.decorator.permission_required import PermissionDecorators
 from common.content_status import STATUS_DRAFT
 from django_models.models import Content, User_info
@@ -37,7 +38,7 @@ class CancelView(MethodView):
             with transaction.atomic():
                 content = Content.objects.select_for_update().get(id=entry_id)
                 current_user = User_info.objects.get(username=session['username'])
-                
+
                 self.logger.info(
                     f"用户 {current_user.username}(ID:{current_user.id}) 开始取消内容(ID:{content.id})，原状态: {content.status}")
 
@@ -45,11 +46,11 @@ class CancelView(MethodView):
                 content.status = STATUS_DRAFT
                 content.reviewer_id = current_user.id
                 content.save(update_fields=['status', 'reviewer_id'])
-                
+
                 self.logger.info(
                     f"取消完成，内容ID: {content.id}，新状态: {content.status}，操作者: {current_user.username}")
                 flash("内容已取消并转为草稿状态")
-                
+
         except Content.DoesNotExist:
             self.logger.warning(f"尝试取消不存在的内容，ID: {entry_id}")
             flash("内容不存在")
@@ -60,5 +61,15 @@ class CancelView(MethodView):
         except Exception as e:
             self.logger.error(f"取消操作失败: {str(e)}")
             flash("操作失败")
-            
-        return redirect(url_for('main'))
+        context_id = request.args.get('context_id')
+        # 2. 获取所有验证后的参数（自动处理默认值和二次验证）
+        page_params = get_main_page_context(context_id)
+        # 3. 重定向到主页面，携带所有参数（与你的MainView参数一致）
+        return redirect(url_for(
+            'main',  # 你的MainView的路由名称（请确保与实际注册的名称一致）
+            page=page_params['page'],
+            page_size=page_params['page_size'],
+            q=page_params['q'],
+            sort_field=page_params['sort_field'],
+            sort_order=page_params['sort_order']
+        ))

@@ -8,6 +8,7 @@ from common.content_status import STATUS_DRAFT
 from common.decorator.permission_required import PermissionDecorators
 from common.methods.fetch_title import fetch_title
 from common.methods.is_valid_url import is_valid_url
+from common.methods.save_context import get_main_page_context
 from django_models.models import Content, User_info
 
 
@@ -37,7 +38,16 @@ class UploadUrlView(MethodView):
         if not link or not is_valid_url(link):
             self.logger.info("用户尝试上传链接但未提供有效地址")
             flash('请输入有效的地址')
-            return redirect(url_for('main'))
+            context_id = request.args.get('context_id')
+            page_params = get_main_page_context(context_id)
+            return redirect(url_for(
+                'main',
+                page=page_params['page'],
+                page_size=page_params['page_size'],
+                q=page_params['q'],
+                sort_field=page_params['sort_field'],
+                sort_order=page_params['sort_order']
+            ))
 
         parsed = urlparse(link)
         canonical_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
@@ -51,7 +61,16 @@ class UploadUrlView(MethodView):
         except User_info.DoesNotExist:
             self.logger.error(f"用户 {session['username']} 不存在")
             flash('用户不存在，请重新登录')
-            return redirect(url_for('main'))
+            context_id = request.args.get('context_id')
+            page_params = get_main_page_context(context_id)
+            return redirect(url_for(
+                'main',
+                page=page_params['page'],
+                page_size=page_params['page_size'],
+                q=page_params['q'],
+                sort_field=page_params['sort_field'],
+                sort_order=page_params['sort_order']
+            ))
 
         try:
             Content.objects.create(
@@ -70,4 +89,13 @@ class UploadUrlView(MethodView):
             self.logger.error(f"保存链接失败: {str(e)}")
             flash(f"保存失败: {str(e)}")
 
-        return redirect(url_for('main'))
+        context_id = request.args.get('context_id')
+        page_params = get_main_page_context(context_id)
+        return redirect(url_for(
+            'main',
+            page=page_params['page'],
+            page_size=page_params['page_size'],
+            q=page_params['q'],
+            sort_field=page_params['sort_field'],
+            sort_order=page_params['sort_order']
+        ))

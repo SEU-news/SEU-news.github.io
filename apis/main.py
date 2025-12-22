@@ -6,8 +6,8 @@ from flask.views import MethodView
 from common.content_status import STATUS_TERMINATED
 from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
-
-
+from common.methods.save_context import save_main_page_context
+from common.methods.save_context import LEGAL_PAGE_SIZES
 class MainView(MethodView):
     """
     主页面视图类
@@ -26,6 +26,7 @@ class MainView(MethodView):
         返回:
             render_template: 主页面模板，包含内容条目列表
         """
+        context_id = save_main_page_context()
         # 获取排序参数，默认按 created_at 降序
         sort_field = request.args.get('sort_field', 'created_at')
         sort_order = request.args.get('sort_order', 'desc')
@@ -49,7 +50,7 @@ class MainView(MethodView):
         # 当前页
         page = int(request.args.get('page', default=1, type=int))
 
-        legal_provisions = [10, 20, 50, 100]
+        legal_provisions = LEGAL_PAGE_SIZES
         try:
             # 尝试从请求获取用户输入
             page_size = request.args.get('page_size', default=10)
@@ -133,4 +134,5 @@ class MainView(MethodView):
             query=query,
             admin_flag=admin_flag,
             editor_flag=editor_flag,
+            context_id=context_id,
         )

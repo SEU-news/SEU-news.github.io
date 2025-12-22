@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import logging
 import os
@@ -11,7 +12,7 @@ from common.decorator.permission_required import PermissionDecorators
 from common.global_static import UPLOAD_FILE_PATH
 from common.methods.allowed_file import allowed_image
 from django_models.models import User_info, Content
-
+from common.methods.save_context import get_main_page_context
 
 class UploadImageView(MethodView):
     """
@@ -101,9 +102,27 @@ class UploadImageView(MethodView):
             except Exception as e:
                 self.logger.error(f"保存图片失败: {str(e)}")
                 flash(f"保存失败: {str(e)}")
-            return redirect(url_for('main'))
+            context_id = request.args.get('context_id')
+            page_params = get_main_page_context(context_id)
+            return redirect(url_for(
+                'main',
+                page=page_params['page'],
+                page_size=page_params['page_size'],
+                q=page_params['q'],
+                sort_field=page_params['sort_field'],
+                sort_order=page_params['sort_order']
+            ))
 
         else:
             self.logger.warning(f"用户 {username} 尝试上传不支持的文件格式: {file.filename}")
             flash("不支持的文件格式")
-            return redirect(url_for('main'))
+            context_id = request.args.get('context_id')
+            page_params = get_main_page_context(context_id)
+            return redirect(url_for(
+                'main',
+                page=page_params['page'],
+                page_size=page_params['page_size'],
+                q=page_params['q'],
+                sort_field=page_params['sort_field'],
+                sort_order=page_params['sort_order']
+            ))

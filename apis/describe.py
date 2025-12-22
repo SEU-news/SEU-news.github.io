@@ -5,6 +5,7 @@ from django.db import transaction
 from flask import render_template, request, session, redirect, url_for, flash
 from flask.views import MethodView
 
+from common.methods.save_context import get_main_page_context
 from common.content_status import ContentStatus
 from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
@@ -40,7 +41,19 @@ class DescribeView(MethodView):
             self.logger.info(f"用户 {session.get('username')} 正在编辑内容 ID: {entry_id}")
         except Content.DoesNotExist:
             self.logger.warning(f"尝试访问不存在的内容 ID: {entry_id}")
-            return redirect(url_for('main'))
+            # 1. 获取上下文ID
+            context_id = request.args.get('context_id')
+            # 2. 获取所有验证后的参数（自动处理默认值和二次验证）
+            page_params = get_main_page_context(context_id)
+            # 3. 重定向到主页面，携带所有参数（与你的MainView参数一致）
+            return redirect(url_for(
+                'main',  # 你的MainView的路由名称（请确保与实际注册的名称一致）
+                page=page_params['page'],
+                page_size=page_params['page_size'],
+                q=page_params['q'],
+                sort_field=page_params['sort_field'],
+                sort_order=page_params['sort_order']
+            ))
         return render_template('describe.html', entry=content)
 
     def post(self, entry_id):
@@ -57,7 +70,7 @@ class DescribeView(MethodView):
             with transaction.atomic():
                 content = Content.objects.select_for_update().get(id=entry_id)
                 current_user = User_info.objects.get(username=session['username'])
-                
+
                 self.logger.info(
                     f"用户 {current_user.username}(ID:{current_user.id}) 开始描述内容(ID:{content.id})，原状态: {content.status}")
 
@@ -94,7 +107,7 @@ class DescribeView(MethodView):
                 status_manager = ContentStatus(content.status)
                 if status_manager.submit():
                     content.status = status_manager.string_en()
-                    content.save(update_fields=['describer_id', 'title', 'short_title', 'content', 
+                    content.save(update_fields=['describer_id', 'title', 'short_title', 'content',
                                               'type', 'tag', 'deadline', 'status', 'updated_at'])
                     self.logger.info(
                         f"描述完成，内容ID: {content.id}，新状态: {content.status}，操作者: {current_user.username}")
@@ -117,4 +130,16 @@ class DescribeView(MethodView):
             self.logger.error(f"描述操作失败: {str(e)}")
             flash("操作失败")
 
-        return redirect(url_for('main'))
+        # 1. 获取上下文ID
+        context_id = request.args.get('context_id')
+        # 2. 获取所有验证后的参数（自动处理默认值和二次验证）
+        page_params = get_main_page_context(context_id)
+        # 3. 重定向到主页面，携带所有参数（与你的MainView参数一致）
+        return redirect(url_for(
+            'main',  # 你的MainView的路由名称（请确保与实际注册的名称一致）
+            page=page_params['page'],
+            page_size=page_params['page_size'],
+            q=page_params['q'],
+            sort_field=page_params['sort_field'],
+            sort_order=page_params['sort_order']
+        ))
