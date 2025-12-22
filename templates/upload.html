@@ -74,7 +74,7 @@
         </div>
         <div class="mt-3">
             <button type="submit" class="btn btn-primary">上传</button>
-            <a href="{{ url_for('main') }}" class="btn btn-secondary">取消</a>
+            <a href="{{ url_for('cancel', entry_id=0) }}?context_id={{ request.args.get('context_id') }}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </div>

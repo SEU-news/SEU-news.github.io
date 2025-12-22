@@ -3,6 +3,7 @@ import logging
 from flask import render_template, request, session, redirect, url_for, flash
 from flask.views import MethodView
 
+from common.methods.save_context import get_main_page_context
 from common.content_status import ContentStatus
 from common.decorator.permission_required import PermissionDecorators
 from django_models.models import Content, User_info
@@ -38,7 +39,19 @@ class DescribeView(MethodView):
             self.logger.info(f"用户 {session.get('username')} 正在编辑内容 ID: {entry_id}")
         except Content.DoesNotExist:
             self.logger.warning(f"尝试访问不存在的内容 ID: {entry_id}")
-            return redirect(url_for('main'))
+            # 1. 获取上下文ID
+            context_id = request.args.get('context_id')
+            # 2. 获取所有验证后的参数（自动处理默认值和二次验证）
+            page_params = get_main_page_context(context_id)
+            # 3. 重定向到主页面，携带所有参数（与你的MainView参数一致）
+            return redirect(url_for(
+                'main',  # 你的MainView的路由名称（请确保与实际注册的名称一致）
+                page=page_params['page'],
+                page_size=page_params['page_size'],
+                q=page_params['q'],
+                sort_field=page_params['sort_field'],
+                sort_order=page_params['sort_order']
+            ))
         return render_template('describe.html', entry=content)
 
     def post(self, entry_id):
@@ -97,4 +110,16 @@ class DescribeView(MethodView):
             self.logger.error(f"用户 {user.username} 尝试更新不存在的内容 ID: {entry_id}")
             flash("内容不存在，请先上传内容")
 
-        return redirect(url_for('main'))
+        # 1. 获取上下文ID
+        context_id = request.args.get('context_id')
+        # 2. 获取所有验证后的参数（自动处理默认值和二次验证）
+        page_params = get_main_page_context(context_id)
+        # 3. 重定向到主页面，携带所有参数（与你的MainView参数一致）
+        return redirect(url_for(
+            'main',  # 你的MainView的路由名称（请确保与实际注册的名称一致）
+            page=page_params['page'],
+            page_size=page_params['page_size'],
+            q=page_params['q'],
+            sort_field=page_params['sort_field'],
+            sort_order=page_params['sort_order']
+        ))
