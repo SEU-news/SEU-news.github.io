@@ -61,11 +61,6 @@ class CancelView(MethodView):
         except Exception as e:
             self.logger.error(f"取消操作失败: {str(e)}")
             flash("操作失败")
-
-        return redirect(url_for('main'))
-               处理GET请求，取消操作并返回主页面的原位置
-               """
-        # 1. 获取上下文ID
         context_id = request.args.get('context_id')
         # 2. 获取所有验证后的参数（自动处理默认值和二次验证）
         page_params = get_main_page_context(context_id)
