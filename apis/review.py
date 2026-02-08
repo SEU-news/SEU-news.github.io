@@ -9,6 +9,7 @@ from flask.views import MethodView
 
 from common.content_status import STATUS_REVIEWED, STATUS_PUBLISHED, STATUS_DRAFT, STATUS_PENDING
 from common.decorator.permission_required import PermissionDecorators
+from common.methods.save_context import get_main_page_context
 from django_models.models import Content, User_info
 
 
@@ -44,14 +45,34 @@ class ReviewView(MethodView):
             if entry.status not in [STATUS_DRAFT, STATUS_PENDING, STATUS_REVIEWED]:
                 self.logger.warning(f"尝试审核不允许的状态内容，ID: {entry_id}, 状态: {entry.status}")
                 flash("该内容状态不允许审核")
-                return redirect(url_for('main'))
+                context_id = request.args.get('context_id')
+                page_params = get_main_page_context(context_id)
+                return redirect(url_for(
+                    'main',
+                    page=page_params['page'],
+                    page_size=page_params['page_size'],
+                    q=page_params['q'],
+                    sort_field=page_params['sort_field'],
+                    sort_order=page_params['sort_order']
+                ))
 
             self.logger.debug(f"成功获取内容详情，ID: {entry_id}")
             return render_template('review.html', entry=entry)
         except Content.DoesNotExist:
             self.logger.warning(f"尝试访问不存在的内容，ID: {entry_id}")
             flash("内容不存在")
-            return redirect(url_for('main'))
+            context_id = request.args.get('context_id')
+            # 2. 获取所有验证后的参数（自动处理默认值和二次验证）
+            page_params = get_main_page_context(context_id)
+            # 3. 重定向到主页面，携带所有参数（与你的MainView参数一致）
+            return redirect(url_for(
+                'main',  # 你的MainView的路由名称（请确保与实际注册的名称一致）
+                page=page_params['page'],
+                page_size=page_params['page_size'],
+                q=page_params['q'],
+                sort_field=page_params['sort_field'],
+                sort_order=page_params['sort_order']
+            ))
 
     def _validate_action_and_state(self, action, content_status, is_modified, current_user, content):
         """
@@ -175,7 +196,18 @@ class ReviewView(MethodView):
             if not action:
                 self.logger.warning("未指定操作类型")
                 flash("未指定操作")
-                return redirect(url_for('main'))
+                context_id = request.args.get('context_id')
+                # 2. 获取所有验证后的参数（自动处理默认值和二次验证）
+                page_params = get_main_page_context(context_id)
+                # 3. 重定向到主页面，携带所有参数（与你的MainView参数一致）
+                return redirect(url_for(
+                    'main',  # 你的MainView的路由名称（请确保与实际注册的名称一致）
+                    page=page_params['page'],
+                    page_size=page_params['page_size'],
+                    q=page_params['q'],
+                    sort_field=page_params['sort_field'],
+                    sort_order=page_params['sort_order']
+                ))
 
             self.logger.info(f"开始处理审核请求，entry_id: {entry_id}, action: {action}")
 
@@ -187,7 +219,18 @@ class ReviewView(MethodView):
                 if content.status not in [STATUS_DRAFT, STATUS_PENDING, STATUS_REVIEWED]:
                     self.logger.warning(f"尝试审核不允许的状态内容，ID: {entry_id}, 状态: {content.status}")
                     flash("该内容状态不允许审核")
-                    return redirect(url_for('main'))
+                    context_id = request.args.get('context_id')
+                    # 2. 获取所有验证后的参数（自动处理默认值和二次验证）
+                    page_params = get_main_page_context(context_id)
+                    # 3. 重定向到主页面，携带所有参数（与你的MainView参数一致）
+                    return redirect(url_for(
+                        'main',  # 你的MainView的路由名称（请确保与实际注册的名称一致）
+                        page=page_params['page'],
+                        page_size=page_params['page_size'],
+                        q=page_params['q'],
+                        sort_field=page_params['sort_field'],
+                        sort_order=page_params['sort_order']
+                    ))
 
                 self.logger.info(
                     f"用户 {current_user.username}(ID:{current_user.id}) 开始审核内容(ID:{content.id})，原状态: {content.status}")
@@ -279,6 +322,28 @@ class ReviewView(MethodView):
                 return render_template('review.html', entry=content)
             except Exception:
                 self.logger.error("无法加载内容详情页面")
-                return redirect(url_for('main'))
+                context_id = request.args.get('context_id')
+                # 2. 获取所有验证后的参数（自动处理默认值和二次验证）
+                page_params = get_main_page_context(context_id)
+                # 3. 重定向到主页面，携带所有参数（与你的MainView参数一致）
+                return redirect(url_for(
+                    'main',  # 你的MainView的路由名称（请确保与实际注册的名称一致）
+                    page=page_params['page'],
+                    page_size=page_params['page_size'],
+                    q=page_params['q'],
+                    sort_field=page_params['sort_field'],
+                    sort_order=page_params['sort_order']
+                ))
 
-        return redirect(url_for('main'))
+        context_id = request.args.get('context_id')
+        # 2. 获取所有验证后的参数（自动处理默认值和二次验证）
+        page_params = get_main_page_context(context_id)
+        # 3. 重定向到主页面，携带所有参数（与你的MainView参数一致）
+        return redirect(url_for(
+            'main',  # 你的MainView的路由名称（请确保与实际注册的名称一致）
+            page=page_params['page'],
+            page_size=page_params['page_size'],
+            q=page_params['q'],
+            sort_field=page_params['sort_field'],
+            sort_order=page_params['sort_order']
+        ))
