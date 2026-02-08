@@ -8,6 +8,7 @@ from flask.views import MethodView
 from common.content_status import STATUS_PENDING
 from common.decorator.permission_required import PermissionDecorators
 from django_models.models import User_info, Content
+from common.methods.save_context import get_main_page_context
 
 
 class UploadView(MethodView):
@@ -99,4 +100,13 @@ class UploadView(MethodView):
             flash('创建内容时发生错误，请稍后重试')
             return render_template('upload.html')
 
-        return redirect(url_for('main'))
+        context_id = request.args.get('context_id')
+        page_params = get_main_page_context(context_id)
+        return redirect(url_for(
+            'main',
+            page=page_params['page'],
+            page_size=page_params['page_size'],
+            q=page_params['q'],
+            sort_field=page_params['sort_field'],
+            sort_order=page_params['sort_order']
+        ))

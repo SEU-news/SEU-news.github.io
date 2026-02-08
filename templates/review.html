@@ -118,7 +118,7 @@
                         <button type="submit" id="publish-button" name="action" value="publish" class="btn btn-primary">Publish (发布已审核内容)</button>
                         <button type="submit" id="reject-button" name="action" value="reject" class="btn btn-danger">Reject (拒绝)</button>
                         <input type="reset" value="Reset" class="btn btn-secondary" />
-                        <a href="{{ url_for('cancel', entry_id=entry.id) }}" class="btn btn-secondary">Cancel</a>
+                        <a href="{{ url_for('cancel', entry_id=entry.id) }}?context_id={{ request.args.get('context_id') }}" class="btn btn-secondary">Cancel</a>
                     </div>
                 </form>
             </div>
