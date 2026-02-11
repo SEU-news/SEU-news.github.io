@@ -10,8 +10,9 @@
   font-size: 1rem;
   line-height: 1.5;
   border-radius: 0.25rem;
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, 
-              border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+              border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out,
+              transform 0.15s ease-in-out;
   cursor: pointer;
 }
 
@@ -21,7 +22,7 @@
 
 .btn:focus {
   outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
 }
 
 .btn:disabled {
@@ -40,14 +41,16 @@
 /* 主要按钮 */
 .btn-primary {
   color: #fff;
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: #667eea;
+  border-color: #667eea;
 }
 
 .btn-primary:hover {
   color: #fff;
-  background-color: #0069d9;
-  border-color: #0062cc;
+  background-color: #5a67d8;
+  border-color: #4a5bb8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
 }
 
 /* 次要按钮 */
@@ -117,16 +120,18 @@
 
 /* 轮廓按钮 */
 .btn-outline-primary {
-  color: #007bff;
+  color: #667eea;
   background-color: transparent;
   background-image: none;
-  border-color: #007bff;
+  border-color: #667eea;
 }
 
 .btn-outline-primary:hover {
-  color: #fff;
-  background-color: #007bff;
-  border-color: #007bff;
+  color: #667eea;
+  background-color: rgba(102, 126, 234, 0.1);
+  border-color: #667eea;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
 }
 
 .btn-outline-secondary {
