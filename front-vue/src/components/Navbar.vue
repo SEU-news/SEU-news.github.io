@@ -6,53 +6,53 @@
       <router-link to="/about" class="nav-link">关于</router-link>
     </div>
 
-    <div
-      class="user-info-wrapper"
-      v-if="authStore.isLoggedIn"
-      @mouseenter="showTooltip = true"
-      @mouseleave="showTooltip = false"
-    >
-      <div class="user-avatar">
-        {{ getInitial }}
-      </div>
-
-      <div class="tooltip-bridge"></div>
-
-      <div class="tooltip" v-show="showTooltip">
-        <div class="tooltip-header">
-          <div class="tooltip-avatar">{{ getInitial }}</div>
-          <div class="tooltip-header-info">
-            <h4 class="tooltip-username">{{ authStore.user.username }}</h4>
-            <span :class="['user-role-badge', getRoleBadgeClass]">
-              {{ getRoleText }}
-            </span>
-          </div>
+    <div class="user-section" v-if="authStore.isLoggedIn">
+      <div class="user-info-wrapper" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false">
+        <div class="user-avatar">
+          {{ getInitial }}
         </div>
 
-        <hr class="tooltip-divider" />
+        <div class="tooltip-bridge"></div>
 
-        <div class="user-info-grid">
-          <div class="info-item">
-            <label>用户名</label>
-            <div class="info-value">{{ authStore.user.username }}</div>
+        <div class="tooltip" v-show="showTooltip">
+          <div class="tooltip-header">
+            <div class="tooltip-avatar">{{ getInitial }}</div>
+            <div class="tooltip-header-info">
+              <h4 class="tooltip-username">{{ authStore.user.username }}</h4>
+              <span :class="['user-role-badge', getRoleBadgeClass]">
+                {{ getRoleText }}
+              </span>
+            </div>
+            <router-link v-if="authStore.hasAdminPerm" to="/manage/admin" class="admin-link">
+              管理后台
+            </router-link>
           </div>
-          <div class="info-item">
-            <label>真实姓名</label>
-            <div class="info-value">{{ authStore.user.realname || '-' }}</div>
+
+          <hr class="tooltip-divider" />
+
+          <div class="user-info-grid">
+            <div class="info-item">
+              <label>用户名</label>
+              <div class="info-value">{{ authStore.user.username }}</div>
+            </div>
+            <div class="info-item">
+              <label>真实姓名</label>
+              <div class="info-value">{{ authStore.user.realname || '-' }}</div>
+            </div>
+            <div class="info-item">
+              <label>学号</label>
+              <div class="info-value">{{ authStore.user.student_id || '-' }}</div>
+            </div>
+            <div class="info-item info-item-role">
+              <label>权限</label>
+              <RoleBadge :user="authStore.user" />
+            </div>
           </div>
-          <div class="info-item">
-            <label>学号</label>
-            <div class="info-value">{{ authStore.user.student_id || '-' }}</div>
-          </div>
-          <div class="info-item info-item-role">
-            <label>权限</label>
-            <RoleBadge :user="authStore.user" />
-          </div>
+
+          <button class="logout-btn" @click="handleLogout">
+            <span>退出登录</span>
+          </button>
         </div>
-
-        <button class="logout-btn" @click="handleLogout">
-          <span>退出登录</span>
-        </button>
       </div>
     </div>
   </nav>
@@ -137,6 +137,25 @@ const handleLogout = async () => {
   box-shadow: 0 1px 3px rgba(102, 126, 234, 0.1);
 }
 
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.admin-link {
+  text-decoration: none;
+  color: #667eea;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+  padding: 0.5rem 0;
+}
+
+.admin-link:hover {
+  color: #764ba2;
+}
+
 .user-info-wrapper {
   position: relative;
   cursor: pointer;
@@ -190,6 +209,7 @@ const handleLogout = async () => {
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

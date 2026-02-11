@@ -97,7 +97,7 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { getEntries } from '../../api/content'
+import { getAdminEntries } from '../../api/content'
 import StatusDropdown from '../../components/StatusDropdown.vue'
 import DeadlineDropdown from '../../components/DeadlineDropdown.vue'
 import Pagination from '../../components/Pagination.vue'
@@ -121,7 +121,7 @@ const { sortField, sortOrder, getSortIcon, toggleSort } = useTableSort({
 async function fetchEntries() {
   try {
     loading.value = true
-    const data = await getEntries({
+    const data = await getAdminEntries({
       page: page.value,
       page_size: pageSize.value,
       sort: sortField.value,

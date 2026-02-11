@@ -1,0 +1,418 @@
+/* 管理布局（保留 Navbar，无侧边栏） */
+.manage-layout {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.manage-header {
+  max-width: 1350px;
+  margin: 0 auto 20px auto;
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.manage-header h2 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+}
+
+.manage-header p {
+  margin: 0;
+  color: #6c757d;
+}
+
+.manage-main {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* 管理页面容器 */
+.manage-page {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 搜索工具栏 */
+.search-toolbar {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 200px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 12px 10px 40px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background-color: #fafafa;
+  color: #2c3e50;
+  transition: all 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+  background-color: #fff;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #adb5bd;
+}
+
+/* 可排序表头 */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  position: relative;
+  padding-right: 12px !important;
+}
+
+.sortable-header:hover {
+  background-color: #e9ecef;
+}
+
+.sortable-header.active {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.header-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sort-icon {
+  display: inline-flex;
+  align-items: center;
+  opacity: 0.6;
+}
+
+.sortable-header:hover .sort-icon,
+.sortable-header.active .sort-icon {
+  opacity: 1;
+}
+
+/* 可折叠上传卡片 */
+.collapsible-upload-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+/* 折叠标题栏 */
+.collapsible-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.collapsible-header:hover {
+  background-color: #f8f9fa;
+}
+
+.collapse-icon {
+  color: #667eea;
+  font-size: 0.875rem;
+  transition: transform 0.2s ease;
+}
+
+.header-text {
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.header-hint {
+  color: #6c757d;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 折叠内容区域 */
+.collapsible-content {
+  border-top: 1px solid #e9ecef;
+  padding: 20px;
+}
+
+/* 过渡动画 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* 操作按钮行 */
+.manage-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* 卡片包装的表单 */
+.manage-form-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 上传表单行 */
+.upload-forms-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* 表单标签 */
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #666;
+}
+
+.required-mark {
+  color: #dc3545;
+  margin-left: 4px;
+}
+
+/* 双列布局（用于审核页面） */
+.two-column-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 992px) {
+  .two-column-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 详情表格 */
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.detail-table th {
+  width: 140px;
+  padding: 1rem;
+  text-align: right;
+  font-weight: 500;
+  color: #666;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.detail-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+  line-height: 1.8;
+}
+
+/* 徽章 */
+.badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.badge-primary { background: #667eea; color: white; }
+.badge-success { background: #28a745; color: white; }
+.badge-info { background: #17a2b8; color: white; }
+.badge-warning { background: #f59e0b; color: white; }
+.badge-danger { background: #dc3545; color: white; }
+.badge-secondary { background: #adb5bd; color: white; }
+
+/* 高亮文本 */
+.highlight {
+  color: #28a745;
+  font-weight: 600;
+}
+
+/* 空值文本 */
+.empty-text {
+  color: #adb5bd;
+  font-style: italic;
+}
+
+/* 内容区域 */
+.content-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.content-box {
+  background: #fafafa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  line-height: 1.8;
+  max-height: 400px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 链接样式 */
+.link {
+  color: #667eea;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: #4a55c6;
+  text-decoration: underline;
+}
+
+/* 预览内容 */
+.preview-content {
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.preview-content pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* PDF 预览 */
+.pdf-preview {
+  padding: 2rem;
+  text-align: center;
+}
+
+/* 列表组 */
+.list-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-group-item {
+  padding: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: 6px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 表单卡片（白色背景） */
+.form-card {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* 工具类 */
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.ms-2 { margin-left: 0.5rem; }
+.ms-3 { margin-left: 1rem; }
+.me-auto { margin-right: auto; }
+.text-muted { color: #6c757d; }
+.text-center { text-align: center; }
+.text-end { text-align: right; }
+.d-flex { display: flex; }
+.justify-content-center { justify-content: center; }
+.justify-content-between { justify-content: space-between; }
+.align-items-center { align-items: center; }
+.align-items-start { align-items: flex-start; }
+.gap-1 { gap: 0.25rem; }
+.gap-2 { gap: 0.5rem; }
+.flex-wrap { flex-wrap: wrap; }
+.fw-bold { font-weight: 600; }
+.py-5 { padding-top: 3rem; padding-bottom: 3rem; }
+.rounded-pill { border-radius: 50px; }
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 已选择文件提示 */
+.selected-files {
+  font-size: 0.875rem;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+/* 多文件输入 */
+input[type="file"][multiple] {
+  padding: 0.5rem;
+}
+
+/* 文件输入框隐藏 */
+.file-input {
+  display: none;
+}
+

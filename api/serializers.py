@@ -179,6 +179,9 @@ class ContentUpdateSerializer(serializers.ModelSerializer):
     """
     内容更新序列化器
     """
+    tag = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    deadline = serializers.DateTimeField(required=False, allow_null=True)
+
     class Meta:
         model = Content
         fields = [
@@ -210,6 +213,29 @@ class ContentDescribeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         instance.describer_id = request.user.id
         instance.status = 'pending'  # 描述后变为待审核
+        return super().update(instance, validated_data)
+
+
+class ContentModifySerializer(serializers.ModelSerializer):
+    """
+    内容修改序列化器（用于 pending 状态的修改）
+    """
+    class Meta:
+        model = Content
+        fields = [
+            'title',
+            'short_title',
+            'content',
+            'type',
+            'tag',
+            'deadline',
+        ]
+
+    def update(self, instance, validated_data):
+        request = self.context.get('request')
+        instance.describer_id = request.user.id
+        # 保持 pending 状态不变
+        instance.status = 'pending'
         return super().update(instance, validated_data)
 
 

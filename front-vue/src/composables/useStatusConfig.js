@@ -8,14 +8,15 @@
 
 import { computed } from 'vue'
 
-// 状态配置映射（与 StatusDropdown.vue:54-61 保持一致）
+// 状态配置映射（现代化语义化设计）
 const statusConfig = {
-  draft: { icon: '📝', label: '草稿', color: '#3498db' },
-  pending: { icon: '⏳', label: '待审核', color: '#f39c12' },
-  reviewed: { icon: '✅', label: '已审核', color: '#2ecc71' },
-  rejected: { icon: '❌', label: '已拒绝', color: '#e74c3c' },
-  published: { icon: '🚀', label: '已发布', color: '#9b59b6' },
-  terminated: { icon: '🚫', label: '已终止', color: '#6c757d' }
+  draft: { icon: '📄', label: '草稿', color: '#64748b' },
+  pending: { icon: '⏳', label: '待审核', color: '#f59e0b' },
+  reviewed: { icon: '✅', label: '已审核', color: '#10b981' },
+  rejected: { icon: '❌', label: '已拒绝', color: '#ef4444' },
+  published: { icon: '🚀', label: '已发布', color: '#6366f1' },
+  terminated: { icon: '⛔', label: '已终止', color: '#475569' },
+  unknown: { icon: '❓', label: '未知', color: '#94a3b8' }
 }
 
 /**
@@ -29,7 +30,7 @@ export function useStatusConfig() {
    * @returns {Object} Status configuration object
    */
   function getStatusConfig(status) {
-    return statusConfig[status] || statusConfig.draft
+    return statusConfig[status] || statusConfig.unknown
   }
 
   /**

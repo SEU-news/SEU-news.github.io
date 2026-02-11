@@ -2,11 +2,27 @@ import api from './index'
 
 /**
  * 获取内容列表（分页）
+ * /manage/list 页面使用，只显示活跃状态
  * @param {Object} params - { page, page_size, q, sort, order }
  */
 export const getEntries = async (params = {}) => {
-  const { page = 1, page_size = 10, q = '', sort = 'created_at', order = 'desc' } = params
-  const response = await api.get('/content/', { params: { page, page_size, q, sort, order } })
+  const { page = 1, page_size = 10, q = '', sort = 'created_at', order = 'desc', ...rest } = params
+  const response = await api.get('/content/', {
+    params: { page, page_size, q, sort, order, ...rest }
+  })
+  return response.data
+}
+
+/**
+ * 获取管理员内容列表（分页）
+ * /manage/admin/entries 页面使用，显示所有状态
+ * @param {Object} params - { page, page_size, q, sort, order }
+ */
+export const getAdminEntries = async (params = {}) => {
+  const { page = 1, page_size = 10, q = '', sort = 'created_at', order = 'desc', ...rest } = params
+  const response = await api.get('/admin/entries/', {
+    params: { page, page_size, q, sort, order, ...rest }
+  })
   return response.data
 }
 
@@ -113,5 +129,37 @@ export const searchEntries = async (query) => {
  */
 export const updateEntryStatus = async (entryId, status) => {
   const response = await api.post(`/content/${entryId}/status/`, { status })
+  return response.data
+}
+
+/**
+ * 修改内容（用于提交审核）
+ * @param {number} entryId - 内容ID
+ * @param {Object} data - { title, short_title, content, type, tag, deadline }
+ */
+export const modifyEntry = async (entryId, data = {}) => {
+  console.log(`modifyEntry API call with id=${entryId}, data:`, data)
+  try {
+    const response = await api.post(`/content/${entryId}/modify/`, data)
+    console.log('modifyEntry full response:', response)
+    console.log('modifyEntry response.data:', response.data)
+    return response.data
+  } catch (error) {
+    console.error('modifyEntry error:', error)
+    console.error('modifyEntry error response:', error.response?.data)
+    throw error
+  }
+}
+
+/**
+ * 统一上传 API
+ * @param {FormData} formData - 上传数据
+ */
+export const unifiedUpload = async (formData) => {
+  const response = await api.post('/upload/', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
   return response.data
 }
