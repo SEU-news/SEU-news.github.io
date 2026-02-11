@@ -144,7 +144,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { getEntries, deleteEntry, pasteUrl, uploadImage } from '../api/content.js'
+import { getEntries, updateEntryStatus, pasteUrl, uploadImage } from '../api/content.js'
 import { logout } from '../api/auth.js'
 import { useAuthStore } from '../stores/auth'
 
@@ -315,14 +315,14 @@ function handleReview(id) {
 }
 
 async function handleDelete(id) {
-  if (!confirm('确定要删除这条内容吗？')) return
+  if (!confirm('确定要终止这条内容吗？状态将变为已终止。')) return
 
   try {
-    await deleteEntry(id)
-    showMessage('删除成功', 'alert-success')
+    await updateEntryStatus(id, 'terminated')
+    showMessage('终止成功', 'alert-success')
     fetchEntries()
   } catch (err) {
-    showMessage('删除失败：' + err.message, 'alert-danger')
+    showMessage('终止失败：' + err.message, 'alert-danger')
   }
 }
 
