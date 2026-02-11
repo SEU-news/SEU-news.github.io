@@ -30,6 +30,12 @@ from .admin import (
 )
 from .publish import (
     PublishAPIView,
+    PublishDataAPIView,
+    GeneratePDFAPIView,
+    GeneratePDFFromSelectionAPIView,
+    QueryPublishedByDateAPIView,
+    QueryDDLByDateAPIView,
+    UnpublishAPIView,
     TypstAPIView,
     LatexAPIView,
 )
@@ -68,6 +74,12 @@ __all__ = [
     'AdminDashboardAPIView',
     # Publish views
     'PublishAPIView',
+    'PublishDataAPIView',
+    'GeneratePDFAPIView',
+    'GeneratePDFFromSelectionAPIView',
+    'QueryPublishedByDateAPIView',
+    'QueryDDLByDateAPIView',
+    'UnpublishAPIView',
     'TypstAPIView',
     'LatexAPIView',
     # Utility views

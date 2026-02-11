@@ -22,6 +22,12 @@ from api.views import (
     ContentCancelAPIView,
     ContentStatusUpdateAPIView,
     PublishAPIView,
+    PublishDataAPIView,
+    GeneratePDFAPIView,
+    GeneratePDFFromSelectionAPIView,
+    QueryPublishedByDateAPIView,
+    QueryDDLByDateAPIView,
+    UnpublishAPIView,
     TypstAPIView,
     LatexAPIView,
     UnifiedUploadAPIView,
@@ -65,6 +71,13 @@ urlpatterns = [
 
     # 发布相关
     path('publish/', csrf_exempt(PublishAPIView.as_view()), name='api_publish'),
+    path('publish/data/<str:date>/', PublishDataAPIView.as_view(), name='api_publish_data'),
+    path('publish/pdf/', csrf_exempt(GeneratePDFAPIView.as_view()), name='api_publish_pdf'),
+    path('publish/pdf_from_selection/', csrf_exempt(GeneratePDFFromSelectionAPIView.as_view()), name='api_publish_pdf_from_selection'),
+    path('publish/query/', QueryPublishedByDateAPIView.as_view(), name='api_publish_query'),
+    path('publish/query/<str:date>/', QueryPublishedByDateAPIView.as_view(), name='api_publish_query_date'),
+    path('publish/ddl/', QueryDDLByDateAPIView.as_view(), name='api_query_ddl'),
+    path('publish/unpublish/', csrf_exempt(UnpublishAPIView.as_view()), name='api_publish_unpublish'),
     path('typst/<str:date>/', TypstAPIView.as_view(), name='api_typst'),
     path('latex/<str:date>/', LatexAPIView.as_view(), name='api_latex'),
 
