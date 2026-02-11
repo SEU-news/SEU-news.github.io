@@ -6,35 +6,42 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-spinner">
-      <span>加载中...</span>
-    </div>
+    <LoadingSpinner v-if="loading" />
 
     <!-- Stats Cards -->
     <div v-else class="dashboard-stats">
-      <div class="stat-card primary" @click="navigateTo('/manage/admin/users')">
-        <div class="stat-label">总用户数</div>
-        <div class="stat-value">{{ stats.total_users || 0 }}</div>
-        <div class="stat-icon">👥</div>
-      </div>
-
-      <div class="stat-card success" @click="navigateTo('/manage/admin/entries')">
-        <div class="stat-label">总内容数</div>
-        <div class="stat-value">{{ stats.total_contents || 0 }}</div>
-        <div class="stat-icon">📝</div>
-      </div>
-
-      <div class="stat-card warning" @click="navigateTo('/manage/review')">
-        <div class="stat-label">待审核</div>
-        <div class="stat-value">{{ stats.pending_reviews || 0 }}</div>
-        <div class="stat-icon">⏳</div>
-      </div>
-
-      <div class="stat-card info" @click="navigateTo('/manage/publish')">
-        <div class="stat-label">今日发布</div>
-        <div class="stat-value">{{ stats.published_today || 0 }}</div>
-        <div class="stat-icon">🚀</div>
-      </div>
+      <StatsCard
+        label="总用户数"
+        :value="stats.total_users || 0"
+        icon="👥"
+        variant="primary"
+        :clickable="true"
+        @click="navigateTo('/manage/admin/users')"
+      />
+      <StatsCard
+        label="总内容数"
+        :value="stats.total_contents || 0"
+        icon="📝"
+        variant="success"
+        :clickable="true"
+        @click="navigateTo('/manage/admin/entries')"
+      />
+      <StatsCard
+        label="待审核"
+        :value="stats.pending_reviews || 0"
+        icon="⏳"
+        variant="warning"
+        :clickable="true"
+        @click="navigateTo('/manage/admin/entries')"
+      />
+      <StatsCard
+        label="今日发布"
+        :value="stats.published_today || 0"
+        icon="🚀"
+        variant="info"
+        :clickable="true"
+        @click="navigateTo('/manage/publish')"
+      />
     </div>
 
     <!-- Status Distribution -->
@@ -129,6 +136,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAdminData } from '../../api/user'
+import StatsCard from '../../components/admin/StatsCard.vue'
 
 const router = useRouter()
 
@@ -194,4 +202,5 @@ onMounted(fetchDashboardData)
 
 <style scoped>
 @import '../../styles/admin.css';
+@import '../../styles/admin-components.css';
 </style>

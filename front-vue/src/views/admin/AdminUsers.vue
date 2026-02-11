@@ -6,9 +6,7 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="loading-spinner">
-      <span>加载中...</span>
-    </div>
+    <LoadingSpinner v-if="loading" />
 
     <!-- Toolbar -->
     <div class="users-toolbar">
@@ -32,11 +30,12 @@
     </div>
 
     <!-- Empty State -->
-    <div v-if="!loading && users.length === 0" class="empty-state">
-      <i>👥</i>
-      <h3>暂无用户</h3>
-      <p>没有找到符合条件的用户</p>
-    </div>
+    <EmptyState
+      v-if="!loading && users.length === 0"
+      icon="👥"
+      title="暂无用户"
+      description="没有找到符合条件的用户"
+    />
 
     <!-- Users Table & Pagination -->
     <template v-if="!loading && users.length > 0">
@@ -45,37 +44,37 @@
         <table class="users-table">
           <thead>
             <tr>
-              <th @click="handleSort('id')" class="sortable-header sortable-header-center" :class="{ active: sortField === 'id' }">
+              <th @click="toggleSort('id', handleSortChange)" class="sortable-header sortable-header-center" :class="{ active: sortField === 'id' }">
                 <span class="header-content">
                   ID
                   <span class="sort-icon" v-html="getSortIcon('id')"></span>
                 </span>
               </th>
-              <th @click="handleSort('username')" class="sortable-header sortable-header-center" :class="{ active: sortField === 'username' }">
+              <th @click="toggleSort('username', handleSortChange)" class="sortable-header sortable-header-center" :class="{ active: sortField === 'username' }">
                 <span class="header-content">
                   用户名
                   <span class="sort-icon" v-html="getSortIcon('username')"></span>
                 </span>
               </th>
-              <th @click="handleSort('realname')" class="sortable-header sortable-header-center" :class="{ active: sortField === 'realname' }">
+              <th @click="toggleSort('realname', handleSortChange)" class="sortable-header sortable-header-center" :class="{ active: sortField === 'realname' }">
                 <span class="header-content">
                   真实姓名
                   <span class="sort-icon" v-html="getSortIcon('realname')"></span>
                 </span>
               </th>
-              <th @click="handleSort('student_id')" class="sortable-header sortable-header-center" :class="{ active: sortField === 'student_id' }">
+              <th @click="toggleSort('student_id', handleSortChange)" class="sortable-header sortable-header-center" :class="{ active: sortField === 'student_id' }">
                 <span class="header-content">
                   学号
                   <span class="sort-icon" v-html="getSortIcon('student_id')"></span>
                 </span>
               </th>
-              <th @click="handleSort('role')" class="sortable-header sortable-header-center" :class="{ active: sortField === 'role' }">
+              <th @click="toggleSort('role', handleSortChange)" class="sortable-header sortable-header-center" :class="{ active: sortField === 'role' }">
                 <span class="header-content">
                   权限
                   <span class="sort-icon" v-html="getSortIcon('role')"></span>
                 </span>
               </th>
-              <th @click="handleSort('created_at')" class="sortable-header sortable-header-center" :class="{ active: sortField === 'created_at' }">
+              <th @click="toggleSort('created_at', handleSortChange)" class="sortable-header sortable-header-center" :class="{ active: sortField === 'created_at' }">
                 <span class="header-content">
                   创建时间
                   <span class="sort-icon" v-html="getSortIcon('created_at')"></span>
@@ -357,13 +356,14 @@ import { getUsers, editUserRole, editUser } from '../../api/user'
 import Pagination from '../../components/Pagination.vue'
 import { useNotification } from '../../composables/useNotification'
 import RoleBadge from '../../components/RoleBadge.vue'
+import { useTableSort } from '../../composables/useTableSort'
 
 const authStore = useAuthStore()
 const { success, error, warning } = useNotification()
 
 // State
 const loading = ref(true)
-const users = ref([])  // 改为当前页数据
+const users = ref([])
 const searchQuery = ref('')
 const roleFilter = ref('')
 
@@ -374,9 +374,11 @@ const totalCount = ref(0)
 const totalPages = ref(1)
 const pageSizeOptions = [10, 20, 50, 100]
 
-// Sorting state
-const sortField = ref('created_at')
-const sortOrder = ref('desc')  // 'asc' | 'desc'
+// Use table sort composable
+const { sortField, sortOrder, getSortIcon, toggleSort } = useTableSort({
+  defaultField: 'created_at',
+  defaultOrder: 'desc'
+})
 
 // Edit Form (for info editing modal)
 const editForm = ref({
@@ -501,34 +503,8 @@ function canChangePassword(user) {
   return false
 }
 
-// 获取排序图标
-function getSortIcon(field) {
-  if (sortField.value !== field) {
-    return '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 5L6 1L10 5" stroke="#adb5bd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11V1" stroke="#adb5bd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-  }
-  if (sortOrder.value === 'asc') {
-    return '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 5L6 1L10 5" stroke="#667eea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11V1" stroke="#667eea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-  } else {
-    return '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 7L6 11L10 7" stroke="#667eea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 1V11" stroke="#667eea" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-  }
-}
-
-// 切换排序
-function handleSort(field) {
-  if (sortField.value === field) {
-    // 同一字段：切换升序/降序/默认
-    if (sortOrder.value === 'desc') {
-      sortOrder.value = 'asc'
-    } else {
-      // 切换到默认（created_at desc）
-      sortField.value = 'created_at'
-      sortOrder.value = 'desc'
-    }
-  } else {
-    // 新字段：默认降序
-    sortField.value = field
-    sortOrder.value = 'desc'
-  }
+// Handle sort change callback
+function handleSortChange() {
   page.value = 1  // 排序后重置到第一页
   fetchUsers()
 }
@@ -789,6 +765,7 @@ watch([page, pageSize], () => {
 <style scoped>
 @import '../../styles/utilities.css';
 @import '../../styles/admin.css';
+@import '../../styles/admin-components.css';
 
 .users-table {
   width: 100%;
@@ -798,7 +775,7 @@ watch([page, pageSize], () => {
 .users-table th,
 .users-table td {
   padding: 12px 15px;
-  text-align: center; /* Center align all cells */
+  text-align: center;
   border-bottom: 1px solid #dee2e6;
 }
 
@@ -811,170 +788,6 @@ watch([page, pageSize], () => {
 
 .users-table tbody tr:hover {
   background-color: #f8f9fa;
-}
-
-/* 操作按钮组样式 */
-.action-buttons-group {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-/* 操作按钮样式 - 与 StatusDropdown/DeadlineDropdown 保持一致 */
-.action-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  border: 1.5px solid transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-  white-space: nowrap;
-  min-width: 85px;
-  justify-content: center;
-  background: transparent;
-  color: #667eea;
-}
-
-/* 信息编辑按钮样式 */
-.action-toggle.info {
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.08);
-  border-color: rgba(102, 126, 234, 0.2);
-}
-
-.action-toggle.info:hover {
-  background: rgba(102, 126, 234, 0.12);
-  border-color: rgba(102, 126, 234, 0.35);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
-}
-
-.action-toggle.info:active {
-  transform: translateY(0);
-}
-
-/* 权限管理按钮样式 */
-.action-toggle.permission {
-  color: #f39c12;
-  background: rgba(243, 156, 18, 0.08);
-  border-color: rgba(243, 156, 18, 0.2);
-}
-
-.action-toggle.permission:hover {
-  background: rgba(243, 156, 18, 0.12);
-  border-color: rgba(243, 156, 18, 0.35);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(243, 156, 18, 0.15);
-}
-
-.action-toggle.permission:active {
-  transform: translateY(0);
-}
-
-/* 工具栏样式 */
-.users-toolbar {
-  background: white;
-  border-radius: 12px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  flex-wrap: wrap;
-  border: 1px solid #e9ecef;
-}
-
-/* 搜索输入框容器 */
-.search-input-wrapper {
-  position: relative;
-  flex: 1 1 auto;
-  min-width: 200px;
-  max-width: calc(100% - 150px);
-  overflow: hidden;
-}
-
-.search-input {
-  width: 100%;
-  max-width: 100%;
-  padding: 10px 12px 10px 40px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background-color: #fafafa;
-  color: #2c3e50;
-  box-sizing: border-box;
-}
-
-.search-input:hover {
-  border-color: #b0b0b0;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(102, 126, 234, 0.1);
-  background-color: #fff;
-}
-
-.search-input::placeholder {
-  color: #adb5bd;
-  font-weight: 400;
-  transition: color 0.3s ease;
-}
-
-.search-input:focus::placeholder {
-  color: #d0d3d4;
-}
-
-/* 搜索图标 */
-.search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.95rem;
-  color: #adb5bd;
-  pointer-events: none;
-  transition: color 0.3s ease;
-}
-
-.search-input:focus ~ .search-icon {
-  color: #667eea;
-}
-
-/* 下拉选择框 */
-.users-toolbar .form-select {
-  flex: 0 0 auto;
-  min-width: 150px;
-  padding: 10px 12px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background-color: #fafafa;
-  color: #2c3e50;
-}
-
-.users-toolbar .form-select:hover {
-  border-color: #b0b0b0;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.users-toolbar .form-select:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(102, 126, 234, 0.1);
-  background-color: #fff;
 }
 
 /* 操作栏最小宽度 */
@@ -1538,44 +1351,5 @@ watch([page, pageSize], () => {
 /* 密码弹窗背景高优先级 - 确保覆盖信息编辑弹窗 */
 .modal-backdrop-high {
   z-index: 2000 !important;
-}
-
-/* 排序列头样式 */
-.users-table th.sortable-header {
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s ease;
-  padding-right: 12px !important;
-}
-
-.users-table th.sortable-header:hover {
-  background-color: #e9ecef;
-}
-
-.users-table th.sortable-header.active {
-  color: #667eea;
-  font-weight: 600;
-}
-
-/* Header content wrapper for proper alignment */
-.header-content {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-/* Sort icon styling */
-.sort-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  vertical-align: middle;
-  opacity: 0.6;
-}
-
-.users-table th.sortable-header:hover .sort-icon,
-.users-table th.sortable-header.active .sort-icon {
-  opacity: 1;
 }
 </style>
