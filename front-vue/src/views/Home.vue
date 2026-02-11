@@ -2,7 +2,7 @@
   <div class="home">
     <h1>至善新声门户</h1>
     <p>欢迎访问 News</p>
-    <a href="http://49.235.51.123:42610"> 旧的系统 </a>
+    <a href="javascript:void(0)" @click="redirectToOldSystem">旧的系统</a>
 
     <div class="home-container">
 
@@ -29,15 +29,15 @@
           </div>
         </div>
         <div class="features_row">
-          <router-link to="/login" class="feature-card link-card">
+          <div @click="goToLogin" class="feature-card link-card" style="cursor: pointer;">
             <h3>访客登录</h3>
             <p>进入访客系统</p>
-          </router-link>
+          </div>
 
-          <router-link to="/admin-login" class="feature-card link-card">
-            <h3>管理登录</h3>
+          <div @click="goToManage" class="feature-card link-card" style="cursor: pointer;">
+            <h3>管理入口</h3>
             <p>后台管理入口</p>
-          </router-link>
+          </div>
 
           <router-link to="/contact" class="feature-card link-card">
             <h3>联系我们</h3>
@@ -53,6 +53,8 @@
 .home {
   text-align: center;
   padding: 0.5rem;
+  min-height: 100vh;
+  background: #fafafa;
 }
 
 .home-container {
@@ -60,63 +62,139 @@
   gap: 2rem;
   justify-content: center;
   align-items: flex-start;
-  flex-wrap: wrap; /* 小屏幕自动换行 */
+  flex-wrap: wrap;
   padding: 2rem;
 }
 
 /* PDF 卡片 */
 .pdf-card {
-  flex: 2 1 300px; /* 左侧宽度可伸缩，最小300px */
-  border: 1px solid #e1e1e1;
+  flex: 2 1 300px;
+  border: 1px solid #e9ecef;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   padding: 1rem;
-  background: #fff;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.pdf-card:hover {
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  transform: translateY(-2px);
+  border-color: rgba(102, 126, 234, 0.3);
 }
 
 /* 功能卡片 */
 .features_row {
-  flex: 1 1 250px; /* 右侧宽度可伸缩，最小250px */
+  flex: 1 1 250px;
   display: flex;
   flex-direction: row;
   gap: 1rem;
 }
 
 .features_column {
-  flex: 1 1 250px; /* 右侧宽度可伸缩，最小250px */
+  flex: 1 1 250px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
 .feature-card {
-  display: flex;            /* flex 布局，统一行为 */
-  flex-direction: column;   /* 纵向排列标题和文字 */
-  justify-content: center;  /* 内容垂直居中 */
-  align-items: center;      /* 水平居中 */
-  min-width: 150px;         /* 最小宽度，保证一致 */
-  flex: 1;                  /* 平分父容器 */
-  border: 1px solid #e1e1e1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 150px;
+  flex: 1;
+  border: 1px solid #e9ecef;
   border-radius: 8px;
   padding: 1rem;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: 0.2s;
-  text-align: center;       /* 文字居中 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: white;
+  transition: all 0.2s ease;
+  text-align: center;
+  color: #333;
 }
 
+.feature-card h3 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-weight: 500;
+}
+
+.feature-card p {
+  margin: 0;
+  color: #666;
+}
 
 /* 鼠标悬停时美化 */
 .feature-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  transform: translateY(-2px);
+  border-color: rgba(102, 126, 234, 0.3);
 }
 
-/* 让 router-link 看起来像卡片 */
 .link-card {
   text-decoration: none;
   color: inherit;
+  cursor: pointer;
 }
 
+.link-card:hover {
+  color: #667eea;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  color: #666;
+}
 </style>
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+function goToManage() {
+  // 先恢复登录状态
+  authStore.restoreState()
+
+  // 未登录 → 跳转到登录页
+  if (!authStore.isLoggedIn) {
+    router.push('/login?redirect=/manage')
+    return
+  }
+
+  // 已登录但无权限 → 提示
+  if (!authStore.hasEditorPerm && !authStore.hasAdminPerm) {
+    alert('您没有管理权限')
+    return
+  }
+
+  // 有权限 → 跳转到管理页
+  router.push('/manage')
+}
+
+function goToLogin() {
+  // 先恢复登录状态
+  authStore.restoreState()
+
+  // 如果已登录，提示用户
+  if (authStore.isLoggedIn) {
+    alert('您已经登录了！')
+    return
+  }
+
+  // 跳转到登录页
+  router.push('/login')
+}
+
+const redirectToOldSystem = () => {
+  const oldSystemUrl = 'http://' + window.location.hostname + ':42610';
+  window.open(oldSystemUrl, '_blank');
+};
 </script>

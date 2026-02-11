@@ -2,7 +2,7 @@
 .table {
   width: 100%;
   margin-bottom: 1rem;
-  color: #212529;
+  color: #333;
   background-color: transparent;
 }
 
@@ -10,17 +10,17 @@
 .table td {
   padding: 0.75rem;
   vertical-align: top;
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid #e9ecef;
 }
 
 .table thead th {
   vertical-align: bottom;
-  border-bottom: 2px solid #dee2e6;
+  border-bottom: 2px solid #e9ecef;
 }
 
 .table-hover tbody tr:hover {
-  color: #212529;
-  background-color: rgba(0, 0, 0, 0.075);
+  color: #333;
+  background-color: rgba(102, 126, 234, 0.05);
 }
 
 /* 表格状态类 */
@@ -41,5 +41,5 @@
 }
 
 .table-primary {
-  background-color: #cce5ff;
+  background-color: rgba(102, 126, 234, 0.15);
 }
