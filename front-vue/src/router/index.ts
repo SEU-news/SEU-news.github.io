@@ -68,49 +68,28 @@ const routes = [
     component: () => import('../views/Register.vue'),
     meta: { guestOnly: true }
   },
-  {
-    path: '/search',
-    name: 'Search',
-    component: () => import('../views/Search.vue'),
-    meta: { requiresAuth: true }
-  },
 
-  // 管理页面（Editor+）
+  // 管理页面（Editor+）- 嵌套路由
   {
     path: '/manage',
-    name: 'Manage',
-    component: () => import('../views/Manage.vue'),
-    meta: { requiresAuth: true, requiresEditor: true }
-  },
-  {
-    path: '/manage/upload',
-    name: 'Upload',
-    component: () => import('../views/Upload.vue'),
-    meta: { requiresAuth: true, requiresEditor: true }
-  },
-  {
-    path: '/manage/describe/:id',
-    name: 'Describe',
-    component: () => import('../views/Describe.vue'),
-    meta: { requiresAuth: true, requiresEditor: true }
-  },
-  {
-    path: '/manage/edit/:id',
-    name: 'Edit',
-    component: () => import('../views/Edit.vue'),
-    meta: { requiresAuth: true, requiresEditor: true }
-  },
-  {
-    path: '/manage/publish',
-    name: 'Publish',
-    component: () => import('../views/Publish.vue'),
-    meta: { requiresAuth: true, requiresEditor: true }
-  },
-  {
-    path: '/manage/preview',
-    name: 'Preview',
-    component: () => import('../views/Preview.vue'),
-    meta: { requiresAuth: true, requiresEditor: true }
+    name: 'ManageLayout',
+    component: () => import('../views/manage/ManageLayout.vue'),
+    meta: { requiresAuth: true, requiresEditor: true },
+    redirect: '/manage/list',
+    children: [
+      {
+        path: 'list',
+        name: 'ManageList',
+        component: () => import('../views/manage/ManageList.vue'),
+        meta: { requiresAuth: true, requiresEditor: true }
+      },
+      {
+        path: 'publish',
+        name: 'ManagePublish',
+        component: () => import('../views/manage/ManagePublish.vue'),
+        meta: { requiresAuth: true, requiresEditor: true }
+      }
+    ]
   },
 
   // 管理员专属（Admin）- 嵌套路由
@@ -140,14 +119,6 @@ const routes = [
         meta: { requiresAuth: true, requiresAdmin: true }
       }
     ]
-  },
-
-  // 审核页面（Editor+，但不能审核自己的内容）
-  {
-    path: '/manage/review/:id',
-    name: 'Review',
-    component: () => import('../views/Review.vue'),
-    meta: { requiresAuth: true, requiresEditor: true }
   },
 
   // 错误页面

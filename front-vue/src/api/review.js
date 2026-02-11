@@ -1,31 +1,22 @@
 import api from './index'
 
 /**
- * 描述内容
+ * 修改内容（pending 状态）
  * @param {number} entryId - 内容ID
- * @param {Object} data - { title, short_title, content, type, tag }
+ * @param {Object} data - { title, short_title, content, type, tag, deadline }
  */
-export const describeEntry = async (entryId, data) => {
-  const response = await api.post(`/content/${entryId}/describe/`, data)
+export const modifyEntry = async (entryId, data) => {
+  const response = await api.post(`/content/${entryId}/modify/`, data)
   return response.data
 }
 
 /**
  * 审核内容
  * @param {number} entryId - 内容ID
- * @param {Object} data - { action, comment } - action: 'approve'|'reject'
+ * @param {Object} data - { action } - action: 'approve'|'reject'
  */
 export const reviewEntry = async (entryId, data) => {
   const response = await api.post(`/content/${entryId}/review/`, data)
-  return response.data
-}
-
-/**
- * 取消内容
- * @param {number} entryId - 内容ID
- */
-export const cancelEntry = async (entryId) => {
-  const response = await api.post(`/content/${entryId}/cancel/`)
   return response.data
 }
 
