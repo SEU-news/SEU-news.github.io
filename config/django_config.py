@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 
 from django.conf import settings
@@ -125,6 +126,23 @@ def configure_django():
 
                 # URL 配置
                 ROOT_URLCONF='config.urls',
+
+                # 静态文件配置
+                STATIC_URL='/static/',
+                STATICFILES_DIRS=[
+                    os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static'),
+                ],
+
+                # 发布相关配置
+                PUBLISH_CONFIG={
+                    'pdf_output_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/pdfs'),
+                    'json_archive_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'archived'),
+                    'latest_json_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/latest.json'),
+                    'latest_pdf_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/latest.pdf'),
+                    'typst_template_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/news_template.typ'),
+                    'fonts_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fonts'),
+                    'typst_command': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'typst.exe') if os.name == 'nt' else 'typst',
+                },
             )
         except Exception as e:
             logger.error(f"[Database] Failed to configure Django: {e}")
