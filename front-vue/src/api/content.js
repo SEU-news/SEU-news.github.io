@@ -2,25 +2,14 @@ import api from './index'
 
 /**
  * 获取内容列表（分页）
- * /manage/list 页面使用，只显示活跃状态
- * @param {Object} params - { page, page_size, q, sort, order }
+ * 支持普通用户和管理员：
+ * - 普通用户：只能看到活跃状态（排除 terminated）
+ * - 管理员：可以看到所有状态（包括 terminated）
+ * @param {Object} params - { page, page_size, q, sort, order, status, type }
  */
 export const getEntries = async (params = {}) => {
   const { page = 1, page_size = 10, q = '', sort = 'created_at', order = 'desc', ...rest } = params
-  const response = await api.get('/content/', {
-    params: { page, page_size, q, sort, order, ...rest }
-  })
-  return response.data
-}
-
-/**
- * 获取管理员内容列表（分页）
- * /manage/admin/entries 页面使用，显示所有状态
- * @param {Object} params - { page, page_size, q, sort, order }
- */
-export const getAdminEntries = async (params = {}) => {
-  const { page = 1, page_size = 10, q = '', sort = 'created_at', order = 'desc', ...rest } = params
-  const response = await api.get('/admin/entries/', {
+  const response = await api.get('/contents/', {
     params: { page, page_size, q, sort, order, ...rest }
   })
   return response.data
@@ -33,7 +22,7 @@ export const getAdminEntries = async (params = {}) => {
 export const uploadText = async (data) => {
   console.log('uploadText API call with data:', data)
   try {
-    const response = await api.post('/content/', data)
+    const response = await api.post('/content/create/', data)
     console.log('uploadText full response:', response)
     console.log('uploadText response.data:', response.data)
     console.log('uploadText response.data type:', typeof response.data)
@@ -53,7 +42,7 @@ export const uploadText = async (data) => {
 export const updateEntry = async (entryId, data) => {
   console.log(`updateEntry API call with id=${entryId}, data:`, data)
   try {
-    const response = await api.patch(`/content/${entryId}/`, data)
+    const response = await api.patch(`/content/${entryId}/modify/`, data)
     console.log('updateEntry full response:', response)
     console.log('updateEntry response.data:', response.data)
     return response.data
@@ -69,7 +58,8 @@ export const updateEntry = async (entryId, data) => {
  * @param {FormData} formData - 包含图片文件的表单数据
  */
 export const uploadImage = async (formData) => {
-  const response = await api.post('/upload_image/', formData, {
+  formData.append('upload_type', 'image')
+  const response = await api.post('/upload/', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -82,16 +72,10 @@ export const uploadImage = async (formData) => {
  * @param {Object} data - { url }
  */
 export const pasteUrl = async (data) => {
-  const response = await api.post('/paste/', data)
-  return response.data
-}
-
-/**
- * 删除内容
- * @param {number} entryId - 内容ID
- */
-export const deleteEntry = async (entryId) => {
-  const response = await api.delete(`/content/${entryId}/`)
+  const response = await api.post('/upload/', {
+    upload_type: 'url',
+    ...data
+  })
   return response.data
 }
 
@@ -101,6 +85,15 @@ export const deleteEntry = async (entryId) => {
  */
 export const recallEntry = async (entryId) => {
   const response = await api.post(`/content/${entryId}/recall/`)
+  return response.data
+}
+
+/**
+ * 取消内容（终止流程）
+ * @param {number} entryId - 内容ID
+ */
+export const cancelEntry = async (entryId) => {
+  const response = await api.post(`/content/${entryId}/cancel/`)
   return response.data
 }
 
@@ -123,32 +116,13 @@ export const searchEntries = async (query) => {
 }
 
 /**
- * 更新内容状态
+ * 提交审核（纯状态转换）
  * @param {number} entryId - 内容ID
- * @param {string} status - 目标状态
+ * @returns {Promise<{success: boolean, message: string}>}
  */
-export const updateEntryStatus = async (entryId, status) => {
-  const response = await api.post(`/content/${entryId}/status/`, { status })
+export const submitEntry = async (entryId) => {
+  const response = await api.post(`/content/${entryId}/submit/`)
   return response.data
-}
-
-/**
- * 修改内容（用于提交审核）
- * @param {number} entryId - 内容ID
- * @param {Object} data - { title, short_title, content, type, tag, deadline }
- */
-export const modifyEntry = async (entryId, data = {}) => {
-  console.log(`modifyEntry API call with id=${entryId}, data:`, data)
-  try {
-    const response = await api.post(`/content/${entryId}/modify/`, data)
-    console.log('modifyEntry full response:', response)
-    console.log('modifyEntry response.data:', response.data)
-    return response.data
-  } catch (error) {
-    console.error('modifyEntry error:', error)
-    console.error('modifyEntry error response:', error.response?.data)
-    throw error
-  }
 }
 
 /**
@@ -160,6 +134,21 @@ export const unifiedUpload = async (formData) => {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+  })
+  return response.data
+}
+
+/**
+ * 管理员强制修改内容状态
+ * @param {number} entryId - 内容ID
+ * @param {string} status - 新状态值 (draft/pending/reviewed/rejected/published/terminated)
+ * @param {string} reason - 状态变更原因（可选）
+ * @returns {Promise<{success: boolean, message: string, data: Object}>}
+ */
+export const adminStatusUpdate = async (entryId, status, reason = '') => {
+  const response = await api.post(`/content/${entryId}/admin_status/`, {
+    status,
+    reason
   })
   return response.data
 }

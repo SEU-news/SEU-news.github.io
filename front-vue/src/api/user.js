@@ -35,16 +35,7 @@ export const editUserRole = async (userId, action, permission) => {
  * @param {Object} data - 用户信息
  */
 export const editUser = async (userId, data) => {
-  const response = await api.patch(`/admin/users/${userId}/`, data)
-  return response.data
-}
-
-/**
- * 添加截止日期
- * @param {Object} data - { content_id, deadline }
- */
-export const addDeadline = async (data) => {
-  const response = await api.post('/admin/deadlines/', data)
+  const response = await api.patch(`/admin/users/${userId}/info/`, data)
   return response.data
 }
 
