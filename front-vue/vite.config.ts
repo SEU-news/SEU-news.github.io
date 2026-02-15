@@ -21,6 +21,13 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0', // 指定0.0.0.0，允许公网访问
-    port: 24610
+    port: 24610,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:42611',
+        changeOrigin: true,
+        secure: false
+      }
+    }
   }
 })
