@@ -31,8 +31,16 @@ class LoginAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        # 调试日志：显示接收到的请求数据
+        logger.info(f"登录请求 - Content-Type: {request.content_type}")
+        logger.info(f"登录请求 - request.data: {request.data}")
+        logger.info(f"登录请求 - request.POST: {dict(request.POST)}")
+        logger.info(f"登录请求 - request.body: {request.body}")
+
         username = request.data.get('username')
         password = request.data.get('password')
+
+        logger.info(f"解析结果 - username: {username}, password: {'***' if password else 'None'}")
 
         try:
             # 使用服务层处理登录逻辑
