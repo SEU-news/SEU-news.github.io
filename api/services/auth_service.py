@@ -30,6 +30,9 @@ class AuthService(BaseService):
             ValidationError: 参数验证失败
             AuthenticationError: 用户名或密码错误
         """
+        import logging
+        logger = logging.getLogger(__name__)
+
         # 验证参数
         if not username or not password:
             raise ValidationError('用户名和密码不能为空')
@@ -37,11 +40,19 @@ class AuthService(BaseService):
         # 查找用户
         try:
             user = User_info.objects.get(username=username)
+            logger.info(f"找到用户: {username}, 密码哈希: {user.password_MD5}")
         except User_info.DoesNotExist:
+            logger.warning(f"用户不存在: {username}")
             raise AuthenticationError('用户名或密码错误')
 
         # 验证密码
+        input_hash = PasswordHandler.hash_password(password)
+        logger.info(f"输入密码哈希: {input_hash}")
+
         if not PasswordHandler.verify_password(password, user.password_MD5):
+            logger.warning(f"密码验证失败: {username}")
+            logger.warning(f"  输入哈希: {input_hash}")
+            logger.warning(f"  数据库哈希: {user.password_MD5}")
             raise AuthenticationError('用户名或密码错误')
 
         # 更新最后登录时间
