@@ -135,6 +135,43 @@ def configure_django():
 
                 # 发布相关配置
                 PUBLISH_CONFIG={
+
+                # 日志配置
+                LOGGING={
+                    'version': 1,
+                    'disable_existing_loggers': False,
+                    'formatters': {
+                        'verbose': {
+                            'format': '[{levelname}] {asctime} {module} {message}',
+                            'style': '{',
+                        },
+                    },
+                    'handlers': {
+                        'console': {
+                            'class': 'logging.StreamHandler',
+                            'formatter': 'verbose',
+                        },
+                    },
+                    'root': {
+                        'handlers': ['console'],
+                        'level': 'INFO',
+                    },
+                    'loggers': {
+                        'django': {
+                            'handlers': ['console'],
+                            'level': 'INFO',
+                            'propagate': False,
+                        },
+                        'api': {
+                            'handlers': ['console'],
+                            'level': 'INFO',
+                            'propagate': False,
+                        },
+                    },
+                },
+
+                # 发布相关配置
+                PUBLISH_CONFIG={
                     'pdf_output_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/pdfs'),
                     'json_archive_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'archived'),
                     'latest_json_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/latest.json'),
