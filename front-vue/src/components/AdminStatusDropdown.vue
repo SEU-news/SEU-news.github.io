@@ -1,5 +1,5 @@
 <template>
-  <div class="status-dropdown" :class="{ 'is-open': isOpen }" ref="dropdownRef">
+  <div class="admin-status-dropdown" :class="{ 'is-open': isOpen }" ref="dropdownRef">
     <button class="status-toggle" @click="toggleDropdown">
       <span class="toggle-icon">⚙️</span>
       <span>状态调整</span>
@@ -17,7 +17,7 @@
           </div>
           <div class="dropdown-body">
             <div
-              v-for="option in statusOptions"
+              v-for="option in allStatusOptions"
               :key="option.value"
               class="dropdown-item"
               :class="`status-${option.value}`"
@@ -25,22 +25,29 @@
             >
               <span class="item-icon">{{ option.icon }}</span>
               <span class="item-label">{{ option.label }}</span>
-              <svg class="chevron-right" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
             </div>
           </div>
         </div>
       </transition>
     </teleport>
+
+    <!-- 确认对话框 -->
+    <div v-if="showConfirmDialog" class="modal-overlay" @click.self="cancelChange">
+      <div class="modal-content" @click.stop>
+        <h3>确认状态变更</h3>
+        <p>确定将状态更改为 <strong>{{ targetStatusLabel }}</strong>？</p>
+        <div class="modal-actions">
+          <button class="btn-cancel" @click="cancelChange">取消</button>
+          <button class="btn-confirm" @click="confirmChange">确认</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { cancelEntry, recallEntry } from '../api/content'
-import { publishContent } from '../api/publish'
-import { reviewEntry } from '../api/review'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { adminStatusUpdate } from '../api/content'
 
 const props = defineProps({
   entryId: { type: Number, required: true },
@@ -50,53 +57,29 @@ const props = defineProps({
 const emit = defineEmits(['status-changed'])
 
 const isOpen = ref(false)
+const showConfirmDialog = ref(false)
+const selectedStatus = ref('')
 const dropdownRef = ref(null)
 
-// 状态配置
-const statusConfig = {
-  draft: { icon: '📝', label: '草稿', color: '#3498db' },
-  pending: { icon: '⏳', label: '待审核', color: '#f39c12' },
-  reviewed: { icon: '✅', label: '已审核', color: '#2ecc71' },
-  rejected: { icon: '❌', label: '已拒绝', color: '#e74c3c' },
-  published: { icon: '🚀', label: '已发布', color: '#9b59b6' },
-  terminated: { icon: '🚫', label: '已终止', color: '#6c757d' }
-}
+// 所有状态选项（不受状态流转限制）
+const allStatusOptions = [
+  { value: 'draft', icon: '📝', label: '草稿' },
+  { value: 'pending', icon: '⏳', label: '待审核' },
+  { value: 'reviewed', icon: '✅', label: '已审核' },
+  { value: 'rejected', icon: '❌', label: '已拒绝' },
+  { value: 'published', icon: '🚀', label: '已发布' },
+  { value: 'terminated', icon: '🚫', label: '已终止' }
+]
 
-const currentStatusConfig = computed(() => statusConfig[props.currentStatus] || statusConfig.draft)
+const currentStatusConfig = computed(() =>
+  allStatusOptions.find(opt => opt.value === props.currentStatus) || allStatusOptions[0]
+)
 const currentStatusIcon = computed(() => currentStatusConfig.value.icon)
 const currentStatusText = computed(() => currentStatusConfig.value.label)
 
-// 状态转换规则
-const statusTransitions = {
-  draft: [
-    { value: 'terminated', label: '终止', icon: '🚫' },
-    { value: 'pending', label: '提交审核', icon: '⏳' }
-  ],
-  pending: [
-    { value: 'draft', label: '撤回草稿', icon: '📝' },
-    { value: 'reviewed', label: '审核通过', icon: '✅' },
-    { value: 'rejected', label: '审核拒绝', icon: '❌' },
-    { value: 'terminated', label: '终止', icon: '🚫' }
-  ],
-  reviewed: [
-    { value: 'draft', label: '退回草稿', icon: '📝' },
-    { value: 'published', label: '发布', icon: '🚀' },
-    { value: 'terminated', label: '终止', icon: '🚫' }
-  ],
-  rejected: [
-    { value: 'draft', label: '修改重提', icon: '📝' },
-    { value: 'terminated', label: '终止', icon: '🚫' }
-  ],
-  published: [
-    { value: 'terminated', label: '终止', icon: '🚫' }
-  ],
-  terminated: [
-    { value: 'draft', label: '恢复草稿', icon: '📝' }
-  ]
-}
-
-const statusOptions = computed(() => {
-  return statusTransitions[props.currentStatus] || []
+const targetStatusLabel = computed(() => {
+  const target = allStatusOptions.find(opt => opt.value === selectedStatus.value)
+  return target ? target.label : ''
 })
 
 // 动态计算下拉菜单位置
@@ -116,49 +99,32 @@ function toggleDropdown() {
   isOpen.value = !isOpen.value
 }
 
-async function handleStatusChange(newStatus) {
-  const targetConfig = statusConfig[newStatus]
-  if (confirm(`确定将状态更改为 "${targetConfig.label}"？\n\n此操作不可撤销。`)) {
-    try {
-      // 根据当前状态和目标状态选择正确的 API 操作
-      const { currentStatus, entryId } = props
-
-      // 终止操作 - 所有状态都可以终止
-      if (newStatus === 'terminated') {
-        await cancelEntry(entryId)
-      }
-      // 撤回操作 - reviewed/pending → draft
-      else if (newStatus === 'draft' && (currentStatus === 'reviewed' || currentStatus === 'pending')) {
-        await recallEntry(entryId)
-      }
-      // 发布操作 - reviewed → published
-      else if (newStatus === 'published' && currentStatus === 'reviewed') {
-        await publishContent({ content_ids: [entryId] })
-      }
-      // 审核操作 - pending → reviewed/rejected
-      else if ((newStatus === 'reviewed' || newStatus === 'rejected') && currentStatus === 'pending') {
-        await reviewEntry(entryId, { approved: newStatus === 'reviewed' })
-      }
-      // 提交审核 - draft → pending (需要内容数据，由父组件处理)
-      else if (newStatus === 'pending' && currentStatus === 'draft') {
-        emit('submit-for-review', entryId)
-        isOpen.value = false
-        return
-      }
-      // 重新编辑 - rejected → draft (需要内容数据，由父组件处理)
-      else if (newStatus === 'draft' && currentStatus === 'rejected') {
-        emit('re-edit', entryId)
-        isOpen.value = false
-        return
-      }
-
-      isOpen.value = false
-      emit('status-changed')
-    } catch (error) {
-      console.error('Failed to update status:', error)
-      alert('状态更新失败，请重试')
-    }
+function handleStatusChange(newStatus) {
+  if (newStatus === props.currentStatus) {
+    // 相同状态，无需确认，直接关闭
+    isOpen.value = false
+    return
   }
+  selectedStatus.value = newStatus
+  showConfirmDialog.value = true
+  isOpen.value = false
+}
+
+async function confirmChange() {
+  try {
+    await adminStatusUpdate(props.entryId, selectedStatus.value)
+    showConfirmDialog.value = false
+    selectedStatus.value = ''
+    emit('status-changed')
+  } catch (error) {
+    console.error('状态更新失败:', error)
+    alert('状态更新失败，请重试')
+  }
+}
+
+function cancelChange() {
+  showConfirmDialog.value = false
+  selectedStatus.value = ''
 }
 
 function handleClickOutside(event) {
@@ -177,28 +143,28 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.status-dropdown {
+.admin-status-dropdown {
   position: relative;
   display: inline-block;
 }
 
-/* 触发按钮 - 调整宽度更紧凑 */
+/* 触发按钮 */
 .status-toggle {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px; /* 减小内边距 */
-  font-size: 0.8125rem; /* 稍微减小字体 */
+  padding: 6px 12px;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: #667eea;
   background: rgba(102, 126, 234, 0.08);
   border: 1.5px solid rgba(102, 126, 234, 0.2);
-  border-radius: 6px; /* 稍微减小圆角 */
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
-  white-space: nowrap; /* 防止按钮文字换行 */
-  min-width: 85px; /* 设置最小宽度保持一致性 */
+  white-space: nowrap;
+  min-width: 85px;
   justify-content: center;
 }
 
@@ -214,7 +180,7 @@ onUnmounted(() => {
 }
 
 .toggle-icon {
-  font-size: 0.9rem; /* 稍微减小图标 */
+  font-size: 0.9rem;
 }
 
 .arrow-icon {
@@ -226,13 +192,13 @@ onUnmounted(() => {
   transform: rotate(180deg);
 }
 
-/* 下拉菜单 - 调整宽度 */
+/* 下拉菜单 */
 .dropdown-menu {
-  min-width: 160px; /* 减小最小宽度 */
-  max-width: 240px; /* 添加最大宽度限制 */
+  min-width: 160px;
+  max-width: 240px;
   background: white;
   border: 1px solid #e9ecef;
-  border-radius: 10px; /* 稍微减小圆角 */
+  border-radius: 10px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
@@ -326,16 +292,6 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-.chevron-right {
-  opacity: 0.3;
-  transition: all 0.2s ease;
-}
-
-.dropdown-item:hover .chevron-right {
-  opacity: 1;
-  transform: translateX(2px);
-}
-
 /* 状态颜色 */
 .dropdown-item.status-draft {
   border-left-color: #3498db;
@@ -368,5 +324,88 @@ onUnmounted(() => {
 
 .dropdown-item.status-terminated:hover {
   background: linear-gradient(135deg, rgba(108, 117, 125, 0.08) 0%, rgba(108, 117, 125, 0.04) 100%);
+}
+
+/* 确认对话框样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+}
+
+.modal-content {
+  background: white;
+  padding: 18px;
+  border-radius: 10px;
+  max-width: 340px;
+  width: 85%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.modal-content h3 {
+  margin: 0 0 10px 0;
+  font-size: 1rem;
+  color: #495057;
+  font-weight: 600;
+}
+
+.modal-content p {
+  margin: 0 0 20px 0;
+  color: #6c757d;
+  line-height: 1.4;
+  font-size: 0.9rem;
+}
+
+.modal-content p strong {
+  color: #667eea;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.modal-actions button {
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.btn-cancel {
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.btn-cancel:hover {
+  background: #e9ecef;
+}
+
+.btn-confirm {
+  background: #667eea;
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.btn-confirm:hover {
+  background: #5568d3;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-confirm:active {
+  transform: translateY(0);
 }
 </style>

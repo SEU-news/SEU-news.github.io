@@ -44,7 +44,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStatusConfig } from '../composables/useStatusConfig.js'
-import { updateEntryStatus, recallEntry, modifyEntry } from '../api/content.js'
+import { recallEntry, submitEntry } from '../api/content.js'
+import { publishContent } from '../api/publish.js'
 
 const props = defineProps({
   entryId: { type: Number, required: true },
@@ -166,13 +167,7 @@ async function handleAction(action) {
         emit('edit', props.entryId)
         break
       case 'submit':
-        await modifyEntry(props.entryId, {
-          title: props.entryData.title,
-          short_title: props.entryData.short_title,
-          content: props.entryData.content,
-          type: props.entryData.type,
-          tag: props.entryData.tag
-        })
+        await submitEntry(props.entryId)
         break
       case 'review':
         emit('review', props.entryId)
@@ -181,7 +176,7 @@ async function handleAction(action) {
         await recallEntry(props.entryId)
         break
       case 'publish':
-        await updateEntryStatus(props.entryId, 'published')
+        await publishContent({ content_ids: [props.entryId] })
         break
     }
 
