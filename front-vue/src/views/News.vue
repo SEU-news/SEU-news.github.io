@@ -1,7 +1,7 @@
 <template>
   <div class="news">
-    <h1>至善新生</h1>
-    <p>欢迎访问至善新生页面</p>
+    <h1>至善新声</h1>
+    <p>欢迎访问至善新声页面</p>
   </div>
 </template>
 

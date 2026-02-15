@@ -2,7 +2,7 @@
   <nav class="navbar">
     <div class="nav-links">
       <router-link to="/" class="nav-link">首页</router-link>
-      <router-link to="/news" class="nav-link">至善新生</router-link>
+      <router-link to="/news" class="nav-link">至善新声</router-link>
       <router-link to="/about" class="nav-link">关于</router-link>
     </div>
 
