@@ -120,6 +120,21 @@ class Content(models.Model):
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='draft')
     type = models.CharField(max_length=50, verbose_name='类型')
     tag = models.TextField(verbose_name='标签', default='')
+
+    # 锁定字段（用于并发编辑控制）
+    locker_id = models.IntegerField(
+        verbose_name='当前锁定者用户ID',
+        null=True,
+        blank=True,
+        help_text='正在编辑此内容的用户ID，为空表示未被锁定'
+    )
+    locked_at = models.DateTimeField(
+        verbose_name='锁定时间',
+        null=True,
+        blank=True,
+        help_text='内容被锁定的时间戳'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -215,20 +230,20 @@ class Comment(models.Model):
     creator_id = models.IntegerField(verbose_name='评论创建者ID')
     news_id = models.IntegerField(verbose_name='关联新闻ID')
     parent_comment_id = models.IntegerField(null=True, blank=True, default=None, verbose_name='回复的上级评论ID（NULL表示顶层评论）')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='最后更新时间')
+    created = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated = models.DateTimeField(auto_now=True, verbose_name='最后更新时间')
 
     class Meta:
         db_table = 'comment_management'
         verbose_name = '评论'
         verbose_name_plural = '评论管理'
         # 按创建时间降序排列
-        ordering = ['-created_at']
+        ordering = ['-created']
         # 创建数据库索引
         indexes = [
             models.Index(fields=['creator_id'], name='idx_creator_id'),
             models.Index(fields=['news_id'], name='idx_news_id'),
             models.Index(fields=['parent_comment_id'], name='idx_parent_comment_id'),
-            models.Index(fields=['created_at'], name='idx_created_at'),
-            models.Index(fields=['updated_at'], name='idx_updated_at'),
+            models.Index(fields=['created'], name='idx_created'),
+            models.Index(fields=['updated'], name='idx_updated'),
         ]
