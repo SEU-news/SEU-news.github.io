@@ -577,11 +577,11 @@ async function savePassword() {
     })
     success('密码已修改')
     closePasswordModal()
-  } catch (error) {
-    console.error('Failed to change password:', error)
+  } catch (err) {
+    console.error('Failed to change password:', err)
     // Check if it's a validation error (password not supported)
-    if (error.response?.data?.password) {
-      error('修改密码失败：' + error.response.data.password.join(', '))
+    if (err.response?.data?.password) {
+      error('修改密码失败：' + err.response.data.password.join(', '))
     } else {
       error('修改密码失败，请检查后端是否支持密码字段')
     }
@@ -620,8 +620,8 @@ async function saveUserInfo() {
 
     success('用户信息已更新')
     closeInfoSelector()
-  } catch (error) {
-    console.error('Failed to edit user:', error)
+  } catch (err) {
+    console.error('Failed to edit user:', err)
     error('更新用户信息失败')
   }
 }
@@ -712,8 +712,8 @@ async function savePermissions() {
 
     success('权限已更新')
     closePermissionModal()
-  } catch (error) {
-    console.error('Failed to update permissions:', error)
+  } catch (err) {
+    console.error('Failed to update permissions:', err)
     error('更新权限失败')
   }
 }

@@ -24,7 +24,7 @@
         icon="📝"
         variant="success"
         :clickable="true"
-        @click="navigateTo('/manage/admin/entries')"
+        @click="navigateTo('/manage/admin/content')"
       />
       <StatsCard
         label="待审核"
@@ -32,7 +32,7 @@
         icon="⏳"
         variant="warning"
         :clickable="true"
-        @click="navigateTo('/manage/admin/entries')"
+        @click="navigateTo('/manage/admin/content')"
       />
       <StatsCard
         label="今日发布"
@@ -117,7 +117,7 @@
         <p>设置内容截止日期</p>
       </div>
 
-      <div class="action-card" @click="navigateTo('/manage/admin/entries')">
+      <div class="action-card" @click="navigateTo('/manage/admin/content')">
         <i>📝</i>
         <h4>条目管理</h4>
         <p>管理所有内容条目</p>

@@ -72,10 +72,10 @@ let toastIdCounter = 0
  * @param {string} message - The message to display
  * @param {string} type - Toast type (success, error, warning, info)
  * @param {number} duration - Auto-dismiss duration in ms (default: 5000)
- * @param {boolean} showBrowserNotification - Whether to show browser notification
+ * @param {boolean} showBrowserNotif - Whether to show browser notification
  * @returns {number} The toast ID
  */
-function showToast(message, type = TOAST_TYPES.INFO, duration = 5000, showBrowserNotification = false) {
+function showToast(message, type = TOAST_TYPES.INFO, duration = 5000, showBrowserNotif = false) {
   const id = ++toastIdCounter
   const toast = {
     id,
@@ -110,7 +110,7 @@ function showToast(message, type = TOAST_TYPES.INFO, duration = 5000, showBrowse
   requestAnimationFrame(updateRemaining)
 
   // Show browser notification for important messages
-  if (showBrowserNotification) {
+  if (showBrowserNotif) {
     showBrowserNotification(message)
   }
 
@@ -165,37 +165,33 @@ export function useNotification() {
   /**
    * Show success notification
    * @param {string} message - The success message
-   * @param {boolean} showBrowserNotif - Whether to show browser notification
    */
-  function success(message, showBrowserNotif = true) {
-    return showToast(message, TOAST_TYPES.SUCCESS, 5000, showBrowserNotif)
+  function success(message) {
+    return showToast(message, TOAST_TYPES.SUCCESS, 5000)
   }
 
   /**
    * Show error notification
    * @param {string} message - The error message
-   * @param {boolean} showBrowserNotif - Whether to show browser notification
    */
-  function error(message, showBrowserNotif = true) {
-    return showToast(message, TOAST_TYPES.ERROR, 6000, showBrowserNotif)
+  function error(message) {
+    return showToast(message, TOAST_TYPES.ERROR, 6000)
   }
 
   /**
    * Show warning notification
    * @param {string} message - The warning message
-   * @param {boolean} showBrowserNotif - Whether to show browser notification
    */
-  function warning(message, showBrowserNotif = false) {
-    return showToast(message, TOAST_TYPES.WARNING, 5000, showBrowserNotif)
+  function warning(message) {
+    return showToast(message, TOAST_TYPES.WARNING, 5000)
   }
 
   /**
    * Show info notification
    * @param {string} message - The info message
-   * @param {boolean} showBrowserNotif - Whether to show browser notification
    */
-  function info(message, showBrowserNotif = false) {
-    return showToast(message, TOAST_TYPES.INFO, 4000, showBrowserNotif)
+  function info(message) {
+    return showToast(message, TOAST_TYPES.INFO, 4000)
   }
 
   return {

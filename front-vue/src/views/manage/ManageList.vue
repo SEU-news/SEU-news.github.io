@@ -161,7 +161,7 @@
           <input v-model="query" class="search-input" placeholder="搜索内容..." @keyup.enter="fetchEntries" />
         </div>
       </div>
-      <table class="table table-hover">
+      <table class="table table-hover fixed-table">
         <thead>
           <tr>
             <th>编号</th>
@@ -536,6 +536,24 @@ tbody td:nth-child(1) {
   max-width: 60px;
 }
 
+/* 上工者列最小宽度 */
+thead th:nth-child(5),
+tbody td:nth-child(5) {
+  min-width: 80px;
+}
+
+/* 锁定者列最小宽度 */
+thead th:nth-child(6),
+tbody td:nth-child(6) {
+  min-width: 80px;
+}
+
+/* 审核人列最小宽度 */
+thead th:nth-child(7),
+tbody td:nth-child(7) {
+  min-width: 80px;
+}
+
 /* 表头居中（排除标题） */
 thead th:nth-child(1),
 thead th:nth-child(3),
@@ -900,21 +918,22 @@ select.form-control {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .preview-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px;
+  gap: 8px;
+  height: 36px;
+  padding: 0 20px;
+  min-width: 100px;
   border: 1.5px solid rgba(23, 162, 184, 0.2);
   border-radius: 6px;
   background: rgba(23, 162, 184, 0.08);
   color: #17a2b8;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);

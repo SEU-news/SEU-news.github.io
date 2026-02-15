@@ -73,7 +73,7 @@
               <span class="time-text">{{ entry.formatted_deadline || '未设置' }}</span>
             </td>
             <td class="actions-cell">
-              <StatusDropdown :entry-id="entry.id" :current-status="entry.status" @status-changed="fetchEntries" />
+              <AdminStatusDropdown :entry-id="entry.id" :current-status="entry.status" @status-changed="fetchEntries" />
               <DeadlineDropdown :entry-id="entry.id" :current-deadline="entry.deadline" :formatted-deadline="entry.formatted_deadline" @deadline-changed="fetchEntries" />
             </td>
           </tr>
@@ -97,8 +97,8 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { getAdminEntries } from '../../api/content'
-import StatusDropdown from '../../components/StatusDropdown.vue'
+import { getEntries } from '../../api/content'
+import AdminStatusDropdown from '../../components/AdminStatusDropdown.vue'
 import DeadlineDropdown from '../../components/DeadlineDropdown.vue'
 import Pagination from '../../components/Pagination.vue'
 import { useTableSort } from '../../composables/useTableSort'
@@ -121,7 +121,7 @@ const { sortField, sortOrder, getSortIcon, toggleSort } = useTableSort({
 async function fetchEntries() {
   try {
     loading.value = true
-    const data = await getAdminEntries({
+    const data = await getEntries({
       page: page.value,
       page_size: pageSize.value,
       sort: sortField.value,

@@ -83,10 +83,10 @@ const navItems = [
     route: '/manage/admin/users'
   },
   {
-    id: 'entries',
-    label: '条目管理',
+    id: 'content',
+    label: '内容管理',
     icon: '📋',
-    route: '/manage/admin/entries'
+    route: '/manage/admin/content'
   }
 ]
 

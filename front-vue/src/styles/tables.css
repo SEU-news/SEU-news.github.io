@@ -43,3 +43,14 @@
 .table-primary {
   background-color: rgba(102, 126, 234, 0.15);
 }
+
+/* 响应式表格 - 当表格内容超过容器宽度时显示横向滚动条 */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive .table {
+  min-width: 100%;
+}

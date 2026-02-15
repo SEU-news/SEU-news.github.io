@@ -27,6 +27,7 @@
                 v-model="endDate"
                 type="date"
                 class="form-control"
+                @change="checkArchivedPDF(endDate)"
               />
             </div>
           </div>
@@ -217,7 +218,7 @@
         v-else
         icon="📄"
         title="暂无PDF预览"
-        :description="startDate && endDate ? `请选择内容后生成 ${startDate} 至 ${endDate} 的PDF` : '请先选择日期范围'"
+        :description="startDate && endDate ? `请选择内容后生成 ${startDate} 至 ${endDate} 的PDF，或查看归档的PDF文件` : '请先选择日期范围'"
       />
     </div>
   </div>
@@ -229,7 +230,7 @@ import { useRouter } from 'vue-router'
 import {
   queryPublishedByDateRange,
   queryDDLByDate,
-  generatePDFFromSelection
+  generatePDF as generatePDFAPI
 } from '../../api/publish.js'
 import EmptyState from '../../components/EmptyState.vue'
 
@@ -264,6 +265,24 @@ const fullPdfUrl = computed(() => {
   return ''
 })
 
+// 检查归档 PDF 是否存在
+async function checkArchivedPDF(date) {
+  const baseUrl = API_BASE_URL.replace('/api', '')
+  const archivedUrl = `/static/pdfs/${date}.pdf`
+
+  try {
+    // 尝试发送 HEAD 请求检查文件是否存在
+    const response = await fetch(`${baseUrl}${archivedUrl}`, { method: 'HEAD' })
+    if (response.ok) {
+      pdfUrl.value = archivedUrl
+      pdfExists.value = true
+    }
+  } catch (err) {
+    // 文件不存在或其他错误，保持 pdfExists = false
+    console.log('归档PDF不存在，将显示空状态')
+  }
+}
+
 // 状态
 const message = ref('')
 const messageClass = ref('alert-info')
@@ -290,13 +309,12 @@ async function loadPublishedContent() {
       queryDDLByDate(endDate.value)
     ])
 
-    publishedContent.value = publishedData.published_contents || []
-    pdfExists.value = publishedData.pdf_exists || false
-    pdfUrl.value = publishedData.pdf_url || ''
+    // 适配新的返回格式
+    publishedContent.value = publishedData.results || []
     selectedContentIds.value = publishedContent.value.map(e => e.id)
 
-    // 更新DDL内容
-    ddlContent.value = ddlData.due_contents || []
+    // DDL 内容（后端已分类）
+    ddlContent.value = ddlData.results || []
     selectedDDLIds.value = ddlContent.value.map(e => e.id)
 
     showMessage(`找到 ${publishedData.count} 条已发布内容，${ddlData.count} 条DDL内容`, 'alert-info')
@@ -330,16 +348,26 @@ function selectNoneDDL() {
   selectedDDLIds.value = []
 }
 
-// 生成PDF（基于选中的内容）
+// 生成PDF（基于选中的内容和日期范围）
 async function generatePDF() {
-  if (selectedContentIds.value.length === 0) {
-    showMessage('请至少选择一条内容', 'alert-warning')
+  // 检查是否至少选中了普通内容或 DDL 内容
+  const hasSelectedContent = selectedContentIds.value.length > 0
+  const hasSelectedDDL = selectedDDLIds.value.length > 0
+
+  if (!hasSelectedContent && !hasSelectedDDL) {
+    showMessage('请至少选择一条内容或DDL', 'alert-warning')
     return
   }
 
   isGeneratingPDF.value = true
   try {
-    const result = await generatePDFFromSelection(selectedContentIds.value)
+    // 如果只选中了 DDL 内容，只传递 date 参数，让后端自动查询
+    // 如果选中了普通内容，传递 content_ids 和 date
+    const params = hasSelectedContent
+      ? { content_ids: selectedContentIds.value, date: endDate.value }
+      : { date: endDate.value }
+
+    const result = await generatePDFAPI(params)
     if (result.success) {
       // 更新DDL内容（使用后端返回的实际DDL）
       if (result.due_contents) {
@@ -353,9 +381,10 @@ async function generatePDF() {
         }
         ddlContent.value = allDue
         selectedDDLIds.value = allDue.map(e => e.id)
+        showMessage(`PDF生成成功！共包含 ${result.count} 条内容，${allDue.length} 条DDL内容`, 'alert-success')
+      } else {
+        showMessage(`PDF生成成功！共包含 ${result.count} 条内容`, 'alert-success')
       }
-
-      showMessage(`PDF生成成功！共包含 ${result.count} 条内容`, 'alert-success')
       pdfExists.value = true
       pdfUrl.value = result.pdf_url
       // 更新时间戳以刷新iframe
@@ -422,6 +451,8 @@ function formatDDLTime(timeStr) {
 
 onMounted(() => {
   loadPublishedContent()
+  // 检查当天的归档 PDF
+  checkArchivedPDF(endDate.value)
 })
 </script>
 
