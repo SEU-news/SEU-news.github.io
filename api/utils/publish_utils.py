@@ -236,13 +236,12 @@ def compile_typst_pdf(json_path, output_path, fonts_dir=None, template_path=None
         template_path = os.path.join(base_dir, 'static', 'news_template.typ')
 
     if typst_cmd is None:
-        # 优先使用项目根目录下的typst.exe
-        exe_path = os.path.join(base_dir, 'typst.exe')
-        if os.name == 'nt' and os.path.exists(exe_path):
+        # 优先使用项目根目录下的 typst 可执行文件
+        exe_path = os.path.join(base_dir, 'typst.exe') if os.name == 'nt' else os.path.join(base_dir, 'typst')
+        if os.path.exists(exe_path):
             typst_cmd = exe_path
-        elif os.name == 'nt':
-            typst_cmd = 'typst'
         else:
+            # 回退到 PATH 中的 typst 命令
             typst_cmd = 'typst'
 
     # 构建命令，添加 --root 参数指定项目根目录

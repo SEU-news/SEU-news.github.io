@@ -141,7 +141,7 @@ def configure_django():
                     'latest_pdf_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/latest.pdf'),
                     'typst_template_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/news_template.typ'),
                     'fonts_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fonts'),
-                    'typst_command': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'typst.exe') if os.name == 'nt' else 'typst',
+                    'typst_command': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'typst.exe') if os.name == 'nt' else os.path.join(os.path.dirname(os.path.dirname(__file__)), 'typst'),
                 },
 
                 # 日志配置

@@ -36,7 +36,7 @@ class PDFService(BaseService):
                 'latest_pdf_path': os.path.join(base_dir, 'static/latest.pdf'),
                 'typst_template_path': os.path.join(base_dir, 'static/news_template.typ'),
                 'fonts_dir': os.path.join(base_dir, 'fonts'),
-                'typst_command': os.path.join(base_dir, 'typst.exe') if os.name == 'nt' else 'typst',
+                'typst_command': os.path.join(base_dir, 'typst.exe') if os.name == 'nt' else os.path.join(base_dir, 'typst'),
             }
         return config
 
