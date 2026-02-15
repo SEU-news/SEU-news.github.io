@@ -41,7 +41,18 @@ const message = ref('')
 
 async function handleSubmit() {
   try {
+    console.log('=== 登录表单提交 ===')
+    console.log('用户名:', username.value)
+    console.log('密码长度:', password.value.length)
+    console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL)
+    console.log('=======================')
+
     const res = await login({ username: username.value, password: password.value })
+
+    console.log('=== 登录响应 ===')
+    console.log('响应数据:', res)
+    console.log('=================')
+
     if (res.success) {
       // 使用 Notification API 显示成功消息
       showNotification('登录成功！')
@@ -57,8 +68,13 @@ async function handleSubmit() {
       router.push(redirect)
     } else {
       message.value = '用户名或密码错误'
+      console.error('登录失败:', res)
     }
   } catch (err) {
+    console.error('=== 登录异常 ===')
+    console.error('错误信息:', err)
+    console.error('错误响应:', err.response)
+    console.error('================')
     message.value = '服务器连接失败'
   }
 }

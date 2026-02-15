@@ -19,9 +19,20 @@ apiClient.interceptors.request.use(
     if (authStore.token) {
       config.headers.Authorization = `Bearer ${authStore.token}`
     }
+
+    // 调试日志
+    console.log('=== API 请求 ===')
+    console.log('URL:', config.baseURL + config.url)
+    console.log('Method:', config.method)
+    console.log('Headers:', config.headers)
+    console.log('Data:', config.data)
+    console.log('BaseURL:', config.baseURL)
+    console.log('================')
+
     return config
   },
   (error) => {
+    console.error('=== 请求错误 ===', error)
     return Promise.reject(error)
   }
 )
@@ -29,9 +40,25 @@ apiClient.interceptors.request.use(
 // 响应拦截器
 apiClient.interceptors.response.use(
   (response) => {
+    // 调试日志
+    console.log('=== API 响应 ===')
+    console.log('URL:', response.config.url)
+    console.log('Status:', response.status)
+    console.log('Data:', response.data)
+    console.log('Headers:', response.headers)
+    console.log('================')
+
     return response
   },
   (error) => {
+    // 调试日志
+    console.error('=== API 错误 ===')
+    console.error('URL:', error.config?.url)
+    console.error('Status:', error.response?.status)
+    console.error('Data:', error.response?.data)
+    console.error('Message:', error.message)
+    console.error('================')
+
     const authStore = useAuthStore()
 
     // 401 未授权 → 自动登出
