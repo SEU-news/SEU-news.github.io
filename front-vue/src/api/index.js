@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/auth'
 
 // 创建 axios 实例
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:42611/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
   timeout: 30000,
   withCredentials: true, // 支持跨域携带 cookies
   headers: {
