@@ -135,6 +135,14 @@ def configure_django():
 
                 # 发布相关配置
                 PUBLISH_CONFIG={
+                    'pdf_output_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/pdfs'),
+                    'json_archive_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'archived'),
+                    'latest_json_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/latest.json'),
+                    'latest_pdf_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/latest.pdf'),
+                    'typst_template_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/news_template.typ'),
+                    'fonts_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fonts'),
+                    'typst_command': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'typst.exe') if os.name == 'nt' else 'typst',
+                },
 
                 # 日志配置
                 LOGGING={
@@ -168,17 +176,6 @@ def configure_django():
                             'propagate': False,
                         },
                     },
-                },
-
-                # 发布相关配置
-                PUBLISH_CONFIG={
-                    'pdf_output_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/pdfs'),
-                    'json_archive_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'archived'),
-                    'latest_json_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/latest.json'),
-                    'latest_pdf_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/latest.pdf'),
-                    'typst_template_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/news_template.typ'),
-                    'fonts_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fonts'),
-                    'typst_command': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'typst.exe') if os.name == 'nt' else 'typst',
                 },
             )
         except Exception as e:
