@@ -236,8 +236,8 @@ import EmptyState from '../../components/EmptyState.vue'
 
 const router = useRouter()
 
-// API基础URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:42611/api'
+// API基础URL（使用相对路径，支持本地开发和远程部署）
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 // 日期范围选择
 const startDate = ref(new Date().toISOString().split('T')[0])
