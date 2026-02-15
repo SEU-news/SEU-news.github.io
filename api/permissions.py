@@ -14,7 +14,7 @@ class IsEditorOrAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
-        return request.user.has_editor_permission()
+        return request.user.has_editor_permission() or request.user.has_admin_permission()
 
 
 class IsAdmin(permissions.BasePermission):

@@ -51,6 +51,7 @@ class ContentSerializer(serializers.ModelSerializer):
     formatted_deadline = serializers.SerializerMethodField()
     status_display = serializers.SerializerMethodField()
     can_delete = serializers.SerializerMethodField()
+    tag_list = serializers.SerializerMethodField()  # 标签列表（JSON 数组格式）
 
     class Meta:
         model = Content
@@ -66,7 +67,8 @@ class ContentSerializer(serializers.ModelSerializer):
             'type',
             'status',
             'status_display',
-            'tag',
+            # 'tag',  # 移除原始字符串，只返回解析后的数组
+            'tag_list',  # 标签列表（JSON 数组）
             'deadline',
             'image_list',
             'publish_at',
@@ -135,6 +137,36 @@ class ContentSerializer(serializers.ModelSerializer):
             'terminated': '已终止',
         }
         return status_map.get(obj.status, obj.status)
+
+    def get_tag_list(self, obj):
+        """
+        获取标签列表（JSON 数组格式）
+
+        支持两种格式：
+        1. 逗号分隔的字符串: "标签1,标签2,标签3"
+        2. JSON 数组字符串: '["标签1","标签2","标签3"]'
+
+        返回统一的数组格式: ["标签1", "标签2", "标签3"]
+        """
+        import json
+
+        if obj is None or not hasattr(obj, 'tag') or not obj.tag:
+            return []
+
+        tag_str = obj.tag
+
+        # 尝试解析 JSON 数组
+        try:
+            if tag_str.startswith('['):
+                return json.loads(tag_str)
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        # 如果不是 JSON 数组，按逗号分割
+        if tag_str:
+            return [t.strip() for t in tag_str.split(',') if t.strip()]
+
+        return []
 
 
 class ContentCreateSerializer(serializers.ModelSerializer):
@@ -251,10 +283,10 @@ class CommentSerializer(serializers.ModelSerializer):
             'creator_id',
             'news_id',
             'parent_comment_id',
-            'created_at',
-            'updated_at',
+            'created',
+            'updated',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created', 'updated']
 
 
 class LoginResponseSerializer(serializers.Serializer):

@@ -13,41 +13,35 @@ from .auth import (
 )
 from .content import (
     ContentListAPIView,
-    AdminContentListAPIView,
+    ContentCreateAPIView,
     ContentDetailAPIView,
-    ContentDescribeAPIView,
+    ContentModifyAPIView,
+    ContentSubmitAPIView,
     ContentReviewAPIView,
     ContentRecallAPIView,
     ContentCancelAPIView,
-    ContentStatusUpdateAPIView,
+    ContentAdminStatusAPIView,
 )
 from .admin import (
     UserAdminListAPIView,
     UserRoleEditAPIView,
     UserEditAPIView,
-    AddDeadlineAPIView,
     AdminDashboardAPIView,
 )
 from .publish import (
     PublishAPIView,
-    PublishDataAPIView,
-    GeneratePDFAPIView,
-    GeneratePDFFromSelectionAPIView,
-    QueryPublishedByDateAPIView,
-    QueryDDLByDateAPIView,
-    UnpublishAPIView,
-    TypstAPIView,
-    LatexAPIView,
+)
+from .export import (
+    ExportPDFAPIView,
+    ExportTypstAPIView,
+    ExportLatexAPIView,
+    ExportDataAPIView,
 )
 from .utility import (
     UnifiedUploadAPIView,
     SearchAPIView,
     PreviewAPIView,
 )
-
-# ContentModifyAPIView 是 ContentDescribeAPIView 的别名
-# 用于保持与原始路由的兼容性
-ContentModifyAPIView = ContentDescribeAPIView
 
 __all__ = [
     # Auth views
@@ -58,30 +52,26 @@ __all__ = [
     'ChangePasswordAPIView',
     # Content views
     'ContentListAPIView',
-    'AdminContentListAPIView',
+    'ContentCreateAPIView',
     'ContentDetailAPIView',
-    'ContentDescribeAPIView',
-    'ContentModifyAPIView',  # Alias for ContentDescribeAPIView
+    'ContentModifyAPIView',  # POST: 描述(已废弃), PATCH: 更新
+    'ContentSubmitAPIView',
     'ContentReviewAPIView',
     'ContentRecallAPIView',
     'ContentCancelAPIView',
-    'ContentStatusUpdateAPIView',
+    'ContentAdminStatusAPIView',
     # Admin views
     'UserAdminListAPIView',
     'UserRoleEditAPIView',
     'UserEditAPIView',
-    'AddDeadlineAPIView',
     'AdminDashboardAPIView',
     # Publish views
     'PublishAPIView',
-    'PublishDataAPIView',
-    'GeneratePDFAPIView',
-    'GeneratePDFFromSelectionAPIView',
-    'QueryPublishedByDateAPIView',
-    'QueryDDLByDateAPIView',
-    'UnpublishAPIView',
-    'TypstAPIView',
-    'LatexAPIView',
+    # Export views
+    'ExportPDFAPIView',
+    'ExportTypstAPIView',
+    'ExportLatexAPIView',
+    'ExportDataAPIView',
     # Utility views
     'UnifiedUploadAPIView',
     'SearchAPIView',
