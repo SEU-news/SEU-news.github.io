@@ -1,0 +1,473 @@
+/**
+ * Admin Components Shared Styles
+ * Admin 组件共享样式
+ *
+ * This file contains shared styles for admin components to reduce duplication.
+ * 这些样式是从各个 admin 组件中提取的共享样式。
+ */
+
+/* ==================== Loading Spinner ==================== */
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+.loading-spinner::before {
+  content: '';
+  width: 40px;
+  height: 40px;
+  border: 3px solid #dee2e6;
+  border-top-color: #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-spinner-small {
+  padding: 20px;
+  font-size: 0.875rem;
+}
+
+.loading-spinner-small::before {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+  margin-right: 10px;
+}
+
+.loading-spinner-large {
+  padding: 60px;
+  font-size: 1.125rem;
+}
+
+.loading-spinner-large::before {
+  width: 56px;
+  height: 56px;
+  border-width: 4px;
+  margin-right: 20px;
+}
+
+/* ==================== Empty State ==================== */
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6c757d;
+}
+
+.empty-state i {
+  display: block;
+  color: #dee2e6;
+  margin: 0 auto 20px;
+}
+
+.empty-state h3 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+.empty-state-icon-small {
+  font-size: 2rem;
+}
+
+.empty-state-icon-medium {
+  font-size: 4rem;
+}
+
+.empty-state-icon-large {
+  font-size: 6rem;
+}
+
+.empty-state-action {
+  margin-top: 20px;
+  padding: 10px 24px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.08);
+  border: 1.5px solid rgba(102, 126, 234, 0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.empty-state-action:hover {
+  background: rgba(102, 126, 234, 0.12);
+  border-color: rgba(102, 126, 234, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+.empty-state-action:active {
+  transform: translateY(0);
+}
+
+/* ==================== Status Badge ==================== */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.status-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge-small {
+  padding: 4px 10px;
+  font-size: 0.75rem;
+}
+
+.status-badge-medium {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.status-badge-large {
+  padding: 8px 16px;
+  font-size: 0.95rem;
+}
+
+.status-badge .status-icon {
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.status-badge .status-label {
+  line-height: 1;
+}
+
+/* ==================== Stats Card ==================== */
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: default;
+  border-left: 4px solid #3498db;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card-default {
+  border-left-color: #3498db;
+}
+
+.stat-card-primary {
+  border-left-color: #3498db;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.stat-card-success {
+  border-left-color: #2ecc71;
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: white;
+}
+
+.stat-card-warning {
+  border-left-color: #f39c12;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.stat-card-info {
+  border-left-color: #1abc9c;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+.stat-card .stat-label {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-card .stat-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-card .stat-icon {
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  font-size: 2.5rem;
+  opacity: 1;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 1;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "EmojiFont", sans-serif;
+}
+
+/* ==================== Sortable Table Header ==================== */
+
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+  position: relative;
+  padding-right: 12px !important;
+}
+
+.sortable-header:hover {
+  background-color: #e9ecef;
+}
+
+.sortable-header.active {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.header-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.sort-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  opacity: 0.6;
+}
+
+.sortable-header:hover .sort-icon,
+.sortable-header.active .sort-icon {
+  opacity: 1;
+}
+
+/* ==================== Action Buttons ==================== */
+
+.action-buttons-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.action-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: 1.5px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  white-space: nowrap;
+  min-width: 85px;
+  justify-content: center;
+  background: transparent;
+}
+
+.action-toggle.info {
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.08);
+  border-color: rgba(102, 126, 234, 0.2);
+}
+
+.action-toggle.info:hover {
+  background: rgba(102, 126, 234, 0.12);
+  border-color: rgba(102, 126, 234, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+}
+
+.action-toggle.info:active {
+  transform: translateY(0);
+}
+
+.action-toggle.permission {
+  color: #f39c12;
+  background: rgba(243, 156, 18, 0.08);
+  border-color: rgba(243, 156, 18, 0.2);
+}
+
+.action-toggle.permission:hover {
+  background: rgba(243, 156, 18, 0.12);
+  border-color: rgba(243, 156, 18, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(243, 156, 18, 0.15);
+}
+
+.action-toggle.permission:active {
+  transform: translateY(0);
+}
+
+/* ==================== Search Toolbar ==================== */
+
+.users-toolbar {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+  border: 1px solid #e9ecef;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 200px;
+  max-width: calc(100% - 150px);
+  overflow: hidden;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 100%;
+  padding: 10px 12px 10px 40px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: #fafafa;
+  color: #2c3e50;
+  box-sizing: border-box;
+}
+
+.search-input:hover {
+  border-color: #b0b0b0;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(102, 126, 234, 0.1);
+  background-color: #fff;
+}
+
+.search-input::placeholder {
+  color: #adb5bd;
+  font-weight: 400;
+  transition: color 0.3s ease;
+}
+
+.search-input:focus::placeholder {
+  color: #d0d3d4;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.95rem;
+  color: #adb5bd;
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+
+.search-input:focus ~ .search-icon {
+  color: #667eea;
+}
+
+.users-toolbar .form-select {
+  flex: 0 0 auto;
+  min-width: 150px;
+  padding: 10px 12px;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: #fafafa;
+  color: #2c3e50;
+}
+
+.users-toolbar .form-select:hover {
+  border-color: #b0b0b0;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.users-toolbar .form-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15), 0 4px 12px rgba(102, 126, 234, 0.1);
+  background-color: #fff;
+}
+
+/* ==================== Table Responsive ==================== */
+
+.table-responsive {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  min-width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.table-hover th,
+.table-hover td {
+  vertical-align: middle;
+}
+
+.table thead th {
+  white-space: nowrap;
+  text-align: center;
+  vertical-align: bottom;
+  position: sticky;
+  top: 0;
+  background-color: #f8f9fa;
+  z-index: 10;
+}
+
+.table tbody td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.table tbody td:nth-child(2) {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center !important;
+}

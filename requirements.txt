@@ -4,3 +4,5 @@ beautifulsoup4
 django
 mysqlclient
 pytz
+djangorestframework
+django-cors-headers

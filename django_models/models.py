@@ -27,6 +27,7 @@ class User_info(models.Model):
     student_id = models.CharField(max_length=30, verbose_name='学号')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    last_login = models.DateTimeField(null=True, blank=True, verbose_name='最后登录时间')
     role = models.PositiveIntegerField(verbose_name="权限位", choices=PERMISSION_CHOICES, default=0,
                                        help_text="●0(00)：一般用户 1(01)：编辑 2(10)：管理员 3(11)：兼任两者")
 
@@ -52,6 +53,30 @@ class User_info(models.Model):
     def has_admin_perm(self):
         return self.has_admin_permission()
 
+    @property
+    def is_active(self):
+        """用户是否激活（所有用户都激活）"""
+        return True
+
+    @property
+    def is_staff(self):
+        """是否可以访问 admin（管理员可以）"""
+        return self.has_admin_permission()
+
+    @property
+    def is_authenticated(self):
+        """是否已认证（用于 Django 认证系统）"""
+        return True
+
+    @property
+    def is_anonymous(self):
+        """是否是匿名用户（Django 认证系统需要）"""
+        return False
+
+    def get_session_auth_hash(self):
+        """获取 session 认证哈希（Django 认证系统需要）"""
+        return self.password_MD5  # 使用密码 MD5 作为 session 哈希
+
     def __str__(self):
         return self.username  # 对象显示为用户名
 
@@ -75,6 +100,7 @@ class Content(models.Model):
         ('reviewed', '已审核'),
         ('rejected', '已拒绝'),
         ('published', '已发布'),
+        ('terminated', '已终止'),
     )
     id = models.AutoField(primary_key=True)
 
@@ -83,17 +109,32 @@ class Content(models.Model):
     reviewer_id = models.IntegerField(verbose_name='审核者ID', null=True)  # 允许为空
 
     title = models.CharField(max_length=200, verbose_name='标题')
-    short_title = models.CharField(max_length=100, verbose_name='短标题')
+    short_title = models.CharField(max_length=100, verbose_name='短标题', null=True, blank=True)
     link = models.TextField(verbose_name='链接')
     content = models.TextField(verbose_name='详细内容')
 
-    deadline = models.DateField(verbose_name="截止时间", null=True, blank=True)
+    deadline = models.DateTimeField(verbose_name="截止时间", null=True, blank=True)
     image_list = models.TextField(default='[]', verbose_name='图片列表', help_text='JSON格式的图片路径数组')
     publish_at = models.DateTimeField(verbose_name="发布时间", null=True, blank=True)
 
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='draft')
     type = models.CharField(max_length=50, verbose_name='类型')
     tag = models.TextField(verbose_name='标签', default='')
+
+    # 锁定字段（用于并发编辑控制）
+    locker_id = models.IntegerField(
+        verbose_name='当前锁定者用户ID',
+        null=True,
+        blank=True,
+        help_text='正在编辑此内容的用户ID，为空表示未被锁定'
+    )
+    locked_at = models.DateTimeField(
+        verbose_name='锁定时间',
+        null=True,
+        blank=True,
+        help_text='内容被锁定的时间戳'
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -189,20 +230,20 @@ class Comment(models.Model):
     creator_id = models.IntegerField(verbose_name='评论创建者ID')
     news_id = models.IntegerField(verbose_name='关联新闻ID')
     parent_comment_id = models.IntegerField(null=True, blank=True, default=None, verbose_name='回复的上级评论ID（NULL表示顶层评论）')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='最后更新时间')
+    created = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    updated = models.DateTimeField(auto_now=True, verbose_name='最后更新时间')
 
     class Meta:
         db_table = 'comment_management'
         verbose_name = '评论'
         verbose_name_plural = '评论管理'
         # 按创建时间降序排列
-        ordering = ['-created_at']
+        ordering = ['-created']
         # 创建数据库索引
         indexes = [
             models.Index(fields=['creator_id'], name='idx_creator_id'),
             models.Index(fields=['news_id'], name='idx_news_id'),
             models.Index(fields=['parent_comment_id'], name='idx_parent_comment_id'),
-            models.Index(fields=['created_at'], name='idx_created_at'),
-            models.Index(fields=['updated_at'], name='idx_updated_at'),
+            models.Index(fields=['created'], name='idx_created'),
+            models.Index(fields=['updated'], name='idx_updated'),
         ]

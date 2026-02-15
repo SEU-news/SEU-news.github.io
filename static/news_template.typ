@@ -118,6 +118,36 @@ column-gutter: 2em
       }
       , [#e.at("due_time").slice(5, 10)], [#e.at("publish_date").slice(0, 10)])
     }
+  },
+  ..for e in college-due {
+    if e.at("due_time") != none {
+    (if e.at("link") != none {
+        link(e.at("link"))[#e.at("title")]
+      } else {
+        e.at("title")
+      }
+      , [#e.at("due_time").slice(5, 10)], [#e.at("publish_date").slice(0, 10)])
+    }
+  },
+  ..for e in club-due {
+    if e.at("due_time") != none {
+    (if e.at("link") != none {
+        link(e.at("link"))[#e.at("title")]
+      } else {
+        e.at("title")
+      }
+      , [#e.at("due_time").slice(5, 10)], [#e.at("publish_date").slice(0, 10)])
+    }
+  },
+  ..for e in lecture-due {
+    if e.at("due_time") != none {
+    (if e.at("link") != none {
+        link(e.at("link"))[#e.at("title")]
+      } else {
+        e.at("title")
+      }
+      , [#e.at("due_time").slice(5, 10)], [#e.at("publish_date").slice(0, 10)])
+    }
   }
 )
 #v(first-v * 1em)

@@ -1,0 +1,39 @@
+/* 提示信息 */
+.alert {
+  position: relative;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.alert-info {
+  color: #1a56db;
+  background-color: #e3f2fd;
+  border-color: rgba(102, 126, 234, 0.2);
+}
+
+.alert-success {
+  color: #0f5132;
+  background-color: #d1e7dd;
+  border-color: rgba(40, 167, 69, 0.2);
+}
+
+.alert-warning {
+  color: #b45309;
+  background-color: #fff3cd;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.alert-danger {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: rgba(220, 53, 69, 0.2);
+}
+
+.alert-secondary {
+  color: #383d41;
+  background-color: #e2e3e5;
+  border-color: rgba(108, 117, 125, 0.2);
+}
