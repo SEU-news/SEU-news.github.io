@@ -3,6 +3,7 @@ PDF服务
 处理PDF生成、Typst模板等功能
 """
 
+import logging
 from typing import Dict, Any, List, Union
 import json
 import os
@@ -12,6 +13,8 @@ from django.conf import settings
 from django_models.models import Content
 from api.services.base_service import BaseService
 from api.core.exceptions import ValidationError
+
+logger = logging.getLogger(__name__)
 
 
 class PDFService(BaseService):

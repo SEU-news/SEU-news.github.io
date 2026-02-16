@@ -125,7 +125,7 @@ class ContentListAPIView(generics.ListAPIView):
         # 使用服务层分页
         page = int(request.query_params.get('page', 1))
         page_size = int(request.query_params.get('page_size', 10))
-        legal_sizes = [10, 20, 50, 100]
+        legal_sizes = [10, 20, 50, 100, 1000]
 
         if page_size not in legal_sizes:
             page_size = 10

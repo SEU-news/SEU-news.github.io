@@ -43,7 +43,7 @@ class UserAdminListAPIView(APIView):
             role_filter_str = request.query_params.get('role', '')
 
             # 验证分页大小
-            legal_sizes = [10, 20, 50, 100]
+            legal_sizes = [10, 20, 50, 100, 1000]
             if page_size not in legal_sizes:
                 page_size = 10
 
