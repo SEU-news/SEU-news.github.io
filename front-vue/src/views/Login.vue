@@ -42,6 +42,7 @@ const message = ref('')
 async function handleSubmit() {
   try {
     const res = await login({ username: username.value, password: password.value })
+
     if (res.success) {
       // 使用 Notification API 显示成功消息
       showNotification('登录成功！')

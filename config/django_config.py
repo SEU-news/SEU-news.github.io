@@ -141,7 +141,41 @@ def configure_django():
                     'latest_pdf_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/latest.pdf'),
                     'typst_template_path': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static/news_template.typ'),
                     'fonts_dir': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'fonts'),
-                    'typst_command': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'typst.exe') if os.name == 'nt' else 'typst',
+                    'typst_command': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'typst.exe') if os.name == 'nt' else os.path.join(os.path.dirname(os.path.dirname(__file__)), 'typst'),
+                },
+
+                # 日志配置
+                LOGGING={
+                    'version': 1,
+                    'disable_existing_loggers': False,
+                    'formatters': {
+                        'verbose': {
+                            'format': '[{levelname}] {asctime} {module} {message}',
+                            'style': '{',
+                        },
+                    },
+                    'handlers': {
+                        'console': {
+                            'class': 'logging.StreamHandler',
+                            'formatter': 'verbose',
+                        },
+                    },
+                    'root': {
+                        'handlers': ['console'],
+                        'level': 'INFO',
+                    },
+                    'loggers': {
+                        'django': {
+                            'handlers': ['console'],
+                            'level': 'INFO',
+                            'propagate': False,
+                        },
+                        'api': {
+                            'handlers': ['console'],
+                            'level': 'INFO',
+                            'propagate': False,
+                        },
+                    },
                 },
             )
         except Exception as e:

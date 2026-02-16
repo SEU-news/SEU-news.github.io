@@ -236,23 +236,20 @@ def compile_typst_pdf(json_path, output_path, fonts_dir=None, template_path=None
         template_path = os.path.join(base_dir, 'static', 'news_template.typ')
 
     if typst_cmd is None:
-        # 优先使用项目根目录下的typst.exe
-        exe_path = os.path.join(base_dir, 'typst.exe')
-        if os.name == 'nt' and os.path.exists(exe_path):
+        # 优先使用项目根目录下的 typst 可执行文件
+        exe_path = os.path.join(base_dir, 'typst.exe') if os.name == 'nt' else os.path.join(base_dir, 'typst')
+        if os.path.exists(exe_path):
             typst_cmd = exe_path
-        elif os.name == 'nt':
-            typst_cmd = 'typst'
         else:
+            # 回退到 PATH 中的 typst 命令
             typst_cmd = 'typst'
 
-    # 构建命令，添加 --root 参数指定项目根目录
-    # 这样 Typst 可以正确解析相对路径
-    cmd = [typst_cmd, 'compile', '--root', base_dir, template_path, output_path]
+    # 构建命令，添加 --font-path 参数指定字体目录（参考Flask原项目）
+    # 这是正确的方式来指定字体，解决中文乱码问题
+    cmd = [typst_cmd, 'compile', '--font-path', fonts_dir if fonts_dir else base_dir, template_path, output_path]
 
-    # 设置环境变量（用于字体目录）
+    # 不再设置环境变量 FONT_PATH，Typst不使用这个环境变量
     env = os.environ.copy()
-    if fonts_dir:
-        env['FONT_PATH'] = fonts_dir
 
     logger.info(f"执行Typst编译: {' '.join(cmd)}")
     logger.info(f"base_dir: {base_dir}")

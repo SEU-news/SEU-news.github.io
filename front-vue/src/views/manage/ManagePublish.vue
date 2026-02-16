@@ -118,7 +118,7 @@
                 </label>
               </div>
               <div>
-                <span class="badge badge-primary">{{ item.category }}</span>
+                <span v-if="item.type" class="badge badge-primary">{{ item.type }}</span>
               </div>
             </div>
             <div class="mt-2 text-muted small">
@@ -176,7 +176,7 @@
               </div>
               <div>
                 <span class="badge badge-primary me-2">{{ item.type }}</span>
-                <span class="badge badge-secondary">{{ item.tag }}</span>
+                <span v-if="item.tag" class="badge badge-secondary">{{ item.tag }}</span>
               </div>
             </div>
             <div class="mt-2 text-muted small">
@@ -236,8 +236,8 @@ import EmptyState from '../../components/EmptyState.vue'
 
 const router = useRouter()
 
-// API基础URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:42611/api'
+// API基础URL（使用相对路径，支持本地开发和远程部署）
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 // 日期范围选择
 const startDate = ref(new Date().toISOString().split('T')[0])
@@ -279,7 +279,6 @@ async function checkArchivedPDF(date) {
     }
   } catch (err) {
     // 文件不存在或其他错误，保持 pdfExists = false
-    console.log('归档PDF不存在，将显示空状态')
   }
 }
 
@@ -313,8 +312,12 @@ async function loadPublishedContent() {
     publishedContent.value = publishedData.results || []
     selectedContentIds.value = publishedContent.value.map(e => e.id)
 
-    // DDL 内容（后端已分类）
-    ddlContent.value = ddlData.results || []
+    // DDL 内容（后端已分类，需要转换字段名）
+    ddlContent.value = (ddlData.results || []).map(e => ({
+      ...e,
+      due_time: e.formatted_deadline || '',
+      publish_date: e.formatted_publish_at || ''
+    }))
     selectedDDLIds.value = ddlContent.value.map(e => e.id)
 
     showMessage(`找到 ${publishedData.count} 条已发布内容，${ddlData.count} 条DDL内容`, 'alert-info')
