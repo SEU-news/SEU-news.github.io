@@ -176,7 +176,7 @@
               </div>
               <div>
                 <span class="badge badge-primary me-2">{{ item.type }}</span>
-                <span class="badge badge-secondary">{{ item.tag }}</span>
+                <span v-if="item.tag" class="badge badge-secondary">{{ item.tag }}</span>
               </div>
             </div>
             <div class="mt-2 text-muted small">
