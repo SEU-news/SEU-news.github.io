@@ -118,7 +118,7 @@
                 </label>
               </div>
               <div>
-                <span class="badge badge-primary">{{ item.category }}</span>
+                <span v-if="item.type" class="badge badge-primary">{{ item.type }}</span>
               </div>
             </div>
             <div class="mt-2 text-muted small">
