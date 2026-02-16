@@ -95,8 +95,11 @@ class PDFService(BaseService):
 
         # 写入JSON（最新）
         json_str = json.dumps(typst_data, ensure_ascii=False, indent=2)
+        logger.info(f"准备写入JSON到: {config['latest_json_path']}")
+        logger.info(f"JSON数据大小: {len(json_str)} bytes")
         with open(config['latest_json_path'], 'w', encoding='utf-8') as f:
             f.write(json_str)
+        logger.info(f"JSON写入成功: {config['latest_json_path']}")
 
         # 归档JSON数据
         archive_json_path = os.path.join(config['json_archive_dir'], f'{archive_date}.json')
