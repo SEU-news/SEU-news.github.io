@@ -1,0 +1,128 @@
+{
+  "platform": {
+    "title": "关于 SEU News",
+    "subtitle": "东南大学校园信息聚合与发布平台",
+    "logo": "/logo_1.png",
+    "description": "SEU News 是一个为东南大学师生打造的校园信息聚合与发布平台。我们致力于整合校园内各类信息，提供便捷的信息获取与发布服务，让校园生活更加高效便捷。",
+    "features": [
+      {
+        "icon": "📰",
+        "title": "信息聚合",
+        "description": "整合教务、学术、活动等各类校园信息，一站式获取"
+      },
+      {
+        "icon": "✍️",
+        "title": "内容发布",
+        "description": "便捷的内容发布流程，支持多种格式的内容编辑"
+      },
+      {
+        "icon": "🔍",
+        "title": "智能搜索",
+        "description": "强大的搜索功能，快速找到所需信息"
+      },
+      {
+        "icon": "📅",
+        "title": "截止提醒",
+        "description": "重要截止日期提醒，不错过任何重要事项"
+      },
+      {
+        "icon": "👥",
+        "title": "团队协作",
+        "description": "支持多人协作编辑，提升工作效率"
+      },
+      {
+        "icon": "📱",
+        "title": "移动优先",
+        "description": "响应式设计，在任意设备上都有良好体验"
+      }
+    ]
+  },
+  "team": {
+    "title": "团队介绍",
+    "members": [
+      {
+        "name": "开发团队",
+        "role": "Frontend & Backend",
+        "avatar": "",
+        "description": "负责平台的前端界面开发与后端 API 设计",
+        "github": ""
+      },
+      {
+        "name": "产品团队",
+        "role": "Product Design",
+        "avatar": "",
+        "description": "负责产品功能设计与用户体验优化",
+        "github": ""
+      },
+      {
+        "name": "运维团队",
+        "role": "DevOps",
+        "avatar": "",
+        "description": "负责服务器部署、维护与性能优化",
+        "github": ""
+      },
+      {
+        "name": "测试团队",
+        "role": "QA Testing",
+        "avatar": "",
+        "description": "负责功能测试与质量保障",
+        "github": ""
+      }
+    ]
+  },
+  "history": {
+    "title": "项目历程",
+    "milestones": [
+      {
+        "date": "2024-01",
+        "title": "项目启动",
+        "description": "SEU News 项目正式立项，开始需求分析与技术选型"
+      },
+      {
+        "date": "2024-03",
+        "title": "后端开发",
+        "description": "完成 Flask 后端基础框架搭建与核心功能开发"
+      },
+      {
+        "date": "2024-06",
+        "title": "前端开发",
+        "description": "Vue.js 前端项目启动，实现基础界面与交互功能"
+      },
+      {
+        "date": "2024-09",
+        "title": "API 重构",
+        "description": "引入 Django REST API，逐步迁移至现代化架构"
+      },
+      {
+        "date": "2024-12",
+        "title": "功能完善",
+        "description": "完成内容管理、审核流程、导出功能等核心特性"
+      },
+      {
+        "date": "2025-02",
+        "title": "持续优化",
+        "description": "持续优化用户体验与系统性能，准备正式上线"
+      }
+    ]
+  },
+  "contact": {
+    "title": "联系我们",
+    "methods": [
+      {
+        "icon": "📧",
+        "label": "邮箱",
+        "value": "support@zhishannews.edu.cn",
+        "link": "mailto:support@zhishannews.edu.cn"
+      },
+      {
+        "icon": "📱",
+        "label": "QQ群",
+        "value": "728248484",
+        "link": "https://qm.qq.com/q/NFsQlwIKey"
+      }
+    ]
+  },
+  "footer": {
+    "copyright": "© 2025 SEU News. All rights reserved."
+  }
+}
