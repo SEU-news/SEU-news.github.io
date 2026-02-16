@@ -4,9 +4,6 @@
     <header class="page-header">
       <h1>至善新声</h1>
       <p>东南大学校园信息聚合平台</p>
-      <a href="javascript:void(0)" @click="redirectToOldSystem" class="old-link">
-        访问旧系统
-      </a>
     </header>
 
     <!-- 主内容区 -->
@@ -128,12 +125,6 @@ function goToLogin() {
 // 刷新PDF
 function refreshPDF() {
   pdfTimestamp.value = Date.now()
-}
-
-// 跳转到旧系统
-const redirectToOldSystem = () => {
-  const oldSystemUrl = 'http://' + window.location.hostname + ':42610'
-  window.open(oldSystemUrl, '_blank')
 }
 
 // 初始化
