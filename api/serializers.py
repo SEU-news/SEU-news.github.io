@@ -49,6 +49,7 @@ class ContentSerializer(serializers.ModelSerializer):
     formatted_created_at = serializers.SerializerMethodField()
     formatted_updated_at = serializers.SerializerMethodField()
     formatted_deadline = serializers.SerializerMethodField()
+    formatted_publish_at = serializers.SerializerMethodField()  # 添加格式化的发布时间字段
     status_display = serializers.SerializerMethodField()
     can_delete = serializers.SerializerMethodField()
     tag_list = serializers.SerializerMethodField()  # 标签列表（JSON 数组格式）
@@ -77,6 +78,7 @@ class ContentSerializer(serializers.ModelSerializer):
             'formatted_created_at',
             'formatted_updated_at',
             'formatted_deadline',
+            'formatted_publish_at',
             'creator_username',
             'describer_username',
             'reviewer_username',
@@ -123,7 +125,12 @@ class ContentSerializer(serializers.ModelSerializer):
     def get_formatted_deadline(self, obj):
         if obj is None or not hasattr(obj, 'deadline') or not obj.deadline:
             return ''
-        return obj.deadline.strftime('%Y-%m-%d')
+        return obj.deadline.strftime('%Y-%m-%d %H:%M:%S')
+
+    def get_formatted_publish_at(self, obj):
+        if obj is None or not hasattr(obj, 'publish_at') or not obj.publish_at:
+            return ''
+        return obj.publish_at.strftime('%Y-%m-%d %H:%M:%S')
 
     def get_status_display(self, obj):
         if obj is None or not hasattr(obj, 'status') or not obj.status:

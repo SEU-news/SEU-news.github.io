@@ -313,8 +313,12 @@ async function loadPublishedContent() {
     publishedContent.value = publishedData.results || []
     selectedContentIds.value = publishedContent.value.map(e => e.id)
 
-    // DDL 内容（后端已分类）
-    ddlContent.value = ddlData.results || []
+    // DDL 内容（后端已分类，需要转换字段名）
+    ddlContent.value = (ddlData.results || []).map(e => ({
+      ...e,
+      due_time: e.formatted_deadline || '',
+      publish_date: e.formatted_publish_at || ''
+    }))
     selectedDDLIds.value = ddlContent.value.map(e => e.id)
 
     showMessage(`找到 ${publishedData.count} 条已发布内容，${ddlData.count} 条DDL内容`, 'alert-info')
