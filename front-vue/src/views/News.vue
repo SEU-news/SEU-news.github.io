@@ -66,7 +66,7 @@ import LoadingSpinner from '../components/admin/LoadingSpinner.vue'
 
 // 数据状态
 const contents = ref([])
-const loading = ref(true)
+const loading = ref(false)
 const loadingMore = ref(false)
 const hasMore = ref(false)
 const currentPage = ref(1)
