@@ -9,7 +9,7 @@
       <!-- 左侧 PDF -->
       <div class="pdf-card">
         <h3>最新公告 PDF</h3>
-        <iframe src="http://49.235.51.123:42610/static/latest.pdf" width="100%" height="600px" style="border:none;"></iframe>
+        <iframe :src="pdfUrl" width="100%" height="600px" style="border:none;"></iframe>
       </div>
 
       <!-- 右侧功能卡片 -->
@@ -152,12 +152,23 @@ p {
   color: #666;
 }
 </style>
-<script setup lang="ts">
+<script setup>
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+// API基础URL（使用相对路径，支持本地开发和远程部署）
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
+
+// PDF URL（动态构建，添加时间戳以刷新缓存）
+const pdfTimestamp = ref(0)
+const pdfUrl = computed(() => {
+  const baseUrl = API_BASE_URL.replace('/api', '')
+  return `${baseUrl}/static/latest.pdf?t=${pdfTimestamp.value}`
+})
 
 function goToManage() {
   // 先恢复登录状态
@@ -196,5 +207,11 @@ function goToLogin() {
 const redirectToOldSystem = () => {
   const oldSystemUrl = 'http://' + window.location.hostname + ':42610';
   window.open(oldSystemUrl, '_blank');
-};
+}
+
+// 初始化时间戳
+onMounted(() => {
+  pdfTimestamp.value = Date.now()
+})
+</script>
 </script>
