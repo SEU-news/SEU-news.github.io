@@ -1,17 +1,17 @@
 <template>
   <div class="home-page">
-    <!-- 顶部欢迎区域 -->
-    <header class="welcome-section">
-      <h1 class="welcome-title">至善新声</h1>
-      <p class="welcome-subtitle">东南大学校园信息聚合平台</p>
-      <a href="javascript:void(0)" @click="redirectToOldSystem" class="old-system-link">
+    <!-- 欢迎标题 -->
+    <header class="page-header">
+      <h1>至善新声</h1>
+      <p>东南大学校园信息聚合平台</p>
+      <a href="javascript:void(0)" @click="redirectToOldSystem" class="old-link">
         访问旧系统
       </a>
     </header>
 
     <!-- 主内容区 -->
-    <main class="main-content">
-      <!-- PDF 预览卡片 -->
+    <main class="main-container">
+      <!-- 左侧：PDF 预览 -->
       <section class="pdf-section">
         <div class="section-header">
           <h2>最新公告 PDF</h2>
@@ -34,14 +34,14 @@
         </div>
       </section>
 
-      <!-- 功能入口卡片 -->
-      <section class="quick-actions">
+      <!-- 右侧：功能入口 -->
+      <section class="actions-section">
         <div class="section-header">
           <h2>快速入口</h2>
         </div>
 
-        <div class="action-cards-grid">
-          <!-- 登录/访客 -->
+        <div class="actions-list">
+          <!-- 访客登录 -->
           <div class="action-card" @click="goToLogin">
             <div class="card-icon">👤</div>
             <h3>访客登录</h3>
@@ -55,7 +55,7 @@
             <p>后台管理系统</p>
           </div>
 
-          <!-- 查看消息 -->
+          <!-- 消息列表 -->
           <router-link to="/news" class="action-card link-card">
             <div class="card-icon">📰</div>
             <h3>消息列表</h3>
@@ -150,60 +150,68 @@ onMounted(() => {
 /* 页面容器 */
 .home-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
-}
-
-/* 欢迎区域 */
-.welcome-section {
-  text-align: center;
-  padding: 40px 20px;
-  margin-bottom: 30px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
-}
-
-.welcome-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 1rem 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.welcome-subtitle {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 2rem 0;
-}
-
-.old-system-link {
-  display: inline-block;
-  padding: 8px 20px;
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  border-radius: 8px;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  font-size: 0.9rem;
-}
-
-.old-system-link:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
-}
-
-/* 主内容区 */
-.main-content {
-  max-width: 1200px;
-  margin: 0 auto;
+  background: #fafafa;
   display: flex;
   flex-direction: column;
-  gap: 30px;
 }
 
-/* 区域标题 */
+/* 页面头部 */
+.page-header {
+  text-align: center;
+  padding: 30px 20px 20px;
+  background: white;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333333;
+  margin: 0 0 0.5rem 0;
+}
+
+.page-header p {
+  color: #666666;
+  margin: 0 0 1rem 0;
+}
+
+.old-link {
+  display: inline-block;
+  padding: 6px 16px;
+  background: #f0f0f0;
+  color: #667eea;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 0.85rem;
+}
+
+.old-link:hover {
+  background: #667eea;
+  color: white;
+}
+
+/* 主内容容器 */
+.main-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  flex: 1;
+  min-height: calc(100vh - 120px);
+}
+
+/* 左侧 PDF 区域 */
+.pdf-section {
+  flex: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -212,22 +220,16 @@ onMounted(() => {
 }
 
 .section-header h2 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #ffffff;
+  color: #333333;
   margin: 0;
 }
 
-/* PDF 区域 */
-.pdf-section {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
 .pdf-container {
-  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   min-height: 600px;
   background: #f8f9fa;
   border-radius: 8px;
@@ -247,53 +249,57 @@ onMounted(() => {
   height: 600px;
 }
 
-/* 快速入口区域 */
-.quick-actions {
+/* 右侧功能区域 */
+.actions-section {
+  flex: 1;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
   background: white;
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-/* 卡片网格 */
-.action-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-/* 动作卡片 */
-.action-card {
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-  border: 1px solid #e9ecef;
   border-radius: 12px;
-  padding: 25px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+.actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* 功能卡片 */
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
 .action-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+  transform: translateX(-4px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
   border-color: #667eea;
 }
 
 .card-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 2rem;
+  flex-shrink: 0;
 }
 
 .action-card h3 {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #333333;
-  margin: 0 0 0.5rem 0;
+  margin: 0;
 }
 
 .action-card p {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: #666666;
   margin: 0;
 }
@@ -308,32 +314,43 @@ onMounted(() => {
 }
 
 /* 响应式设计 */
+@media (max-width: 992px) {
+  .main-container {
+    flex-direction: column;
+  }
+
+  .pdf-section {
+    flex: none;
+    min-height: 600px;
+  }
+
+  .actions-section {
+    max-width: none;
+    flex: none;
+  }
+
+  .actions-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 768px) {
-  .home-page {
+  .page-header {
+    padding: 20px 15px 15px;
+  }
+
+  .page-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .main-container {
     padding: 10px;
-  }
-
-  .welcome-section {
-    padding: 30px 15px;
-  }
-
-  .welcome-title {
-    font-size: 2rem;
-  }
-
-  .action-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
   }
 
-  .action-card {
-    padding: 20px 15px;
-  }
-
-  .section-header {
+  .actions-list {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
   }
 }
 </style>
