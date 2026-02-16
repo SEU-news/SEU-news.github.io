@@ -20,18 +20,8 @@ export const getEntries = async (params = {}) => {
  * @param {Object} data - { title, short_title, content, link, type, tag, deadline }
  */
 export const uploadText = async (data) => {
-  console.log('uploadText API call with data:', data)
-  try {
-    const response = await api.post('/content/create/', data)
-    console.log('uploadText full response:', response)
-    console.log('uploadText response.data:', response.data)
-    console.log('uploadText response.data type:', typeof response.data)
-    return response.data
-  } catch (error) {
-    console.error('uploadText error:', error)
-    console.error('uploadText error response:', error.response?.data)
-    throw error
-  }
+  const response = await api.post('/content/create/', data)
+  return response.data
 }
 
 /**
@@ -40,17 +30,8 @@ export const uploadText = async (data) => {
  * @param {Object} data - { title, short_title, content, link, type, tag, deadline }
  */
 export const updateEntry = async (entryId, data) => {
-  console.log(`updateEntry API call with id=${entryId}, data:`, data)
-  try {
-    const response = await api.patch(`/content/${entryId}/modify/`, data)
-    console.log('updateEntry full response:', response)
-    console.log('updateEntry response.data:', response.data)
-    return response.data
-  } catch (error) {
-    console.error('updateEntry error:', error)
-    console.error('updateEntry error response:', error.response?.data)
-    throw error
-  }
+  const response = await api.patch(`/content/${entryId}/modify/`, data)
+  return response.data
 }
 
 /**

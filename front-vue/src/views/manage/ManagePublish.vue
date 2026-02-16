@@ -279,7 +279,6 @@ async function checkArchivedPDF(date) {
     }
   } catch (err) {
     // 文件不存在或其他错误，保持 pdfExists = false
-    console.log('归档PDF不存在，将显示空状态')
   }
 }
 

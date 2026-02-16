@@ -79,25 +79,16 @@ const observer = ref(null)
 
 // 加载消息列表
 async function loadContents(isLoadMore = false) {
-  console.log('[DEBUG] loadContents 被调用', { isLoadMore, loading: loading.value, loadingMore: loadingMore.value })
-
   if (isLoadMore) {
-    if (loadingMore.value) {
-      console.log('[DEBUG] loadingMore 为 true，跳过加载')
-      return
-    }
+    if (loadingMore.value) return
     loadingMore.value = true
   } else {
-    if (loading.value) {
-      console.log('[DEBUG] loading 为 true，跳过加载')
-      return
-    }
+    if (loading.value) return
     loading.value = true
   }
 
   try {
     const page = isLoadMore ? currentPage.value : 1
-    console.log('[DEBUG] 开始请求内容', { page, page_size: pageSize.value })
     const response = await getEntries({
       page,
       page_size: pageSize.value,
@@ -105,7 +96,6 @@ async function loadContents(isLoadMore = false) {
       sort: 'created_at',
       order: 'desc'
     })
-    console.log('[DEBUG] 请求成功', { count: response.count, resultsCount: response.results?.length })
 
     if (isLoadMore) {
       contents.value = [...contents.value, ...(response.results || [])]
@@ -117,9 +107,8 @@ async function loadContents(isLoadMore = false) {
 
     totalCount.value = response.count || 0
     hasMore.value = totalCount.value > 0 && contents.value.length < totalCount.value
-    console.log('[DEBUG] 加载完成', { hasMore: hasMore.value, contentsLength: contents.value.length, totalCount: totalCount.value })
   } catch (error) {
-    console.error('[DEBUG] 加载消息失败:', error)
+    console.error('加载消息失败:', error)
     loading.value = false
     loadingMore.value = false
   } finally {
@@ -130,19 +119,14 @@ async function loadContents(isLoadMore = false) {
 
 // 初始化 IntersectionObserver
 function setupIntersectionObserver() {
-  console.log('[DEBUG] setupIntersectionObserver 被调用', { hasMore: hasMore.value, loadMoreTrigger: !!loadMoreTrigger.value })
   if (observer.value) {
-    console.log('[DEBUG] 断开旧的 observer')
     observer.value.disconnect()
   }
 
   observer.value = new IntersectionObserver(
     (entries) => {
-      console.log('[DEBUG] IntersectionObserver 触发', entries.map(e => ({ isIntersecting: e.isIntersecting })))
       entries.forEach(entry => {
-        console.log('[DEBUG] 检查触发条件', { isIntersecting: entry.isIntersecting, loadingMore: loadingMore.value, hasMore: hasMore.value })
         if (entry.isIntersecting && !loadingMore.value && hasMore.value) {
-          console.log('[DEBUG] 满足加载条件，调用 loadContents(true)')
           loadContents(true)
         }
       })
@@ -156,26 +140,19 @@ function setupIntersectionObserver() {
 
   // 观察加载触发元素
   if (loadMoreTrigger.value) {
-    console.log('[DEBUG] 开始观察 loadMoreTrigger 元素')
     observer.value.observe(loadMoreTrigger.value)
-  } else {
-    console.log('[DEBUG] loadMoreTrigger 元素不存在，暂不观察')
   }
 }
 
 // 监听 hasMore 和 loadMoreTrigger 的变化
 watch([hasMore, loadMoreTrigger], ([newHasMore, newTrigger]) => {
-  console.log('[DEBUG] watch 触发', { newHasMore, hasTrigger: !!newTrigger })
   if (newHasMore && newTrigger) {
     if (!observer.value) {
-      console.log('[DEBUG] observer 不存在，创建新 observer')
       setupIntersectionObserver()
     } else {
-      console.log('[DEBUG] observer 存在，重新观察触发元素')
       observer.value.observe(newTrigger)
     }
   } else if (!newHasMore && observer.value) {
-    console.log('[DEBUG] 没有更多数据，断开 observer')
     observer.value.disconnect()
   }
 })
@@ -202,19 +179,14 @@ onUnmounted(() => {
 
 // 初始化
 onMounted(async () => {
-  console.log('[DEBUG] onMounted 开始')
   await loadContents()
 
   // 等待 DOM 渲染完成
   await nextTick()
 
   // 如果有更多数据且触发元素存在，初始化 observer
-  console.log('[DEBUG] nextTick 后检查', { hasMore: hasMore.value, loadMoreTrigger: !!loadMoreTrigger.value })
   if (hasMore.value && loadMoreTrigger.value) {
-    console.log('[DEBUG] 条件满足，初始化 observer')
     setupIntersectionObserver()
-  } else {
-    console.log('[DEBUG] 条件不满足，不初始化 observer', { hasMore: hasMore.value, hasTrigger: !!loadMoreTrigger.value })
   }
 })
 </script>
