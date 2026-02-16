@@ -106,9 +106,11 @@ async function loadContents(isLoadMore = false) {
     }
 
     totalCount.value = response.count || 0
-    hasMore.value = contents.value.length < totalCount.value
+    hasMore.value = totalCount.value > 0 && contents.value.length < totalCount.value
   } catch (error) {
     console.error('加载消息失败:', error)
+    loading.value = false
+    loadingMore.value = false
   } finally {
     loading.value = false
     loadingMore.value = false
