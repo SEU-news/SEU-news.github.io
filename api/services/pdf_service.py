@@ -74,15 +74,12 @@ class PDFService(BaseService):
                 raise ValidationError('没有找到有效的已发布内容')
 
             # 生成Typst数据（基于选中内容）
-            typst_data = PDFService._generate_typst_data_from_contents(list(contents))
+            # 传入 date_str 作为目标结束日期，用于正确筛选DDL内容
+            typst_data = PDFService._generate_typst_data_from_contents(list(contents), target_end_date=date_str)
             count = len(contents)
             due_contents = typst_data.get('due', {})
-            # 如果提供了 date_str，使用它覆盖数据中的日期
-            if date_str:
-                typst_data['data']['date'] = date_str
-                archive_date = date_str
-            else:
-                archive_date = typst_data.get('data', {}).get('date', datetime.now().strftime('%Y-%m-%d'))
+            # 使用数据中的日期作为归档日期
+            archive_date = typst_data.get('data', {}).get('date', datetime.now().strftime('%Y-%m-%d'))
         elif date_str:
             # 从日期生成（使用 publish_utils.generate_typst_data 返回 Flask 格式）
             typst_data = generate_typst_data(date_str)
@@ -143,23 +140,38 @@ class PDFService(BaseService):
         }
 
     @staticmethod
-    def _generate_typst_data_from_contents(contents: List[Content]) -> Dict[str, Any]:
-        """根据选中的内容生成Typst数据（Flask格式）"""
+    def _generate_typst_data_from_contents(contents: List[Content], target_end_date: str = None) -> Dict[str, Any]:
+        """
+        根据选中的内容生成Typst数据（Flask格式）
+
+        Args:
+            contents: 选中的内容列表
+            target_end_date: 目标结束日期字符串 (YYYY-MM-DD)，用于筛选DDL内容
+        """
         from datetime import time
         from api.utils.publish_utils import sort_content_by_category
 
         # 分类普通内容
         categorized = sort_content_by_category(contents, is_deadline_content=False)
 
-        # 计算结束日期：使用选中内容的最大发布时间
-        end_date = None
-        for content in contents:
-            if content.publish_at:
-                if end_date is None or content.publish_at.date() > end_date:
-                    end_date = content.publish_at.date()
+        # 计算结束日期：
+        # 优先使用 target_end_date（用户选择的结束日期）
+        # 否则使用选中内容的最大发布时间
+        if target_end_date:
+            try:
+                end_date = datetime.strptime(target_end_date, '%Y-%m-%d').date()
+            except ValueError:
+                end_date = None
+        else:
+            end_date = None
 
         if end_date is None:
-            end_date = datetime.now().date()
+            for content in contents:
+                if content.publish_at:
+                    if end_date is None or content.publish_at.date() > end_date:
+                        end_date = content.publish_at.date()
+            if end_date is None:
+                end_date = datetime.now().date()
 
         start_of_day = datetime.combine(end_date, time.min)
         end_of_day = datetime.combine(end_date, time.max)
