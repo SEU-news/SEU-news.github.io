@@ -77,8 +77,12 @@ class PDFService(BaseService):
             typst_data = PDFService._generate_typst_data_from_contents(list(contents))
             count = len(contents)
             due_contents = typst_data.get('due', {})
-            # 使用数据中的日期作为归档日期，如果提供了 date_str 则使用 date_str
-            archive_date = date_str if date_str else typst_data.get('data', {}).get('date', datetime.now().strftime('%Y-%m-%d'))
+            # 如果提供了 date_str，使用它覆盖数据中的日期
+            if date_str:
+                typst_data['data']['date'] = date_str
+                archive_date = date_str
+            else:
+                archive_date = typst_data.get('data', {}).get('date', datetime.now().strftime('%Y-%m-%d'))
         elif date_str:
             # 从日期生成（使用 publish_utils.generate_typst_data 返回 Flask 格式）
             typst_data = generate_typst_data(date_str)
