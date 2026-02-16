@@ -1,5 +1,5 @@
 <template>
-  <div class="news-page" @scroll="handleScroll">
+  <div class="news-page">
     <!-- 页面头部 -->
     <header class="page-header">
       <h1>至善新声</h1>
@@ -59,7 +59,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { getEntries } from '../api/content.js'
 import EmptyState from '../components/EmptyState.vue'
 import LoadingSpinner from '../components/admin/LoadingSpinner.vue'
@@ -117,11 +117,12 @@ async function loadContents(isLoadMore = false) {
   }
 }
 
-// 滚动事件处理
-function handleScroll() {
-  if (!observer.value || !loadMoreTrigger.value || loadingMore.value || !hasMore.value) return
+// 初始化 IntersectionObserver
+function setupIntersectionObserver() {
+  if (observer.value) {
+    observer.value.disconnect()
+  }
 
-  // 使用 IntersectionObserver 检测是否滚动到底部
   observer.value = new IntersectionObserver(
     (entries) => {
       entries.forEach(entry => {
@@ -137,8 +138,24 @@ function handleScroll() {
     }
   )
 
-  observer.value.observe(loadMoreTrigger.value)
+  // 观察加载触发元素
+  if (loadMoreTrigger.value) {
+    observer.value.observe(loadMoreTrigger.value)
+  }
 }
+
+// 监听 hasMore 和 loadMoreTrigger 的变化
+watch([hasMore, loadMoreTrigger], ([newHasMore, newTrigger]) => {
+  if (newHasMore && newTrigger) {
+    if (!observer.value) {
+      setupIntersectionObserver()
+    } else {
+      observer.value.observe(newTrigger)
+    }
+  } else if (!newHasMore && observer.value) {
+    observer.value.disconnect()
+  }
+})
 
 // 获取状态徽章样式
 function getStatusBadgeClass(status) {
@@ -161,8 +178,16 @@ onUnmounted(() => {
 })
 
 // 初始化
-onMounted(() => {
-  loadContents()
+onMounted(async () => {
+  await loadContents()
+
+  // 等待 DOM 渲染完成
+  await nextTick()
+
+  // 如果有更多数据且触发元素存在，初始化 observer
+  if (hasMore.value && loadMoreTrigger.value) {
+    setupIntersectionObserver()
+  }
 })
 </script>
 
