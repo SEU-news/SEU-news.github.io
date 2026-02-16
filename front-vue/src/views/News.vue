@@ -1,5 +1,5 @@
 <template>
-  <div class="news-page">
+  <div class="news-page" @scroll="handleScroll">
     <!-- 页面头部 -->
     <header class="page-header">
       <h1>至善新声</h1>
@@ -8,7 +8,7 @@
 
     <!-- 消息列表 -->
     <main class="news-container">
-      <div v-if="loading" class="loading-state">
+      <div v-if="loading && contents.length === 0" class="loading-state">
         <LoadingSpinner />
       </div>
 
@@ -45,60 +45,97 @@
         </div>
       </div>
 
-      <!-- 分页 -->
-      <div v-if="totalPages > 1" class="pagination-wrapper">
-        <Pagination
-          :current-page="currentPage"
-          :total-pages="totalPages"
-          @page-change="handlePageChange"
-        />
+      <!-- 加载更多指示器 -->
+      <div v-if="hasMore" class="load-more-wrapper">
+        <div v-if="loadingMore" class="loading-more">
+          <LoadingSpinner />
+        </div>
+        <div v-else ref="loadMoreTrigger" class="load-more-trigger">
+          <span>向下滚动加载更多</span>
+        </div>
       </div>
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { getEntries } from '../api/content.js'
 import EmptyState from '../components/EmptyState.vue'
-import Pagination from '../components/Pagination.vue'
 import LoadingSpinner from '../components/admin/LoadingSpinner.vue'
 
 // 数据状态
-const loading = ref(true)
 const contents = ref([])
+const loading = ref(true)
+const loadingMore = ref(false)
+const hasMore = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const totalCount = ref(0)
 
-// 总页数
-const totalPages = ref(0)
+// 懒加载相关
+const loadMoreTrigger = ref(null)
+const observer = ref(null)
 
 // 加载消息列表
-async function loadContents() {
-  loading.value = true
+async function loadContents(isLoadMore = false) {
+  if (isLoadMore) {
+    if (loadingMore.value) return
+    loadingMore.value = true
+  } else {
+    if (loading.value) return
+    loading.value = true
+  }
+
   try {
+    const page = isLoadMore ? currentPage.value : 1
     const response = await getEntries({
-      page: currentPage.value,
+      page,
       page_size: pageSize.value,
-      status: 'published'
+      status: 'published',
+      sort: 'created_at',
+      order: 'desc'
     })
-    contents.value = response.results || []
+
+    if (isLoadMore) {
+      contents.value = [...contents.value, ...(response.results || [])]
+      currentPage.value = page + 1
+    } else {
+      contents.value = response.results || []
+      currentPage.value = 1
+    }
+
     totalCount.value = response.count || 0
-    totalPages.value = Math.ceil(totalCount.value / pageSize.value)
+    hasMore.value = contents.value.length < totalCount.value
   } catch (error) {
     console.error('加载消息失败:', error)
   } finally {
     loading.value = false
+    loadingMore.value = false
   }
 }
 
-// 页码变化处理
-function handlePageChange(page) {
-  currentPage.value = page
-  loadContents()
-  // 滚动到顶部
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+// 滚动事件处理
+function handleScroll() {
+  if (!observer.value || !loadMoreTrigger.value || loadingMore.value || !hasMore.value) return
+
+  // 使用 IntersectionObserver 检测是否滚动到底部
+  observer.value = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !loadingMore.value && hasMore.value) {
+          loadContents(true)
+        }
+      })
+    },
+    {
+      root: null,
+      rootMargin: '100px',
+      threshold: 0.1
+    }
+  )
+
+  observer.value.observe(loadMoreTrigger.value)
 }
 
 // 获取状态徽章样式
@@ -113,6 +150,13 @@ function getStatusBadgeClass(status) {
   }
   return classMap[status] || 'badge-secondary'
 }
+
+// 清理
+onUnmounted(() => {
+  if (observer.value) {
+    observer.value.disconnect()
+  }
+})
 
 // 初始化
 onMounted(() => {
@@ -239,11 +283,22 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
-/* 分页容器 */
-.pagination-wrapper {
+/* 加载更多指示器 */
+.load-more-wrapper {
+  padding: 30px 0;
+}
+
+.loading-more {
   display: flex;
   justify-content: center;
-  padding-top: 30px;
+  padding: 30px 0;
+}
+
+.load-more-trigger {
+  text-align: center;
+  padding: 20px;
+  color: #999999;
+  font-size: 0.9rem;
 }
 
 /* 加载状态 */
