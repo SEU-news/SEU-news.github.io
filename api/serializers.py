@@ -125,11 +125,19 @@ class ContentSerializer(serializers.ModelSerializer):
     def get_formatted_deadline(self, obj):
         if obj is None or not hasattr(obj, 'deadline') or not obj.deadline:
             return ''
+        # 如果 deadline 已经是字符串，直接返回
+        if isinstance(obj.deadline, str):
+            return obj.deadline
+        # 否则格式化为字符串
         return obj.deadline.strftime('%Y-%m-%d %H:%M:%S')
 
     def get_formatted_publish_at(self, obj):
         if obj is None or not hasattr(obj, 'publish_at') or not obj.publish_at:
             return ''
+        # 如果 publish_at 已经是字符串，直接返回
+        if isinstance(obj.publish_at, str):
+            return obj.publish_at
+        # 否则格式化为字符串
         return obj.publish_at.strftime('%Y-%m-%d %H:%M:%S')
 
     def get_status_display(self, obj):
