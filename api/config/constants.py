@@ -36,7 +36,7 @@ ACTIVE_CONTENT_STATUSES = [
 ]
 
 # ===== 内容类型 =====
-CONTENT_TYPES = ['教务', '竞赛', '活动', '讲座', '其他']
+CONTENT_TYPES = ['教务', '竞赛', '活动', '讲座', '通知', '其他']
 
 # ===== Typst 配置 =====
 TYPST_VERSIONS = {
