@@ -6,6 +6,9 @@ from django.conf import settings
 
 from config.load_config import GLOBAL_CONFIG
 
+# 导入统一日志模块
+from api.logging import setup_logging
+
 
 def configure_django():
     """
@@ -144,39 +147,8 @@ def configure_django():
                     'typst_command': os.path.join(os.path.dirname(os.path.dirname(__file__)), 'typst.exe') if os.name == 'nt' else os.path.join(os.path.dirname(os.path.dirname(__file__)), 'typst'),
                 },
 
-                # 日志配置
-                LOGGING={
-                    'version': 1,
-                    'disable_existing_loggers': False,
-                    'formatters': {
-                        'verbose': {
-                            'format': '[{levelname}] {asctime} {module} {message}',
-                            'style': '{',
-                        },
-                    },
-                    'handlers': {
-                        'console': {
-                            'class': 'logging.StreamHandler',
-                            'formatter': 'verbose',
-                        },
-                    },
-                    'root': {
-                        'handlers': ['console'],
-                        'level': 'INFO',
-                    },
-                    'loggers': {
-                        'django': {
-                            'handlers': ['console'],
-                            'level': 'INFO',
-                            'propagate': False,
-                        },
-                        'api': {
-                            'handlers': ['console'],
-                            'level': 'INFO',
-                            'propagate': False,
-                        },
-                    },
-                },
+                # 日志配置已迁移到 api/logging 模块，此处保留兼容性
+                # 新的统一日志系统在 Django 配置前初始化，见下方 setup_logging() 调用
             )
         except Exception as e:
             logger.error(f"[Database] Failed to configure Django: {e}")

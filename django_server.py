@@ -15,6 +15,16 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django.conf')
 os.environ['DJANGO_NO_MIGRATIONS'] = '1'
 
+# 初始化统一日志系统（在 Django 配置之前）
+from api.logging import setup_logging
+setup_logging(
+    log_dir='logs',
+    log_level='DEBUG',
+    console_level='INFO',
+    max_bytes=10 * 1024 * 1024,  # 10MB
+    backup_count=30,
+)
+
 # 配置 Django
 from config.django_config import configure_django
 
