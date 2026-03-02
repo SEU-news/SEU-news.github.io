@@ -93,9 +93,13 @@ def sort_content_by_category(content_items, is_deadline_content=False):
 
         # 构造内容项
         if is_deadline_content:
-            # 截止日期内容项
-            deadline_str = content_item.deadline.strftime('%Y-%m-%d %H:%M:%S') if content_item.deadline else None
-            publish_time_str = content_item.publish_at.strftime('%Y-%m-%d %H:%M:%S') if content_item.publish_at else None
+            # 截止日期内容项：deadline 和 publish_at 必须都有值
+            if not content_item.deadline or not content_item.publish_at:
+                logger.debug(f"跳过截止日期内容: {title} (deadline={content_item.deadline}, publish_at={content_item.publish_at})")
+                continue
+
+            deadline_str = content_item.deadline.strftime('%Y-%m-%d %H:%M:%S')
+            publish_time_str = content_item.publish_at.strftime('%Y-%m-%d %H:%M:%S')
 
             item = {
                 "title": title,
