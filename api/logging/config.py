@@ -50,11 +50,11 @@ def setup_logging(
         'formatters': {
             'standard': {
                 'format': '%(levelname)s - %(asctime)s - [%(name)s] - [%(filename)s:%(lineno)d] - %(message)s',
-                'datefmt': '%Y-%m-%d %H:%M:%S,%f',
+                'datefmt': '%Y-%m-%d %H:%M:%S',
             },
             'detailed': {
                 'format': '%(levelname)s - %(asctime)s - [%(name)s] - [%(filename)s:%(lineno)d] - [%(funcName)s] - %(message)s',
-                'datefmt': '%Y-%m-%d %H:%M:%S,%f',
+                'datefmt': '%Y-%m-%d %H:%M:%S',
             },
         },
         'handlers': {
