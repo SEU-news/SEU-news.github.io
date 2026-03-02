@@ -19,7 +19,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django_models.models import Content
-from api.serializers import ContentSerializer, ContentCreateSerializer
+from api.serializers import ContentSerializer
 from api.permissions import IsEditorOrAdmin
 from api.services.file_service import FileService
 from api.services.content_service import ContentService
@@ -84,7 +84,7 @@ class UnifiedUploadAPIView(APIView):
                 )
 
             # 使用服务层创建内容
-            content = FileService.create_content_from_url(request.user, url)
+            content = FileService.create_content_from_url(url, request.user)
 
             content_serializer = ContentSerializer(content, context={'request': request})
             return Response(content_serializer.data, status=status.HTTP_201_CREATED)
@@ -105,10 +105,12 @@ class UnifiedUploadAPIView(APIView):
                 )
 
             # 使用服务层上传图片
-            result = FileService.upload_multiple_images(request.user, images)
+            result = FileService.upload_multiple_images(images, request.user)
 
-            content_serializer = ContentSerializer(result['content'], context={'request': request})
-            return Response(content_serializer.data, status=status.HTTP_201_CREATED)
+            return Response({
+                'success': True,
+                'image_urls': result
+            }, status=status.HTTP_201_CREATED)
         except APIException as e:
             return Response(
                 {'success': False, 'message': e.message},
