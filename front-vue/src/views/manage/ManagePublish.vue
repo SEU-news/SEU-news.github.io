@@ -9,6 +9,24 @@
         {{ message }}
       </div>
 
+      <!-- PDF 日期选择 -->
+      <div class="manage-form-card">
+        <div class="form-group">
+          <label class="form-label">
+            发刊日期
+            <span class="text-muted" style="font-size: 0.85rem; margin-left: 0.5rem;">
+              （用于 PDF 打印的日期参数）
+            </span>
+          </label>
+          <input
+            v-model="pdfDate"
+            type="date"
+            class="form-control"
+            placeholder="选择 PDF 日期"
+          />
+        </div>
+      </div>
+
       <!-- 日期范围选择和操作 -->
       <div class="manage-form-card">
         <div class="d-flex gap-2 flex-column">
@@ -239,6 +257,9 @@ const router = useRouter()
 // API基础URL（使用相对路径，支持本地开发和远程部署）
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
+// 发刊日期
+const pdfDate = ref(new Date().toISOString().split('T')[0])
+
 // 日期范围选择
 const startDate = ref(new Date().toISOString().split('T')[0])
 const endDate = ref(new Date().toISOString().split('T')[0])
@@ -362,13 +383,23 @@ async function generatePDF() {
     return
   }
 
+  if (!pdfDate.value) {
+    showMessage('请选择发刊日期', 'alert-warning')
+    return
+  }
+
   isGeneratingPDF.value = true
   try {
     // 如果只选中了 DDL 内容，只传递 date 参数，让后端自动查询
     // 如果选中了普通内容，传递 content_ids 和 date
-    const params = hasSelectedContent
-      ? { content_ids: selectedContentIds.value, date: endDate.value }
-      : { date: endDate.value }
+     const params = hasSelectedContent
+        ? {
+            content_ids: selectedContentIds.value,
+            date: pdfDate.value  // 传递发刊日期参数
+          }
+        : {
+            date: pdfDate.value  // 传递发刊日期参数
+          }
 
     const result = await generatePDFAPI(params)
     if (result.success) {
