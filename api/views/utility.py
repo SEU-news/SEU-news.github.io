@@ -5,11 +5,7 @@
 """
 
 import logging
-import os
-import uuid
-import json
 
-from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
@@ -18,7 +14,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from django_models.models import Content
 from api.serializers import ContentSerializer
 from api.permissions import IsEditorOrAdmin
 from api.services.file_service import FileService

@@ -5,7 +5,6 @@
 """
 
 import logging
-from datetime import datetime
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -15,11 +14,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from django_models.models import User_info, Content
 from api.serializers import UserSerializer
 from api.permissions import IsAdmin
 from api.services.user_service import UserService
-from api.services.content_service import ContentService
 from api.core.exceptions import APIException
 
 logger = logging.getLogger(__name__)
@@ -96,7 +93,7 @@ class UserRoleEditAPIView(APIView):
 
     def post(self, request, user_id):
         try:
-            from django_models.models import User_info
+            from api.django_models import User_info
             from api.services.base_service import BaseService
 
             # 使用服务层获取用户
@@ -156,7 +153,7 @@ class UserEditAPIView(APIView):
 
     def patch(self, request, user_id):
         try:
-            from django_models.models import User_info
+            from api.django_models import User_info
             from api.services.base_service import BaseService
             import hashlib
 

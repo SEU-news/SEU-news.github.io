@@ -3,9 +3,7 @@
 处理用户登录、注册、修改密码等认证相关业务逻辑
 """
 
-from typing import Optional
-from django.db import transaction
-from django_models.models import User_info
+from api.django_models import User_info
 from api.core.exceptions import ValidationError, AuthenticationError, ConflictError
 from api.core.password_handler import PasswordHandler
 from api.services.base_service import BaseService

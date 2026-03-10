@@ -5,7 +5,7 @@ API 序列化器
 """
 
 from rest_framework import serializers
-from django_models.models import User_info, Content, Comment
+from api.django_models import User_info, Content, Comment
 
 
 class UserSerializer(serializers.ModelSerializer):

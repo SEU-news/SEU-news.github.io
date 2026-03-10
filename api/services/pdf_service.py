@@ -4,13 +4,13 @@ PDF服务
 """
 
 import logging
-from typing import Dict, Any, List, Union
+from typing import Dict, Any, List
 import json
 import os
 from datetime import datetime
 
 from django.conf import settings
-from django_models.models import Content
+from api.django_models import Content
 from api.services.base_service import BaseService
 from api.core.exceptions import ValidationError
 

@@ -3,14 +3,11 @@
 处理内容的创建、更新、审核、撤回等业务逻辑
 """
 
-import logging
 from typing import Dict, Any, List
-from django.db import transaction
 from django.db.models import Q
-from django_models.models import User_info, Content
+from api.django_models import User_info, Content
 from api.core.exceptions import ValidationError, PermissionDeniedError, NotFoundError, BusinessLogicError
 from api.config.constants import CONTENT_STATUS_PUBLISHED
-from api.config.app_config import app_config
 from api.services.base_service import BaseService
 from api.logging import get_logger
 import json

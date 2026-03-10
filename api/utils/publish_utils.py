@@ -4,14 +4,13 @@
 从Flask的apis/typst.py移植，生成Flask兼容的Typst JSON数据
 """
 
-import json
 import logging
 import os
 import re
 import subprocess
 from datetime import time, datetime
 
-from django_models.models import Content
+from api.django_models import Content
 
 
 logger = logging.getLogger(__name__)

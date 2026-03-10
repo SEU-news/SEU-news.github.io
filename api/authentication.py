@@ -6,10 +6,9 @@
 """
 
 from django.contrib.auth.backends import ModelBackend
-from django.contrib.auth import get_user_model
 from rest_framework.authentication import SessionAuthentication as DRFSessionAuthentication
 
-from django_models.models import User_info
+from api.django_models import User_info
 
 
 class SessionAuthentication(DRFSessionAuthentication):

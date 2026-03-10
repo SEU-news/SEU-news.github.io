@@ -4,9 +4,9 @@
 """
 
 from typing import Dict, Any
-from django.db.models import Q, Count
-from django_models.models import User_info, Content
-from api.core.exceptions import ValidationError, PermissionDeniedError, NotFoundError
+from django.db.models import Q
+from api.django_models import User_info, Content
+from api.core.exceptions import ValidationError, PermissionDeniedError
 from api.services.base_service import BaseService
 
 
@@ -172,9 +172,7 @@ class UserService(BaseService):
         Returns:
             统计数据字典
         """
-        from django.db.models import Count
         from django.utils import timezone
-        from datetime import timedelta
 
         # 用户统计
         total_users = User_info.objects.count()

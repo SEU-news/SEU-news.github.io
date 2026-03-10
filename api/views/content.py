@@ -5,8 +5,6 @@
 """
 
 import logging
-
-import logging
 from datetime import datetime
 
 from django.utils.decorators import method_decorator
@@ -17,11 +15,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from django_models.models import Content
+from api.django_models import Content
 from api.serializers import (
     ContentSerializer,
-    ContentCreateSerializer,
-    ContentUpdateSerializer,
 )
 from api.permissions import IsEditorOrAdmin, IsOwnerOrAdmin, IsCreatorOrAdmin, IsAdmin
 from api.services import ContentService

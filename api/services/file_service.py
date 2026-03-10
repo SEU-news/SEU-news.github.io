@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 from typing import List
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django_models.models import User_info, Content
+from api.django_models import User_info, Content
 from api.core.exceptions import ValidationError, PermissionDeniedError
 from api.config.constants import ALLOWED_IMAGE_EXTENSIONS, MAX_FILE_SIZE, UPLOAD_DIR
 from api.services.base_service import BaseService
@@ -97,7 +97,6 @@ class FileService(BaseService):
             raise PermissionDeniedError('需要编辑权限才能上传图片')
 
         # 保存图片
-        from datetime import datetime
         image_path = FileService.save_image_file(image_file, user.id)
 
         return f'/static/{image_path}'
